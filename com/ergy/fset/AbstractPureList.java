@@ -16,9 +16,7 @@ import java.util.*;
  * 
  * <p>The primary purpose of this class is to provide methods for all the mutating
  * operations which throw <code>UnsupportedOperationException</code>, and one for
- * <code>clone</code> which simply returns <code>this</code>.  It also declares the
- * <code>cacheEqual</code> method, a protected method used to cache the results of
- * equality tests in certain cases.
+ * <code>clone</code> which simply returns <code>this</code>.
  *
  * @author Scott L. Burson
  */

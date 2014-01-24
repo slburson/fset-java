@@ -11,12 +11,10 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * This class provides a skeletal implementation of the PureMap interface.  It
- * exists for three reasons: (1) to provide methods for all the mutating operations
- * which throw <code>UnsupportedOperationException</code>; (2) to provide a method
- * for <code>clone</code> which simply returns <code>this</code>; and (3) to declare
- * the <code>cacheEqual</code> method, a protected method used to cache the results
- * of equality tests in certain cases.
+ * This class provides a skeletal implementation of the PureMap interface.
+ * It exists to provide methods for all the mutating operations which throw
+ * <code>UnsupportedOperationException</code>, and to provide a method for
+ * <code>clone</code> which simply returns <code>this</code>.
  *
  * @author Scott L. Burson
  */
