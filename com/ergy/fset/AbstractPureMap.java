@@ -1,9 +1,9 @@
 /*
  * AbstractPureMap.java
  *
- * Copyright (c) 2013 Scott L. Burson.
+ * Copyright (c) 2013, 2014 Scott L. Burson.
  *
- * This file is licensed under the Library GNU Public License (LGPL).
+ * This file is licensed under the Library GNU Public License (LGPL), v. 2.1.
  */
 
 
@@ -21,7 +21,7 @@ import java.util.*;
 
 public abstract class AbstractPureMap<Key, Val>
     extends AbstractMap<Key, Val>
-    implements PureMap<Key, Val>, Cloneable
+    implements PureMap<Key, Val>
 {
 
     /**

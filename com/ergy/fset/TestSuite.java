@@ -1,9 +1,9 @@
 /*
  * TestSuite.java
  *
- * Copyright (c) 2013 Scott L. Burson.
+ * Copyright (c) 2013, 2014 Scott L. Burson.
  *
- * This file is licensed under the Library GNU Public License (LGPL).
+ * This file is licensed under the Library GNU Public License (LGPL), v. 2.1.
  */
 
 
@@ -52,7 +52,6 @@ public class TestSuite {
 	    //testPureCachedHashMap(rand, i, pchs);
 	    testPureTreeList(rand, i);
 	}
-	println("All tests passed.");
     }
 
     static PureTreeSet<MyInteger> testPureTreeSet(Random rand, int i) {
