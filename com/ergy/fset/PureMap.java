@@ -133,7 +133,7 @@ public interface PureMap<Key, Val>
      * is of the same class and has the same comparator as <code>initialSet</code>.
      * (The contents of <code>initialSet</code> are ignored.)
      *
-     * @param initial_set the set whose class and comparator will be used for the
+     * @param initialSet the set whose class and comparator will be used for the
      * result
      * @return the range set of this map
      */
@@ -155,7 +155,7 @@ public interface PureMap<Key, Val>
      * <code>initialSet</code>.  (The contents of <code>initialSet</code> are
      * ignored.)
      *
-     * @param initial_set the set whose class and comparator will be used for the
+     * @param initialSet the set whose class and comparator will be used for the
      * result
      * @return the set of entries this map contains
      */
@@ -165,13 +165,13 @@ public interface PureMap<Key, Val>
      * Adds the pairs of <code>withMap</code> to this map, returning the result.
      * The domain of the result is the union of the domains of the two maps; for
      * each key, if it appears in both maps, its value in the result is that in
-     * <code>with_map</code>, else its value is that in whichever map it appeared
-     * in.  That is, the values in <code>with_map</code> take precedence.
+     * <code>withMap</code>, else its value is that in whichever map it appeared
+     * in.  That is, the values in <code>withMap</code> take precedence.
      *
      * <p>The default value of the result (the value returned by <code>get</code> of
      * a key not in the map) is that of this map.
      *
-     * @param with_map the map to merge with
+     * @param withMap the map to merge with
      * @return the result of the merge
      */
     public PureMap<Key, Val> union(PureMap<? extends Key, ? extends Val> withMap);
