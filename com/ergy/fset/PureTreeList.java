@@ -484,7 +484,7 @@ public class PureTreeList<Elt>
 	}
     }
 
-    private static Object insert(Object subtree, int index, Object elt) {
+    /*package*/ static Object insert(Object subtree, int index, Object elt) {
 	if (subtree == null) {
 	    Object[] ary = new Object[1];
 	    ary[0] = elt;

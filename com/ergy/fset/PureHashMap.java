@@ -273,18 +273,18 @@ public class PureHashMap<Key, Val>
     public PureHashMap<Key, Val> with(Key key, Val value) {
 	Object t = with(tree, key, hashCode(key), value);
 	if (t == tree) return this;
-	else return new PureHashMap(t, dflt);
+	else return new PureHashMap<Key, Val>(t, dflt);
     }
 
     public PureHashMap<Key, Val> less(Object key) {
 	Object t = less(tree, key, hashCode(key));
 	if (t == tree) return this;
-	else return new PureHashMap(t, dflt);
+	else return new PureHashMap<Key, Val>(t, dflt);
     }
 
     public PureHashSet<Key> domain() {
 	Object dom = domain(tree);
-	return new PureHashSet(dom);
+	return new PureHashSet<Key>(dom);
     }
 
     public PureHashSet<Key> keySet() {
@@ -551,7 +551,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private boolean containsKey(Object subtree, Object key, int khash) {
+    /*package*/ boolean containsKey(Object subtree, Object key, int khash) {
 	if (subtree == null) return false;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -610,7 +610,7 @@ public class PureHashMap<Key, Val>
     }
 
     /* `key' may be an `EquivalentMap', or an `Entry'. */
-    private static Object with(Object subtree, Object key, int khash, Object value) {
+    /*package*/ static Object with(Object subtree, Object key, int khash, Object value) {
 	if (subtree == null) {
 	    if (!(key instanceof EquivalentMap)) {
 		Object[] a = new Object[2];
