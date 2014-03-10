@@ -41,7 +41,7 @@ import java.util.*;
  * access pattern really is sequential.  For a good example, see the code for {@link
  * Collections.binarySearch} in the J2SDK sources.
  *
- * @author Scott L. Burson, Sympoiesis, Inc.
+ * @author Scott L. Burson
  * @see PureList
  */
 

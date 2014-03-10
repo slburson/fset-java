@@ -22,8 +22,10 @@ import java.util.*;
  * implement {@link Comparable}; they need not even have any superclass in common
  * other than <code>Object</code>.  In the case where distinct elements have the
  * same hash code, the implementation is correct, but less efficient; so it is
- * important to make the hash codes distinct whenever possible.  No guarantee is
- * made as to the order in which elements are returned by the iterator.
+ * important to make the hash codes distinct whenever possible.  The iterator
+ * returns elements in increasing order of their hash codes; in the case of elements
+ * with equal hash codes, the order is not specified, but it will be deterministic
+ * (it depends only on the sequence of operations used to construct the set).
  *
  * <p>Time costs: <code>isEmpty</code>, <code>size</code>, and <code>arb</code> take
  * O(1) (constant) time.  <code>contains</code>, <code>with</code>, <code>less</code>
@@ -51,7 +53,7 @@ import java.util.*;
  * <p><code>PureHashSet</code> implements {@link java.io.Serializable}; an instance
  * of it is serializable provided that all elements it contains are serializable.
  *
- * @author Scott L. Burson, Sympoiesis, Inc.
+ * @author Scott L. Burson
  * @see PureSet
  * @see PureTreeSet
  * @see PureCachedHashSet

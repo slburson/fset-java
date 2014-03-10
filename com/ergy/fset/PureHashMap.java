@@ -22,8 +22,11 @@ import java.util.*;
  * Comparable}; they need not even have any superclass in common other than
  * <code>Object</code>.  In the case where distinct keys have the same hash code, the
  * implementation is correct, but less efficient; so it is (as with ordinary hash
- * tables) important to make the hash codes distinct whenever possible.  No guarantee
- * is made as to the order in which entries are returned by the iterator.
+ * tables) important to make the hash codes distinct whenever possible.  The iterator
+ * returns entries in increasing order of the hash codes of the keys; in the case of
+ * keys with equal hash codes, the order is not specified, but it will be
+ * deterministic (it depends only on the sequence of operations used to construct the
+ * map).
  *
  * <p>Time costs: <code>isEmpty</code>, <code>size</code>, <code>arb</code>, and
  * <code>entrySet</code> take O(1) (constant) time.  <code>containsKey</code>,
@@ -49,17 +52,6 @@ import java.util.*;
  * better choice.
  *
  * <p><code>PureHashMap</code> accepts the null key and the null value.
- *
- * <p><code>PureHashMap</code> provides a variety of constructors for various cases,
- * including two that take an <code>Elt[][]</code>.  These are intended for
- * convenience when initializing maps in code; one may write, for instance,
- *
- * <pre>
- *     String[][] map_init = { { "x", "1" }, { "y", "2" } }
- *     PureMap<String> map = new PureHashMap<String>(map_init);
- * </pre>
- *
- * to get a map that maps "x" to "1" and "y" to "2".
  *
  * <p><code>PureHashMap</code> also provides, corresponding to each constructor, a
  * static factory method <code>withDefault</code> which, in addition to the

@@ -75,7 +75,7 @@ import java.util.*;
  * of it is serializable provided that all elements it contains, and the
  * <code>Comparator</code> it uses if any, are serializable.
  *
- * @author Scott L. Burson, Sympoiesis, Inc.
+ * @author Scott L. Burson
  * @see PureSet
  * @see PureHashSet
  * @see Comparable
