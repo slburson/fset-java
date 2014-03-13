@@ -174,6 +174,7 @@ public final class PureTreeSet<Elt>
      * inner arrays, not the objects which are ultimately found after multiple
      * levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array to use the components of
      */
     public <T extends Elt> PureTreeSet(T[] ary) {
@@ -202,6 +203,7 @@ public final class PureTreeSet<Elt>
      * elements of the set will be the inner arrays, not the objects which are
      * ultimately found after multiple levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array to use the components of
      * @param c the comparator
      */

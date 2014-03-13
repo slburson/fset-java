@@ -106,6 +106,7 @@ public class PureTreeList<Elt>
      * elements of the list will be the inner arrays, not the objects which are
      * ultimately found after multiple levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array
      */
     public <T extends Elt> PureTreeList(T[] ary) {
@@ -121,6 +122,7 @@ public class PureTreeList<Elt>
      * multidimensional, the elements of the list will be the inner arrays, not the
      * objects which are ultimately found after multiple levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array
      * @param c the comparator
      */

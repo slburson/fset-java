@@ -109,6 +109,7 @@ public final class PureHashSet<Elt>
      * Constructs a <code>PureHashSet</code> whose elements are the components of
      * <code>ary</code>.
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array to use the components of
      */
     public <T extends Elt> PureHashSet(T[] ary) {
