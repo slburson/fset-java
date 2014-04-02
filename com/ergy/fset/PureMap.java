@@ -229,4 +229,21 @@ public interface PureMap<Key, Val>
      */
     public Iterator<Map.Entry<Key, Val>> iterator();
 
+
+    /* ======== Deprecated Map Methods ========
+     *
+     * We mark these deprecated to remind people not to use them on a PureMap.
+     */
+
+    @Deprecated
+    void clear();
+
+    @Deprecated
+    Val put(Key key, Val value);
+
+    @Deprecated
+    void putAll(Map<? extends Key, ? extends Val> m);
+
+    @Deprecated
+    Val remove(Object key);
 }

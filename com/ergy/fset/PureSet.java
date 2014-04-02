@@ -138,5 +138,28 @@ public interface PureSet<Elt> extends Set<Elt> {
      */
     boolean isSuperset(Collection<?> coll);
 
+
+    /* ======== Deprecated Set Methods ========
+     *
+     * We mark these deprecated to remind people not to use them on a PureSet.
+     */
+
+    @Deprecated
+    boolean add(Elt e);
+
+    @Deprecated
+    boolean addAll(Collection<? extends Elt> c);
+
+    @Deprecated
+    void clear();
+
+    @Deprecated
+    boolean remove(Object e);
+
+    @Deprecated
+    boolean removeAll(Collection<?> c);
+
+    @Deprecated
+    boolean retainAll(Collection<?> c);
 }
 

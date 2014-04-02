@@ -150,4 +150,30 @@ public interface PureList<Elt> extends List<Elt> {
      */
     PureList<Elt> sort(Comparator<? super Elt> comp);
 
+
+    /* ======== Deprecated List Methods ========
+     *
+     * We mark these deprecated to remind people not to use them on a PureList.
+     */
+
+    @Deprecated
+    boolean add(Elt e);
+
+    @Deprecated
+    void add(int index, Elt e);
+
+    @Deprecated
+    boolean addAll(int index, Collection<? extends Elt> c);
+
+    @Deprecated
+    void clear();
+
+    @Deprecated
+    Elt remove(int index);
+
+    @Deprecated
+    boolean removeRange(int fromIndex, int toIndex);
+
+    @Deprecated
+    Elt set(int index, Elt e);
 }
