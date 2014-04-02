@@ -74,17 +74,6 @@ import java.util.*;
  * equivalent but unequal keys, it does so with some loss of efficiency.  As long as
  * these are rare, however, the cost will not be significant.
  *
- * <p><code>PureTreeMap</code> provides a variety of constructors for various cases,
- * including two that take an <code>Object[][]</code>.  These are intended for
- * convenience when initializing maps in code; one may write, for instance,
- *
- * <pre>
- *     Object[][] map_init = { { "x", "1" }, { "y", "2" } }
- *     PureMap map = new PureTreeMap(map_init);
- * </pre>
- *
- * to get a map that maps "x" to "1" and "y" to "2".
- *
  * <p><code>PureTreeMap</code> also provides, corresponding to each constructor, a
  * static factory method <code>withDefault</code> which, in addition to the
  * functionality of the constructor, also allows the specification of a default
@@ -121,7 +110,7 @@ import java.util.*;
  * <code>Comparator</code> it uses if any, and the default value if nonnull, are
  * serializable.
  *
- * @author Scott L. Burson, Sympoiesis, Inc.
+ * @author Scott L. Burson
  * @see PureMap
  * @see PureHashMap
  */

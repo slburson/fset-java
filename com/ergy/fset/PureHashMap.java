@@ -22,8 +22,11 @@ import java.util.*;
  * Comparable}; they need not even have any superclass in common other than
  * <code>Object</code>.  In the case where distinct keys have the same hash code, the
  * implementation is correct, but less efficient; so it is (as with ordinary hash
- * tables) important to make the hash codes distinct whenever possible.  No guarantee
- * is made as to the order in which entries are returned by the iterator.
+ * tables) important to make the hash codes distinct whenever possible.  The iterator
+ * returns entries in increasing order of the hash codes of the keys; in the case of
+ * keys with equal hash codes, the order is not specified, but it will be
+ * deterministic (it depends only on the sequence of operations used to construct the
+ * map).
  *
  * <p>Time costs: <code>isEmpty</code>, <code>size</code>, <code>arb</code>, and
  * <code>entrySet</code> take O(1) (constant) time.  <code>containsKey</code>,
@@ -49,17 +52,6 @@ import java.util.*;
  * better choice.
  *
  * <p><code>PureHashMap</code> accepts the null key and the null value.
- *
- * <p><code>PureHashMap</code> provides a variety of constructors for various cases,
- * including two that take an <code>Elt[][]</code>.  These are intended for
- * convenience when initializing maps in code; one may write, for instance,
- *
- * <pre>
- *     String[][] map_init = { { "x", "1" }, { "y", "2" } }
- *     PureMap<String> map = new PureHashMap<String>(map_init);
- * </pre>
- *
- * to get a map that maps "x" to "1" and "y" to "2".
  *
  * <p><code>PureHashMap</code> also provides, corresponding to each constructor, a
  * static factory method <code>withDefault</code> which, in addition to the
@@ -273,18 +265,18 @@ public class PureHashMap<Key, Val>
     public PureHashMap<Key, Val> with(Key key, Val value) {
 	Object t = with(tree, key, hashCode(key), value);
 	if (t == tree) return this;
-	else return new PureHashMap(t, dflt);
+	else return new PureHashMap<Key, Val>(t, dflt);
     }
 
     public PureHashMap<Key, Val> less(Object key) {
 	Object t = less(tree, key, hashCode(key));
 	if (t == tree) return this;
-	else return new PureHashMap(t, dflt);
+	else return new PureHashMap<Key, Val>(t, dflt);
     }
 
     public PureHashSet<Key> domain() {
 	Object dom = domain(tree);
-	return new PureHashSet(dom);
+	return new PureHashSet<Key>(dom);
     }
 
     public PureHashSet<Key> keySet() {
@@ -550,7 +542,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private boolean containsKey(Object subtree, Object key, int khash) {
+    /*package*/ boolean containsKey(Object subtree, Object key, int khash) {
 	if (subtree == null) return false;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -605,7 +597,7 @@ public class PureHashMap<Key, Val>
     }
 
     /* `key' may be an `EquivalentMap', or an `Entry'. */
-    private static Object with(Object subtree, Object key, int khash, Object value) {
+    /*package*/ static Object with(Object subtree, Object key, int khash, Object value) {
 	if (subtree == null) {
 	    if (!(key instanceof EquivalentMap)) {
 		Object[] a = new Object[2];

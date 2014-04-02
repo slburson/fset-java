@@ -75,7 +75,7 @@ import java.util.*;
  * of it is serializable provided that all elements it contains, and the
  * <code>Comparator</code> it uses if any, are serializable.
  *
- * @author Scott L. Burson, Sympoiesis, Inc.
+ * @author Scott L. Burson
  * @see PureSet
  * @see PureHashSet
  * @see Comparable
@@ -172,6 +172,7 @@ public final class PureTreeSet<Elt>
      * inner arrays, not the objects which are ultimately found after multiple
      * levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array to use the components of
      */
     public <T extends Elt> PureTreeSet(T[] ary) {
@@ -200,6 +201,7 @@ public final class PureTreeSet<Elt>
      * elements of the set will be the inner arrays, not the objects which are
      * ultimately found after multiple levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array to use the components of
      * @param c the comparator
      */

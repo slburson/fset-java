@@ -41,7 +41,7 @@ import java.util.*;
  * access pattern really is sequential.  For a good example, see the code for {@link
  * Collections.binarySearch} in the J2SDK sources.
  *
- * @author Scott L. Burson, Sympoiesis, Inc.
+ * @author Scott L. Burson
  * @see PureList
  */
 
@@ -106,6 +106,7 @@ public class PureTreeList<Elt>
      * elements of the list will be the inner arrays, not the objects which are
      * ultimately found after multiple levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array
      */
     public <T extends Elt> PureTreeList(T[] ary) {
@@ -121,6 +122,7 @@ public class PureTreeList<Elt>
      * multidimensional, the elements of the list will be the inner arrays, not the
      * objects which are ultimately found after multiple levels of indexing.)
      *
+     * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array
      * @param c the comparator
      */
@@ -486,7 +488,7 @@ public class PureTreeList<Elt>
 	}
     }
 
-    private static Object insert(Object subtree, int index, Object elt) {
+    /*package*/ static Object insert(Object subtree, int index, Object elt) {
 	if (subtree == null) {
 	    Object[] ary = new Object[1];
 	    ary[0] = elt;
