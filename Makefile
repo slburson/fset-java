@@ -7,5 +7,5 @@ test:
 doc:
 	javadoc -link http://docs.oracle.com/javase/7/docs/api/ -d Doc/JavaDoc com/ergy/fset/*Pure*.java
 
-fset.jar: com/ergy/fset/*.class
+fset.jar: all com/ergy/fset/*.class
 	jar cf fset.jar com/ergy/fset/*.class
