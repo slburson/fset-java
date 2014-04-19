@@ -121,6 +121,15 @@ public class PureTreeMap<Key, Val>
 {
 
     /**
+     * Returns an empty PureTreeMap that uses the natural ordering of the keys.
+     * Slightly more efficient than calling the constructor, because it returns a
+     * canonical instance.
+     */
+    public static <Key, Val> PureTreeMap<Key, Val> emptyMap() {
+	return (PureTreeMap<Key, Val>)EMPTY_INSTANCE;
+    }
+
+    /**
      * Constructs an empty <code>PureTreeMap</code> that uses the natural ordering
      * of the keys.
      */
@@ -653,6 +662,14 @@ public class PureTreeMap<Key, Val>
 
     /******************************************************************************/
     /* Internals */
+
+    // Inspired by Stephen Adams' paper on weight-balanced binary trees.  As an additional
+    // development, these trees are heterogeneous: instead of consisting entirely of nodes,
+    // the lowest two to three levels of the tree are stored in bounded-length vectors.
+    // This cuts space requirements roughly in half without costing much (if any) time.
+
+    // The empty, naturally ordered map can be a singleton.
+    private static final PureTreeMap EMPTY_INSTANCE = new PureTreeMap();
 
     /* Instance variables */
     private transient Object tree;	// a subtree (see below)

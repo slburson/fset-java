@@ -51,7 +51,16 @@ public class PureTreeList<Elt>
 {
 
     /**
-     * Constructs a new, empty <code>PureTreeList</code>, whose
+     * Returns an empty PureTreeList whose <code>compareTo</code> method uses the
+     * natural ordering of the elements.  Slightly more efficient than calling the
+     * constructor, because it returns a canonical instance.
+     */
+    public static <Elt> PureTreeList<Elt> emptyList() {
+	return (PureTreeList<Elt>)EMPTY_INSTANCE;
+    }
+
+    /**
+     * Constructs a new, empty <code>PureTreeList</code> whose
      * <code>compareTo</code> method uses the natural ordering of its elements.
      */
     public PureTreeList() {
@@ -60,7 +69,7 @@ public class PureTreeList<Elt>
     }
 
     /**
-     * Constructs a new, empty <code>PureTreeList</code>, whose
+     * Constructs a new, empty <code>PureTreeList</code> whose
      * <code>compareTo</code> method uses the supplied <code>Comparator</code> to
      * compare elements.
      *
@@ -426,6 +435,9 @@ public class PureTreeList<Elt>
     // development, these trees are heterogeneous: instead of consisting entirely of nodes,
     // the lowest two to three levels of the tree are stored in bounded-length vectors.
     // This cuts space requirements roughly in half without costing much (if any) time.
+
+    // The empty, naturally ordered list can be a singleton.
+    private static final PureTreeList EMPTY_INSTANCE = new PureTreeList();
 
     /* Instance variables */
     private transient Object tree;

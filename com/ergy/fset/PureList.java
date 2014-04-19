@@ -124,7 +124,7 @@ public interface PureList<Elt> extends List<Elt> {
      *
      * @throws IndexOutOfBoundsException
      */
-    PureList<Elt> subseq (int fromIndex, int toIndex);
+    PureList<Elt> subseq(int fromIndex, int toIndex);
 
     /**
      * Returns a new list in which the elements of this list are sorted by their

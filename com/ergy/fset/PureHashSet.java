@@ -67,6 +67,14 @@ public final class PureHashSet<Elt>
 {
 
     /**
+     * Returns an empty PureHashSet.  Slightly more efficient than calling the constructor,
+     * because it returns a canonical instance.
+     */
+    public static <Elt> PureHashSet<Elt> emptySet() {
+	return (PureHashSet<Elt>)EMPTY_INSTANCE;
+    }
+
+    /**
      * Constructs an empty <code>PureHashSet</code>.
      */
     public PureHashSet() {
@@ -350,6 +358,9 @@ public final class PureHashSet<Elt>
     // development, these trees are heterogeneous: instead of consisting entirely of nodes,
     // the lowest two to three levels of the tree are stored in bounded-length vectors.
     // This cuts space requirements roughly in half without costing much (if any) time.
+
+    // The empty set can be a singleton.
+    private static final PureHashSet EMPTY_INSTANCE = new PureHashSet();
 
     /* Instance variables */
     // This has package access for benefit of `PureHashMap.restrict[Not]'.

@@ -88,6 +88,15 @@ public final class PureTreeSet<Elt>
 {
 
     /**
+     * Returns an empty PureTreeSet that uses the natural ordering of the elements.
+     * Slightly more efficient than calling the constructor, because it returns a
+     * canonical instance.
+     */
+    public static <Elt> PureTreeSet<Elt> emptySet() {
+	return (PureTreeSet<Elt>)EMPTY_INSTANCE;
+    }
+
+    /**
      * Constructs an empty <code>PureTreeSet</code> that uses the natural ordering
      * of the elements.
      */
@@ -541,6 +550,9 @@ public final class PureTreeSet<Elt>
     // development, these trees are heterogeneous: instead of consisting entirely of nodes,
     // the lowest two to three levels of the tree are stored in bounded-length vectors.
     // This cuts space requirements roughly in half without costing much (if any) time.
+
+    // The empty, naturally ordered set can be a singleton.
+    private static final PureTreeSet EMPTY_INSTANCE = new PureTreeSet();
 
     /* Instance variables */
     // This has package access for benefit of `PureTreeMap.restrict[Not]'.

@@ -102,6 +102,14 @@ public class PureHashMap<Key, Val>
 {
 
     /**
+     * Returns an empty PureHashMap.  Slightly more efficient than calling the constructor,
+     * because it returns a canonical instance.
+     */
+    public static <Key, Val> PureHashMap<Key, Val> emptyMap() {
+	return (PureHashMap<Key, Val>)EMPTY_INSTANCE;
+    }
+
+    /**
      * Constructs an empty <code>PureHashMap</code>.
      */
     public PureHashMap() {
@@ -408,6 +416,9 @@ public class PureHashMap<Key, Val>
     // development, these trees are heterogeneous: instead of consisting entirely of nodes,
     // the lowest two to three levels of the tree are stored in bounded-length vectors.
     // This cuts space requirements roughly in half without costing much (if any) time.
+
+    // The empty map can be a singleton.
+    private static final PureHashMap EMPTY_INSTANCE = new PureHashMap();
 
     /* Instance variables */
 
