@@ -144,9 +144,9 @@ public class PureTreeMap<Key, Val>
      *
      * @param c the comparator
      */
-    public PureTreeMap(Comparator c) {
+    public PureTreeMap(Comparator<? super Key> c) {
 	tree = null;
-	comp = c;
+	comp = (Comparator<Key>)c;
     }
 
     /**
@@ -156,7 +156,7 @@ public class PureTreeMap<Key, Val>
      * @param map the map to use the entries of
      */
     public PureTreeMap(Map<? extends Key, ? extends Val> map) {
-	initialize((Map<Key, Val>)map, null);
+	fromMap((Map<Key, Val>)map, null);
     }
 
     /**
@@ -168,7 +168,7 @@ public class PureTreeMap<Key, Val>
      * @param c the comparator
      */
     public PureTreeMap(Map<? extends Key, ? extends Val> map, Comparator<? super Key> c) {
-	initialize((Map<Key, Val>)map, c);
+	fromMap((Map<Key, Val>)map, c);
     }
 
     /**
@@ -178,67 +178,37 @@ public class PureTreeMap<Key, Val>
      * @param map the map to use the entries of
      */
     public PureTreeMap(SortedMap<Key, Val> map) {
-	initialize(map, map.comparator());
+	fromMap(map, map.comparator());
     }
 
     /**
-     * Constructs a <code>PureTreeMap</code>, initializing it from <code>ary</code>,
-     * which should be an array of key/value pairs represented as arrays of length 2,
-     * containing the key at index 0 and the value at index 1; the resulting map uses
-     * the natural ordering of the keys.  (The intent of this constructor is to make
-     * it easy to write map literals in source code.)  If a key is duplicated, it is
-     * unspecified, of the values given for that key, which it will have in the
-     * result.
+     * Constructs a <code>PureTreeMap</code> mapping each element of <code>keys</code>
+     * to the corresponding element of <code>vals</code>; the resulting map uses the
+     * natural ordering of the keys.  If a key is duplicated, the value it will be
+     * mapped to in the result will be the one corresponding to its last occurrence.
      *
-     * @param ary the array of pairs
+     * @throws IllegalArgumentException if keys.length != vals.length
      */
-/*
-    public PureTreeMap(Object[][] ary) {
+    public PureTreeMap(Key[] keys, Val[] vals) {
+	if (keys.length != vals.length) throw new IllegalArgumentException();
 	comp = null;
-	tree = fromArray(ary, 0, ary.length);
+	tree = fromArrays(keys, vals, 0, keys.length);
     }
-
-    private Object fromArray(Object[][] ary, int lo, int hi) {
-	if (lo == hi) return null;
-	else if (lo + 1 == hi) {
-	    Object[] pr = ary[lo];
-	    // While in most cases we could just return `pr', let's protect ourselves
-	    // against it being too long or getting altered later.
-	    Object[] a = new Object[2];
-	    a[0] = pr[0];
-	    a[1] = pr[1];
-	    return a;
-	} else {
-	    int mid = (lo + hi) >> 1;
-	    return union(fromArray(ary, lo, mid),
-			 fromArray(ary, mid, hi));
-	}
-    }
-*/
 
     /**
-     * Constructs a <code>PureTreeMap</code>, initializing it from <code>ary</code>,
-     * which should be an array of key/value pairs represented as arrays of length
-     * 2, containing the key at index 0 and the value at index 1; the resulting map
-     * uses the supplied <code>Comparator</code> to compare keys and values.  (The
-     * intent of this constructor is to make it easy to write map literals in source
-     * code.)  If a key is duplicated, it is unspecified, of the values given for
-     * that key, which it will have in the result.
+     * Constructs a <code>PureTreeMap</code> mapping each element of <code>keys</code>
+     * to the corresponding element of <code>vals</code>; the resulting map will use the
+     * supplied <code>Comparator> to compare keys.  If a key is duplicated, the value it
+     * will be mapped to in the result will be the one corresponding to its last
+     * occurrence.
      *
-     * @param ary the array of pairs
-     * @param c the comparator
+     * @throws IllegalArgumentException if keys.length != vals.length
      */
-/*
-    public PureTreeMap(Object[][] ary, Comparator c) {
-	comp = c;
-	Object t = null;
-	for (int i = 0, len = ary.length; i < len; ++i) {
-	    Object[] pr = ary[i];
-	    t = with(t, pr[0], pr[1]);
-	}
-	tree = t;
+    public PureTreeMap(Key[] keys, Val[] vals, Comparator<? super Key> c) {
+	if (keys.length != vals.length) throw new IllegalArgumentException();
+	comp = (Comparator<Key>)c;
+	tree = fromArrays(keys, vals, 0, keys.length);
     }
-*/
 
     /**
      * Constructs and returns an empty <code>PureTreeMap</code> that uses the
@@ -306,49 +276,7 @@ public class PureTreeMap<Key, Val>
 	return m;
     }
 
-    /**
-     * Constructs and returns a <code>PureTreeMap</code>, initializing it from
-     * <code>ary</code>, which should be an array of key/value pairs represented as
-     * arrays of length 2, containing the key at index 0 and the value at index 1;
-     * the resulting map uses the natural ordering of the keys and values, and its
-     * <code>get</code> method returns <code>dflt</code> when called with a key
-     * which is not in the map.
-     *
-     * @param ary the array of pairs
-     * @param dflt the default value
-     * @return the new <code>PureTreeMap</code>
-     */
-/*
-    public static PureTreeMap withDefault(Object[][] ary, Object dflt) {
-	PureTreeMap m = new PureTreeMap(ary);
-	m.dflt = dflt;
-	return m;
-    }
-*/
-
-    /**
-     * Constructs and returns a <code>PureTreeMap</code>, initializing it from
-     * <code>ary</code>, which should be an array of key/value pairs represented as
-     * arrays of length 2, containing the key at index 0 and the value at index 1;
-     * the resulting map uses the supplied <code>Comparator</code> to compare keys
-     * and values, and its <code>get</code> method returns <code>dflt</code> when
-     * called with a key which is not in the map.
-     *
-     * @param ary the array of pairs
-     * @param dflt the default value
-     * @param comp the comparator
-     * @return the new <code>PureTreeMap</code>
-     */
-/*
-    public static PureTreeMap withDefault(Object[][] ary, Object dflt,
-					  Comparator comp) {
-	PureTreeMap m = new PureTreeMap(ary, comp);
-	m.dflt = dflt;
-	return m;
-    }
-*/
-
-    private void initialize(Map<Key, Val> map, Comparator<? super Key> _comp) {
+    private void fromMap(Map<Key, Val> map, Comparator<? super Key> _comp) {
 	comp = (Comparator<Key>)_comp;
 	if (map instanceof PureTreeMap && eql(comp, ((PureTreeMap)map).comp))
 	    tree = ((PureTreeMap)map).tree;
@@ -360,6 +288,19 @@ public class PureTreeMap<Key, Val>
 	    for (Map.Entry<Key, Val> ent : map.entrySet())
 		t = with(t, ent.getKey(), ent.getValue());
 	    tree = t;
+	}
+    }
+
+    private Object fromArrays(Key[] keys, Val[] vals, int lo, int hi) {
+	if (lo == hi) return null;
+	else if (lo + 1 == hi) {
+	    Object[] pr = new Object[2];
+	    pr[0] = keys[lo];
+	    pr[1] = vals[lo];
+	    return pr;
+	} else {
+	    int mid = lo + ((hi - lo) >> 1);		// avoid overflow
+	    return union(fromArrays(keys, vals, lo, mid), fromArrays(keys, vals, mid, hi));
 	}
     }
 

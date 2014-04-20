@@ -123,41 +123,51 @@ public class PureHashMap<Key, Val>
      * @param map the map to use the entries of
      */
     public PureHashMap(Map<? extends Key, ? extends Val> map) {
-	initialize(map);
+	fromMap(map);
+    }
+
+    private void fromMap(Map<? extends Key, ? extends Val> map) {
+	if (map instanceof PureHashMap)
+	    tree = ((PureHashMap)map).tree;
+	else {
+	    // &&& This could be improved along the same lines as the `PureTreeSet'
+	    // constructor... but it won't help as much if the map iterator has to cons
+	    // a new `Map.Entry' each time.
+	    Object t = null;
+	    for (Iterator it = map.entrySet().iterator(); it.hasNext(); ) {
+		Map.Entry ent = (Map.Entry)it.next();
+		Object k = ent.getKey();
+		t = with(t, k, hashCode(k), ent.getValue());
+	    }
+	    tree = t;
+	}
     }
 
     /**
-     * Constructs a <code>PureHashMap</code>, initializing it from <code>ary</code>,
-     * which should be an array of key/value pairs represented as arrays of length
-     * 2, containing the key at index 0 and the value at index 1.  (The intent of
-     * this constructor is to make it easy to write map literals in source code.)
-     * If a key is duplicated, it is unspecified, of the values given for that key,
-     * which it will have in the result.
+     * Constructs a <code>PureTreeMap</code> mapping each element of <code>keys</code>
+     * to the corresponding element of <code>vals</code>.  If a key is duplicated, the
+     * value it will be mapped to in the result will be the one corresponding to its
+     * last occurrence.
      *
-     * @param ary the array of pairs
+     * @throws IllegalArgumentException if keys.length != vals.length
      */
-/*
-    public PureHashMap(Elt[][] ary) {
-	tree = fromArray(ary, 0, ary.length);
+    public PureHashMap(Key[] keys, Val[] vals) {
+	if (keys.length != vals.length) throw new IllegalArgumentException();
+	tree = fromArrays(keys, vals, 0, keys.length);
     }
 
-    private Object fromArray(Elt[][] ary, int lo, int hi) {
+    private Object fromArrays(Key[] keys, Val[] vals, int lo, int hi) {
 	if (lo == hi) return null;
 	else if (lo + 1 == hi) {
-	    Elt[] pr = ary[lo];
-	    // While in most cases we could just return `pr', let's protect ourselves
-	    // against it being too long or getting altered later.
-	    Elt[] a = new Elt[2];
-	    a[0] = pr[0];
-	    a[1] = pr[1];
-	    return a;
+	    Object[] pr = new Object[2];
+	    pr[0] = keys[lo];
+	    pr[1] = vals[lo];
+	    return pr;
 	} else {
-	    int mid = (lo + hi) >> 1;
-	    return union(fromArray(ary, lo, mid),
-			 fromArray(ary, mid, hi));
+	    int mid = lo + ((hi - lo) >> 1);		// avoid overflow
+	    return union(fromArrays(keys, vals, lo, mid), fromArrays(keys, vals, mid, hi));
 	}
     }
-*/
 
     /**
      * Constructs and returns an empty <code>PureHashMap</code> with default
@@ -187,43 +197,6 @@ public class PureHashMap<Key, Val>
 	PureHashMap<Key, Val> m = new PureHashMap<Key, Val>(map);
 	m.dflt = dflt;
 	return m;
-    }
-
-    /**
-     * Constructs and returns a <code>PureHashMap</code> with default
-     * <code>dflt</code>, initializing it from <code>ary</code>.  <code>ary</code>
-     * should be an array of key/value pairs represented as arrays of length 2,
-     * containing the key at index 0 and the value at index 1.  The resulting map's
-     * <code>get</code> method returns <code>dflt</code> when called with a key
-     * which is not in the map.
-     *
-     * @param ary the array of pairs
-     * @param dflt the default value
-     * @return the new <code>PureHashMap</code>
-     */
-/*
-    public static <Key, Val> PureHashMap<Key, Val> withDefault(Val[][] ary, Val dflt) {
-	PureHashMap<Key, Val> m = new PureHashMap<Key, Val>(ary);
-	m.dflt = dflt;
-	return m;
-    }
-*/
-
-    private void initialize(Map<? extends Key, ? extends Val> map) {
-	if (map instanceof PureHashMap)
-	    tree = ((PureHashMap)map).tree;
-	else {
-	    // &&& This could be improved along the same lines as the `PureTreeSet'
-	    // constructor... but it won't help as much if the map iterator has to cons
-	    // a new `Map.Entry' each time.
-	    Object t = null;
-	    for (Iterator it = map.entrySet().iterator(); it.hasNext(); ) {
-		Map.Entry ent = (Map.Entry)it.next();
-		Object k = ent.getKey();
-		t = with(t, k, hashCode(k), ent.getValue());
-	    }
-	    tree = t;
-	}
     }
 
     public boolean isEmpty() {
