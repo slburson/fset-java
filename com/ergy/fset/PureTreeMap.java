@@ -996,7 +996,7 @@ public class PureTreeMap<Key, Val>
     }
 
     private Object union(Object subtree1, Object subtree2, Object lo, Object hi) {
-	if (subtree1 == null) return split(subtree2, lo, hi);
+	if (subtree1 == subtree2 || subtree1 == null) return split(subtree2, lo, hi);
 	else if (subtree2 == null) return split(subtree1, lo, hi);
 	else if (!(subtree1 instanceof Node)) {
 	    Object[] ary1 = (Object[])subtree1;
@@ -1188,7 +1188,7 @@ public class PureTreeMap<Key, Val>
 
     private int compareTo(Object subtree1, int base1, Object subtree2, int base2,
 			  int lo, int hi) {
-	if (lo == hi) return 0;
+	if ((subtree1 == subtree2 && base1 == base2) || lo == hi) return 0;
 	else if (!(subtree1 instanceof Node)) {
 	    if (!(subtree2 instanceof Node)) {
 		Object[] ary1 = (Object[])subtree1, ary2 = (Object[])subtree2;
@@ -1246,7 +1246,7 @@ public class PureTreeMap<Key, Val>
 
     private boolean equals(Object subtree1, int base1, Object subtree2, int base2,
 			   int lo, int hi) {
-	if (lo == hi) return true;
+	if ((subtree1 == subtree2 && base1 == base2) || lo == hi) return true;
 	else if (!(subtree1 instanceof Node)) {
 	    if (!(subtree2 instanceof Node)) {
 		Object[] ary1 = (Object[])subtree1, ary2 = (Object[])subtree2;

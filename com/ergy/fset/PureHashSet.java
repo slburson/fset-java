@@ -572,7 +572,7 @@ public final class PureHashSet<Elt>
     }
 
     private static Object union(Object subtree1, Object subtree2, int lo, int hi) {
-	if (subtree2 == null) return split(subtree1, lo, hi);
+	if (subtree1 == subtree2 || subtree2 == null) return split(subtree1, lo, hi);
 	else if (subtree1 == null) return split(subtree2, lo, hi);
 	else if (!(subtree1 instanceof Node)) {
 	    if (!(subtree2 instanceof Node))
@@ -593,9 +593,9 @@ public final class PureHashSet<Elt>
 	return intersection(subtree1, subtree2, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
-    private static Object intersection(Object subtree1, Object subtree2,
-				       int lo, int hi) {
-	if (subtree1 == null || subtree2 == null) return null;
+    private static Object intersection(Object subtree1, Object subtree2, int lo, int hi) {
+	if (subtree1 == subtree2) return split(subtree1, lo, hi);
+	else if (subtree1 == null || subtree2 == null) return null;
 	else if (!(subtree1 instanceof Node)) {
 	    if (!(subtree2 instanceof Node))
 		return intersection((Object[])subtree1, (Object[])subtree2, lo, hi);
@@ -666,7 +666,7 @@ public final class PureHashSet<Elt>
 
     private static int compareTo(Object subtree1, int base1, Object subtree2, int base2,
 				 int lo, int hi) {
-	if (lo == hi) return 0;
+	if ((subtree1 == subtree2 && base1 == base2) || lo == hi) return 0;
 	else if (!(subtree1 instanceof Node)) {
 	    if (!(subtree2 instanceof Node)) {
 		Object[] ary1 = (Object[])subtree1, ary2 = (Object[])subtree2;
@@ -721,7 +721,7 @@ public final class PureHashSet<Elt>
 
     private static boolean equals(Object subtree1, int base1, Object subtree2, int base2,
 				  int lo, int hi) {
-	if (lo == hi) return true;
+	if ((subtree1 == subtree2 && base1 == base2) || lo == hi) return true;
 	else if (!(subtree1 instanceof Node)) {
 	    if (!(subtree2 instanceof Node)) {
 		Object[] ary1 = (Object[])subtree1, ary2 = (Object[])subtree2;
@@ -814,7 +814,7 @@ public final class PureHashSet<Elt>
     }
 
     private static boolean isSubset(Object subtree1, Object subtree2, int lo, int hi) {
-	if (subtree1 == null) return true;
+	if (subtree1 == subtree2 || subtree1 == null) return true;
 	else if (!(subtree1 instanceof Node)) {
 	    if (subtree2 == null || !(subtree2 instanceof Node))
 		return isSubset((Object[])subtree1, (Object[])subtree2, lo, hi);
