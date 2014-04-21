@@ -205,29 +205,26 @@ public class TestSuite {
 		    + i);
 	    exit();
 	}
-/*
-	if (!pts0.equals(new PureTreeSet<MyInteger>(ts0.toArray()))) {
+	if (!pts0.equals(new PureTreeSet<MyInteger>(ts0.toArray(new MyInteger[0])))) {
 	    println("PureTreeSet construction from array failed (pts0) on iteration "
 		    + i);
 	    exit();
 	}
-*/
 	if (!pts1.equals(ts1)) {
 	    println("PureTreeSet Equality failed (pts1, A) on iteration " + i);
 	    exit();
 	}
-	// Next line also tests constructor from `Object[]'
-/*
-	if (!pts1.equals(new PureTreeSet<MyInteger>(ts1.toArray()))) {
+	// Next line also tests constructor from `MyInteger[]'
+	if (!pts1.equals(new PureTreeSet<MyInteger>(ts1.toArray(new MyInteger[0])))) {
 	    println("PureTreeSet Equality failed (pts1, B) on iteration " + i);
 	    exit();
 	}
-	// Next line also tests constructor from `Object[]'
-	if (!pts1.equals(new PureTreeSet(ts1.toArray(), TestComparator.Instance))) {
+	// Next line also tests constructor from `MyInteger[]'
+	if (!pts1.equals(new PureTreeSet<MyInteger>(ts1.toArray(new MyInteger[0]),
+						    TestComparator.Instance))) {
 	    println("PureTreeSet Equality failed (pts1, C) on iteration " + i);
 	    exit();
 	}
-*/
 	if (pts0.first().intValue() / 2 != ts0.first().intValue() / 2) {
 	    println("PureTreeSet `first' failed (pts0) on iteration " + i);
 	    exit();
@@ -2045,16 +2042,16 @@ public class TestSuite {
 			// We have to use the same kind of set as 'a' and 'b' (which are
 			// assumed to be the same as each other), because they use different
 			// value comparators.
-			PureTreeSet<MyInteger> avs = new PureTreeSet<MyInteger>();
+			PureTreeSet<MyInteger> avs = PureTreeSet.<MyInteger>emptySet();
 			avs = avs.with(a_ent.getValue()).with(a_next.getValue());
-			PureTreeSet<MyInteger> bvs = new PureTreeSet<MyInteger>();
+			PureTreeSet<MyInteger> bvs = PureTreeSet.<MyInteger>emptySet();
 			bvs = bvs.with(b_ent.getValue()).with(b_next.getValue());
 			int comp_res = avs.compareTo(bvs);
 			if (comp_res != 0) return comp_res;
 		    } else {
-			PureHashSet<MyInteger> avs = new PureHashSet<MyInteger>();
+			PureHashSet<MyInteger> avs = PureHashSet.<MyInteger>emptySet();
 			avs = avs.with(a_ent.getValue()).with(a_next.getValue());
-			PureHashSet<MyInteger> bvs = new PureHashSet<MyInteger>();
+			PureHashSet<MyInteger> bvs = PureHashSet.<MyInteger>emptySet();
 			bvs = bvs.with(b_ent.getValue()).with(b_next.getValue());
 			int comp_res = avs.compareTo(bvs);
 			if (comp_res != 0) return comp_res;

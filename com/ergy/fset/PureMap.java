@@ -53,18 +53,16 @@ public interface PureMap<Key, Val>
 {
 
     /**
-     * Returns an arbitrary pair of the map as a {@link java.util.Map.Entry}, or
-     * null if the map is empty.  <i>All</i> this guarantees is that if the map is
-     * nonempty, the returned pair will be in the map; no other assumptions should
-     * be made.  Specifically, it is not required to select a different pair when
-     * invoked repeatedly on a given map, nor is it required to return the same pair
-     * when invoked on two equal maps.
+     * Returns an arbitrary pair of the map as a {@link java.util.Map.Entry}, if the map
+     * is nonempty.  <i>All</i> this guarantees is that if the map is nonempty, the
+     * returned pair will be in the map; no other assumptions should be made.
+     * Specifically, it is not required to select a different pair when invoked
+     * repeatedly on a given map, nor is it required to return the same pair when
+     * invoked on two equal maps.
      *
-     * (Note that the behavior of this method when this map is empty contrasts with
-     * that of {@link SortedMap#firstKey} and {@link SortedMap#lastKey}, which throw
-     * <code>NoSuchElementException</code>.)
-     *
-     * @return some pair of the map, or null if none */
+     * @return some pair of the map
+     * @throws NoSuchElementException if the map is empty
+	 */
     Map.Entry<Key, Val> arb();
 
     /**
@@ -109,16 +107,18 @@ public interface PureMap<Key, Val>
     PureMap<Key, Val> less(Key key);
 
     /**
-     * Returns the domain of this map (the set of keys it contains).  A synonym for
-     * <code>keySet</code>.
+     * Returns the domain of this map (the set of keys it contains).  Similar to
+     * <code>keySet</code>, but returns a <code>PureSet</code> with the same ordering
+     * as this map.
      *
      * @return the domain set of this map
      */
     PureSet<Key> domain();
 
     /**
-     * Returns the range of the map (the set of values it contains).  A synonym for
-     * <code>values</code>.
+     * Returns the range of the map (the set of values it contains).  Similar to
+     * <code>values</code>, but that method returns a <code>Collection</code> that
+	 * may contain duplicates, while this one constructs a <code>Set</code>.
      *
      * The class and comparator of the returned set depend on those of this map; but
      * see the second form of <code>range</code> below.

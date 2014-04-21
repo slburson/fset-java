@@ -313,7 +313,7 @@ public class PureTreeMap<Key, Val>
     }
 
     public Map.Entry<Key, Val> arb() {
-	if (tree == null) return null;
+	if (tree == null) throw new NoSuchElementException();
 	else if (!(tree instanceof Node)) {
 	    Object[] ary = (Object[])tree;
 	    int len = ary.length, nkeys = len >> 1, idx = nkeys >> 1;
@@ -353,17 +353,79 @@ public class PureTreeMap<Key, Val>
 	else return new PureTreeMap<Key, Val>(t, dflt, comp);
     }
 
+    public Set<Key> keySet() {
+	return new AbstractSet<Key>() {
+	    public Iterator<Key> iterator() {
+		return new PTMKeyIterator<Key>(tree);
+	    }
+	    public int size() {
+		return PureTreeMap.this.size();
+	    }
+	    public boolean contains(Object key) {
+		return containsKey(key);
+	    }
+	};
+	
+    }
+
+    public Collection<Val> values() {
+	return new AbstractCollection<Val>() {
+	    public Iterator<Val> iterator() {
+		return new PTMValueIterator<Val>(tree);
+	    }
+	    public int size() {
+		return PureTreeMap.this.size();
+	    }
+	};
+    }
+
+    public Set<Map.Entry<Key, Val>> entrySet() {
+	return new AbstractSet<Map.Entry<Key, Val>>() {
+	    public Iterator iterator() {
+		return PureTreeMap.this.iterator();
+	    }
+	    public int size() {
+		return PureTreeMap.this.size();
+	    }
+	    public boolean contains(Object x) {
+		if (!(x instanceof Map.Entry)) return false;
+		else {
+		    Map.Entry<Object, Object> ent = (Map.Entry<Object, Object>)x;
+		    Object ekey = ent.getKey();
+		    Object eval = ent.getValue();
+		    // This could be improved, but I don't think it's important...
+		    if (containsKey(ekey)) return eql(eval, get(ekey));
+		    else return false;
+		}
+	    }
+	    public boolean remove(Object x) {
+		throw new UnsupportedOperationException();
+	    }
+	    public void clear() {
+		throw new UnsupportedOperationException();
+	    }
+	};
+    }
+
     public PureTreeSet<Key> domain() {
 	Object dom = domain(tree);
 	return new PureTreeSet<Key>(dom, comp);
     }
 
-    public Set<Key> keySet() {
-	return domain();
+    /**
+     * Returns the range of the map (the set of values it contains).  The returned set
+     * is a {@link PureTreeSet} which uses the natural ordering of elements.
+     *
+     * @return the range set of this map
+     */
+    public PureTreeSet<Val> range() {
+	return (PureTreeSet<Val>)range(tree, new PureTreeSet());
     }
 
-    public Set<Val> values() {
-	return range();
+    public PureSet<Val> range(PureSet<Val> initial_set) {
+	// Gives us an empty set of the right class and comparator.
+	initial_set = initial_set.difference(initial_set);
+	return (PureSet<Val>)range(tree, initial_set);
     }
 
     /**
@@ -372,7 +434,7 @@ public class PureTreeMap<Key, Val>
      * <code>PureTreeSet</code>.  If this map uses natural ordering then so does the
      * returned set; if it uses a <code>Comparator</code>, then the returned set uses
      * a new <code>Comparator</code> that invokes this map's <code>Comparator</code>
-     * on the keys and values, ordering the entries first by key, then by value.
+     * on the keys and uses the natural ordering of the values.
      *
      * @return the set of entries this map contains
      */
@@ -388,52 +450,6 @@ public class PureTreeMap<Key, Val>
 	for (Iterator it = iterator(); it.hasNext(); )
 	    s = s.with(it.next());
 	return s;
-    }
-
-    public Set<Map.Entry<Key, Val>> entrySet() {
-	return new AbstractSet<Map.Entry<Key, Val>>() {
-		public Iterator iterator() {
-		    return PureTreeMap.this.iterator();
-		}
-		public int size() {
-		    return PureTreeMap.this.size();
-		}
-		public boolean contains(Object x) {
-		    if (!(x instanceof Map.Entry)) return false;
-		    else {
-			Map.Entry<Object, Object> ent = (Map.Entry<Object, Object>)x;
-			Object ekey = ent.getKey();
-			Object eval = ent.getValue();
-			// This could be improved, but I don't think it's important...
-			if (containsKey(ekey)) return eql(eval, get(ekey));
-			else return false;
-		    }
-		}
-		public boolean remove(Object x) {
-		    throw new UnsupportedOperationException();
-		}
-		public void clear() {
-		    throw new UnsupportedOperationException();
-		}
-	    };
-    }
-
-    /**
-     * Returns the range of the map (the set of values it contains).  A synonym for
-     * <code>values</code>.  The returned set is a {@link PureTreeSet}, with the same
-     * <code>Comparator</code> as this map, or if this map uses natural ordering, so
-     * does the returned set.
-     *
-     * @return the range set of this map
-     */
-    public PureTreeSet<Val> range() {
-	return (PureTreeSet<Val>)range(tree, new PureTreeSet(comp));
-    }
-
-    public PureSet<Val> range(PureSet<Val> initial_set) {
-	// Gives us an empty set of the right class and comparator.
-	initial_set = initial_set.difference(initial_set);
-	return (PureSet<Val>)range(tree, initial_set);
     }
 
     public PureTreeMap<Key, Val> union(PureMap<? extends Key, ? extends Val> with_map) {
@@ -2146,6 +2162,65 @@ public class PureTreeMap<Key, Val>
 	    inode.index++;
 	    canonicalize();
 	    return (Map.Entry<Key, Val>)entry;
+	}
+
+	public void remove() {
+	    throw new UnsupportedOperationException();
+	}
+    }
+
+    // Used by 'keySet'.
+    private static class PTMKeyIterator<Key> implements Iterator<Key> {
+	private PTMIterator<Key, Object> ptmIter;
+
+	PTMKeyIterator(Object subtree) {
+	    ptmIter = new PTMIterator(subtree);
+	}
+
+	public boolean hasNext() {
+	    return ptmIter.hasNext();
+	}
+
+	// Duplicate code, but saves consing.
+	public Key next() {
+	    Key key;
+	    if (ptmIter.inode == null) throw new NoSuchElementException();
+	    else if (!(ptmIter.inode.subtree instanceof Node)) {
+		Object[] ary = (Object[])ptmIter.inode.subtree;
+		key = (Key)ary[ptmIter.inode.index];
+	    } else {
+		Node node = (Node)ptmIter.inode.subtree;
+		if (node.key instanceof EquivalentMap) {
+		    ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
+		    key = (Key)al.get(ptmIter.inode.index - 1).key;
+		} else key = (Key)node.key;
+	    }
+	    ptmIter.inode.index++;
+	    ptmIter.canonicalize();
+	    return key;
+	}
+
+	public void remove() {
+	    throw new UnsupportedOperationException();
+	}
+    }
+
+    // Used by 'values'.
+    private static class PTMValueIterator<Val> implements Iterator<Val> {
+	private PTMIterator<Object, Val> ptmIter;
+
+	PTMValueIterator(Object subtree) {
+	    ptmIter = new PTMIterator(subtree);
+	}
+
+	public boolean hasNext() {
+	    return ptmIter.hasNext();
+	}
+
+	// I don't think 'values' is commonly used, so I haven't bothered to optimize
+	// this like 'PTMKeyIterator.next'.
+	public Val next() {
+	    return ptmIter.next().getValue();
 	}
 
 	public void remove() {

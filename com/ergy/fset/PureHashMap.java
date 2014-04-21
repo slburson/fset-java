@@ -208,7 +208,7 @@ public class PureHashMap<Key, Val>
     }
 
     public Map.Entry<Key, Val> arb() {
-	if (tree == null) return null;
+	if (tree == null) throw new NoSuchElementException();
 	else if (!(tree instanceof Node)) {
 	    Object[] ary = (Object[])tree;
 	    int len = ary.length, nkeys = len >> 1, idx = nkeys >> 1;
@@ -255,49 +255,67 @@ public class PureHashMap<Key, Val>
 	else return new PureHashMap<Key, Val>(t, dflt);
     }
 
-    public PureHashSet<Key> domain() {
-	Object dom = domain(tree);
-	return new PureHashSet<Key>(dom);
+    public Set<Key> keySet() {
+	return new AbstractSet<Key>() {
+	    public Iterator<Key> iterator() {
+		return new PHMKeyIterator<Key>(tree);
+	    }
+	    public int size() {
+		return PureHashMap.this.size();
+	    }
+	    public boolean contains(Object key) {
+		return containsKey(key);
+	    }
+	};
     }
 
-    public PureHashSet<Key> keySet() {
-	return domain();
-    }
-
-    public PureHashSet<Map.Entry<Key, Val>> toSet() {
-	return (PureHashSet<Map.Entry<Key, Val>>)toSet(new PureHashSet<Map.Entry<Key, Val>>());
-    }
-
-    public PureSet<Map.Entry<Key, Val>> toSet(PureSet<Map.Entry<Key, Val>> initial_set) {
-	// Gives us an empty set of the right class and comparator.
-	PureSet<Map.Entry<Key, Val>> s = initial_set.difference(initial_set);
-	for (Map.Entry<Key, Val> ent : this)
-	    s = s.with(ent);
-	return s;
+    public Collection<Val> values() {
+	return new AbstractCollection<Val>() {
+	    public Iterator<Val> iterator() {
+		return new PHMValueIterator<Val>(tree);
+	    }
+	    public int size() {
+		return PureHashMap.this.size();
+	    }
+	};
     }
 
     public Set<Map.Entry<Key, Val>> entrySet() {
 	return new AbstractSet<Map.Entry<Key, Val>>() {
-	    public Iterator iterator() {
+	    public Iterator<Map.Entry<Key, Val>> iterator() {
 		return PureHashMap.this.iterator();
 	    }
 	    public int size() {
 		return PureHashMap.this.size();
 	    }
-	    // &&& Wrong -- 'contains' takes an 'Object'.  Why no error???
-	    public boolean contains(Map.Entry<Key, Val> ent) {
-		Key ekey = ent.getKey();
-		Val eval = ent.getValue();
-		// This could be improved, but I don't think it's important...
-		if (containsKey(ekey)) return eql(eval, get(ekey));
-		else return false;
+	    public boolean contains(Object x) {
+		if (!(x instanceof Map.Entry)) return false;
+		else {
+		    Map.Entry<Object, Object> ent = (Map.Entry)x;
+		    Object ekey = ent.getKey();
+		    Object eval = ent.getValue();
+		    // This could be improved, but I don't think it's important...
+		    if (containsKey(ekey)) return eql(eval, get(ekey));
+		    else return false;
+		}
+	    }
+	    public boolean remove(Object x) {
+		throw new UnsupportedOperationException();
+	    }
+	    public void clear() {
+		throw new UnsupportedOperationException();
 	    }
 	};
     }
 
+    public PureHashSet<Key> domain() {
+	Object dom = domain(tree);
+	return new PureHashSet<Key>(dom);
+    }
+
     /**
-     * Returns the range of the map (the set of values it contains).  A synonym for
-     * <code>values</code>.
+     * Returns the range of the map (the set of values it contains).  The returned set
+     * is a {@link PureHashSet}.
      *
      * @return the range set of this map
      */
@@ -311,8 +329,16 @@ public class PureHashMap<Key, Val>
 	return (PureSet<Val>)range(tree, initial_set);
     }
 
-    public PureSet<Val> values() {
-	return range();
+    public PureHashSet<Map.Entry<Key, Val>> toSet() {
+	return (PureHashSet<Map.Entry<Key, Val>>)toSet(new PureHashSet<Map.Entry<Key, Val>>());
+    }
+
+    public PureSet<Map.Entry<Key, Val>> toSet(PureSet<Map.Entry<Key, Val>> initial_set) {
+	// Gives us an empty set of the right class and comparator.
+	PureSet<Map.Entry<Key, Val>> s = initial_set.difference(initial_set);
+	for (Map.Entry<Key, Val> ent : this)
+	    s = s.with(ent);
+	return s;
     }
 
     public PureHashMap<Key, Val> union(PureMap<? extends Key, ? extends Val> with_map) {
@@ -1936,6 +1962,65 @@ public class PureHashMap<Key, Val>
 	    inode.index++;
 	    canonicalize();
 	    return (Map.Entry<Key, Val>)entry;
+	}
+
+	public void remove() {
+	    throw new UnsupportedOperationException();
+	}
+    }
+
+    // Used by 'keySet'.
+    private static class PHMKeyIterator<Key> implements Iterator<Key> {
+	private PHMIterator<Key, Object> phmIter;
+
+	PHMKeyIterator(Object subtree) {
+	    phmIter = new PHMIterator(subtree);
+	}
+
+	public boolean hasNext() {
+	    return phmIter.hasNext();
+	}
+
+	// Duplicate code, but saves consing.
+	public Key next() {
+	    Key key;
+	    if (phmIter.inode == null) throw new NoSuchElementException();
+	    else if (!(phmIter.inode.subtree instanceof Node)) {
+		Object[] ary = (Object[])phmIter.inode.subtree;
+		key = (Key)ary[phmIter.inode.index];
+	    } else {
+		Node node = (Node)phmIter.inode.subtree;
+		if (node.key instanceof EquivalentMap) {
+		    ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
+		    key = (Key)al.get(phmIter.inode.index - 1).key;
+		} else key = (Key)node.key;
+	    }
+	    phmIter.inode.index++;
+	    phmIter.canonicalize();
+	    return key;
+	}
+
+	public void remove() {
+	    throw new UnsupportedOperationException();
+	}
+    }
+
+    // Used by 'values'.
+    private static class PHMValueIterator<Val> implements Iterator<Val> {
+	private PHMIterator<Object, Val> phmIter;
+
+	PHMValueIterator(Object subtree) {
+	    phmIter = new PHMIterator(subtree);
+	}
+
+	public boolean hasNext() {
+	    return phmIter.hasNext();
+	}
+
+	// I don't think 'values' is commonly used, so I haven't bothered to optimize
+	// this like 'PHMKeyIterator.next'.
+	public Val next() {
+	    return phmIter.next().getValue();
 	}
 
 	public void remove() {
