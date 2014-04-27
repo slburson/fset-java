@@ -140,7 +140,7 @@ public class PureTreeList<Elt>
 	tree = fromCollection(ary);
     }
 
-    Object fromCollection(Object coll_or_array) {
+    /*package*/ static Object fromCollection(Object coll_or_array) {
 	// Wicked clever linear-time, garbage-free algorithm for tree construction.
 	int siz;
 	Iterator coll_it = null;
@@ -473,7 +473,7 @@ public class PureTreeList<Elt>
 	else return new Node(treeSize(left) + treeSize(right), left, right);
     }
 
-    private static int treeSize(Object subtree) {
+    /*package*/ static int treeSize(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) return ((Object[])subtree).length;
 	else return ((Node)subtree).size;
@@ -523,7 +523,7 @@ public class PureTreeList<Elt>
 	}
     }
 
-    private static Object less(Object subtree, int index) {
+    /*package*/ static Object less(Object subtree, int index) {
 	if (!(subtree instanceof Node)) return less((Object[])subtree, index);
 	else {
 	    Node node = (Node)subtree;
@@ -911,7 +911,7 @@ public class PureTreeList<Elt>
     /****************/
     // Iterator class
 
-    private static final class PTLIterator<Elt> implements ListIterator<Elt> {
+    /*package*/ static final class PTLIterator<Elt> implements ListIterator<Elt> {
 
 	private static final class IteratorNode {
 	    public IteratorNode (Object _subtree, int _index, IteratorNode _parent) {
@@ -927,7 +927,7 @@ public class PureTreeList<Elt>
 	private IteratorNode inode;
 	private boolean at_start = false, at_end = false;
 
-	private PTLIterator(Object subtree) {
+	/*package*/ PTLIterator(Object subtree) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    at_start = true;
 	    if (subtree == null) at_end = true;

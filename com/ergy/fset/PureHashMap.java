@@ -208,17 +208,7 @@ public class PureHashMap<Key, Val>
     }
 
     public Map.Entry<Key, Val> arb() {
-	if (tree == null) throw new NoSuchElementException();
-	else if (!(tree instanceof Node)) {
-	    Object[] ary = (Object[])tree;
-	    int len = ary.length, nkeys = len >> 1, idx = nkeys >> 1;
-	    return (Map.Entry<Key, Val>)new Entry(ary[idx], ary[idx + nkeys]);
-	} else {
-	    Node node = (Node) tree;
-	    if (node.key instanceof EquivalentMap)
-		return (Map.Entry<Key, Val>)((EquivalentMap)node.key).contents.get(0);
-	    else return (Map.Entry<Key, Val>)node;
-	}
+	return (Map.Entry<Key, Val>)arb(tree);
     }
 
     public Key firstKey() {
@@ -240,7 +230,7 @@ public class PureHashMap<Key, Val>
      * was originally created by the <code>withDefault</code> static factory
      * method. */
     public Val get(Object key) {
-	return (Val)get(tree, key, hashCode(key));
+	return (Val)get(tree, key, hashCode(key), dflt);
     }
 
     public PureHashMap<Key, Val> with(Key key, Val value) {
@@ -249,7 +239,7 @@ public class PureHashMap<Key, Val>
 	else return new PureHashMap<Key, Val>(t, dflt);
     }
 
-    public PureHashMap<Key, Val> less(Object key) {
+    public PureHashMap<Key, Val> less(Key key) {
 	Object t = less(tree, key, hashCode(key));
 	if (t == tree) return this;
 	else return new PureHashMap<Key, Val>(t, dflt);
@@ -280,6 +270,8 @@ public class PureHashMap<Key, Val>
 	};
     }
 
+    // Note, you never have to call this; you can iterate over the map directly.
+    // But in case you're in the habit of doing so, it's provided.
     public Set<Map.Entry<Key, Val>> entrySet() {
 	return new AbstractSet<Map.Entry<Key, Val>>() {
 	    public Iterator<Map.Entry<Key, Val>> iterator() {
@@ -377,18 +369,19 @@ public class PureHashMap<Key, Val>
 	else if (obj instanceof PureHashMap) {
 	    PureHashMap phm = (PureHashMap)obj;
 	    return equals(tree, phm.tree);
+	} else if (obj instanceof PureLinkedHashMap) {
+	    PureLinkedHashMap plhm = (PureLinkedHashMap)obj;
+	    return equals(tree, plhm.map_tree);
 	} else if (!(obj instanceof Map)) return false;
 	else {
-	    // Either not a PureHashMap, or has a different ordering.
-	    Map map = (Map)obj;
+	    Map<Object, Object> map = (Map<Object, Object>)obj;
 	    if (size() != map.size()) return false;
-	    for (Iterator it = map.entrySet().iterator(); it.hasNext(); ) {
-		Map.Entry ent = (Map.Entry)it.next();
+	    for (Map.Entry<Object, Object> ent : map.entrySet()) {
 		Object ekey = ent.getKey();
 		Object eval = ent.getValue();
 		int ekhash = hashCode(ekey);
 		if (!containsKey(tree, ekey, ekhash)) return false;
-		if (!eql(eval, get(tree, ekey, ekhash))) return false;
+		if (!eql(eval, get(tree, ekey, ekhash, dflt))) return false;
 	    }
 	    return true;
 	}
@@ -421,7 +414,7 @@ public class PureHashMap<Key, Val>
 
     /* Instance variables */
 
-    private transient Object tree;	// a subtree (see below)
+    /*package*/ transient Object tree;	// a subtree (see below)
 
     private Val dflt = null;
 
@@ -444,7 +437,7 @@ public class PureHashMap<Key, Val>
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
 
-    private static int hashCode(Object x) {
+    /*package*/ static int hashCode(Object x) {
 	if (x instanceof EquivalentMap)
 	    x = ((Entry)((EquivalentMap)x).contents.get(0)).key;
 	if (x == null) return 0;
@@ -454,7 +447,7 @@ public class PureHashMap<Key, Val>
 	else return h;
     }
 
-    private static class Entry implements Map.Entry<Object, Object> {
+    /*package*/ static class Entry implements Map.Entry<Object, Object> {
 	Entry(Object _key, Object _value) {
 	    key = _key;
 	    value = _value;
@@ -484,7 +477,7 @@ public class PureHashMap<Key, Val>
      * containing first the keys, then the values (i.e. its length is twice the
      * number of pairs).  The `Entry' key type is `Object' because it might hold an
      * `EquivalentMap'. */
-    private static final class Node extends Entry {
+    /*package*/ static final class Node extends Entry {
 	Node(int _size, Object _key, Object _value, Object _left, Object _right) {
 	    super(_key, _value);
 	    size = _size;
@@ -506,7 +499,7 @@ public class PureHashMap<Key, Val>
 			key, value, left, right);
     }
 
-    private static int treeSize(Object subtree) {
+    /*package*/ static int treeSize(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) return ((Object[])subtree).length >> 1;
 	else return ((Node)subtree).size;
@@ -523,10 +516,24 @@ public class PureHashMap<Key, Val>
 	dflt = _dflt;
     }
 
-    private Object firstKey(Object subtree) {
+    /*package*/ static Object arb(Object tree) {
+	if (tree == null) throw new NoSuchElementException();
+	else if (!(tree instanceof Node)) {
+	    Object[] ary = (Object[])tree;
+	    int len = ary.length, nkeys = len >> 1, idx = nkeys >> 1;
+	    return new Entry(ary[idx], ary[idx + nkeys]);
+	} else {
+	    Node node = (Node) tree;
+	    if (node.key instanceof EquivalentMap)
+		return ((EquivalentMap)node.key).contents.get(0);
+	    else return node;
+	}
+    }
+
+    /*package*/ static Object firstKey(Object subtree) {
 	if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
-	    return (Key)ary[0];
+	    return ary[0];
 	} else {
 	    Node node = (Node)subtree;
 	    if (node.left == null) {
@@ -537,10 +544,10 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private Object lastKey(Object subtree) {
+    /*package*/ static Object lastKey(Object subtree) {
 	if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
-	    return (Key)ary[(ary.length >> 1) - 1];
+	    return ary[(ary.length >> 1) - 1];
 	} else {
 	    Node node = (Node)subtree;
 	    if (node.right == null) {
@@ -552,7 +559,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    /*package*/ boolean containsKey(Object subtree, Object key, int khash) {
+    /*package*/ static boolean containsKey(Object subtree, Object key, int khash) {
 	if (subtree == null) return false;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -578,7 +585,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private Object get(Object subtree, Object key, int khash) {
+    /*package*/ static Object get(Object subtree, Object key, int khash, Object dflt) {
 	if (subtree == null) return dflt;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -601,8 +608,8 @@ public class PureHashMap<Key, Val>
 		    return dflt;
 		} else if (eql(key, nkey)) return node.value;
 		else return dflt;
-	    } else if (khash < nhash) return get(node.left, key, khash);
-	    else return get(node.right, key, khash);
+	    } else if (khash < nhash) return get(node.left, key, khash, dflt);
+	    else return get(node.right, key, khash, dflt);
 	}
     }
 
@@ -655,7 +662,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private static Object less(Object subtree, Object key, int khash) {
+    /*package*/ static Object less(Object subtree, Object key, int khash) {
 	if (subtree == null) return null;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -688,7 +695,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private static Object domain(Object subtree) {
+    /*package*/ static Object domain(Object subtree) {
 	if (subtree == null) return null;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -708,7 +715,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private static <Val> PureSet<Object> range(Object subtree, PureSet<Val> initial) {
+    /*package*/ static <Val> PureSet<Object> range(Object subtree, PureSet<Val> initial) {
 	if (subtree == null) return (PureSet<Object>)initial;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -918,7 +925,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private static int compareTo(Object tree1, Object tree2) {
+    /*package*/ static int compareTo(Object tree1, Object tree2) {
 	if (tree1 == tree2) return 0;
 	int size1 = treeSize(tree1), size2 = treeSize(tree2);
 	// Start by comparing the sizes; smaller sets are considered less than
@@ -984,7 +991,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private static boolean equals(Object tree1, Object tree2) {
+    /*package*/ static boolean equals(Object tree1, Object tree2) {
 	if (tree1 == tree2) return true;
 	int size1 = treeSize(tree1), size2 = treeSize(tree2);
 	if (size1 != size2) return false;
@@ -1267,7 +1274,7 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    private int myHashCode(Object subtree) {
+    /*package*/ static int myHashCode(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -1897,7 +1904,7 @@ public class PureHashMap<Key, Val>
     /****************/
     // Iterator class
 
-    private static final class PHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
+    /*package*/ static final class PHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
 
 	private static final class IteratorNode {
 	    IteratorNode(Object _subtree, int _index, IteratorNode _parent) {
@@ -1912,7 +1919,7 @@ public class PureHashMap<Key, Val>
 
 	private IteratorNode inode;
 
-	private PHMIterator(Object subtree) {
+	/*package*/ PHMIterator(Object subtree) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    canonicalize();
 	}
@@ -2031,15 +2038,15 @@ public class PureHashMap<Key, Val>
     /**
      * Saves the state of this <code>PureHashMap</code> to a stream.
      *
-     * @serialData Emits the internal data of the map, including the default and
-     * comparator it uses; the size of the map [<code>int</code>]; and the key/value
-     * pairs in key order [<code>Object</code>s].
+     * @serialData Emits the internal data of the map, including the default it uses;
+     * the size of the map [<code>int</code>]; and the key/value pairs in key order
+     * [<code>Object</code>s].
      */
     private void writeObject(ObjectOutputStream strm) throws IOException {
 	strm.defaultWriteObject();	// writes `comp' and `dflt'
         strm.writeInt(size());
-	for (Iterator it = iterator(); it.hasNext(); ) {
-	    Entry ent = (Entry)it.next();
+	for (Map.Entry ment : this) {
+	    Entry ent = (Entry)ment;
             strm.writeObject(ent.key);
 	    strm.writeObject(ent.value);
 	}
@@ -2059,7 +2066,11 @@ public class PureHashMap<Key, Val>
 	tree = fromArrayNoCopy(ary, 0, size);
     }
 
-    private Object fromArrayNoCopy(Object[][] ary, int lo, int hi) {
+    /*package*/ static Object fromArrayNoCopy(Object[][] ary, int lo, int hi) {
+	// This is actually not a very good way to do this.  In fact, repeated 'with' may
+	// be a little faster, if memory serves.  What would be much better would be something
+	// like 'PureTreeList.fromCollection', which we should be able to do since the keys
+	// are already in order.
 	if (lo == hi) return null;
 	else if (lo + 1 == hi) return ary[lo];
 	else {

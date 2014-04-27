@@ -1786,6 +1786,10 @@ public final class PureTreeSet<Elt>
 	Elt[] ary = (Elt[])new Object[size];
 	for (int i = 0; i < size; ++i)
 	    ary[i] = (Elt)strm.readObject();
+	// This is actually not a very good way to do this.  In fact, repeated 'with' may
+	// be a little faster, if memory serves.  What would be much better would be something
+	// like 'PureTreeList.fromCollection', which we should be able to do since the keys
+	// are already in order.
 	tree = fromArray(ary, 0, size);
     }
 

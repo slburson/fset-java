@@ -2239,9 +2239,9 @@ public class PureTreeMap<Key, Val>
         throws java.io.IOException {
 	strm.defaultWriteObject();	// writes `comp' and `dflt'
         strm.writeInt(size());
-	for (Iterator it = iterator(); it.hasNext(); ) {
-	    Entry ent = (Entry)it.next();
-            strm.writeObject(ent.key);
+	for (Map.Entry ment : this) {
+            Entry ent = (Entry)ment;
+	    strm.writeObject(ent.key);
 	    strm.writeObject(ent.value);
 	}
     }
@@ -2262,6 +2262,10 @@ public class PureTreeMap<Key, Val>
     }
 
     private Object fromArrayNoCopy(Object[][] ary, int lo, int hi) {
+	// This is actually not a very good way to do this.  In fact, repeated 'with' may
+	// be a little faster, if memory serves.  What would be much better would be something
+	// like 'PureTreeList.fromCollection', which we should be able to do since the keys
+	// are already in order.
 	if (lo == hi) return null;
 	else if (lo + 1 == hi) return ary[lo];
 	else {
