@@ -22,9 +22,9 @@ import java.io.Serializable;
  * <code>values</code>, and <code>entrySet</code> return collections whose iterators
  * return objects in the same order.
  *
- * WARNING: <code>less</code> takes O(n) time in this implementation.  Avoid it.
+ * <p>WARNING: <code>less</code> takes O(n) time in this implementation.  Avoid it.
  *
- * Still unimplemented: <code>restrictedTo</code>, <code>restrictedFrom</code>.
+ * <p>Still unimplemented: <code>restrictedTo</code>, <code>restrictedFrom</code>.
  */
 
 public class FLinkedHashMap<Key, Val>
