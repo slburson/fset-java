@@ -1,5 +1,5 @@
 /*
- * AbstractPureList.java
+ * AbstractFList.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -21,10 +21,10 @@ import java.util.*;
  * @author Scott L. Burson
  */
 
-public abstract class AbstractPureList<Elt>
-    // can't extend AbstractPureList<Elt> because of subList return type
+public abstract class AbstractFList<Elt>
+    // can't extend AbstractFList<Elt> because of subList return type
     extends AbstractCollection<Elt>
-    implements PureList<Elt> {
+    implements FList<Elt> {
 
     /**
      * Unsupported.
@@ -57,7 +57,7 @@ public abstract class AbstractPureList<Elt>
     /**
      * Returns this map.
      */
-    public final AbstractPureList<Elt> clone() {
+    public final AbstractFList<Elt> clone() {
 	return this;
     }
 

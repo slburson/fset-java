@@ -1,5 +1,5 @@
 /*
- * PureLinkedHashMap.java
+ * FLinkedHashMap.java
  *
  * Copyright (c) 2013 Scott L. Burson.
  *
@@ -17,7 +17,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
- * Just like <code>PureHashMap</code> except that the iterator returns entries
+ * Just like <code>FHashMap</code> except that the iterator returns entries
  * in the same order in which the keys were first added.  Also, <code>keySet</code>,
  * <code>values</code>, and <code>entrySet</code> return collections whose iterators
  * return objects in the same order.
@@ -27,25 +27,25 @@ import java.io.Serializable;
  * Still unimplemented: <code>restrictedTo</code>, <code>restrictedFrom</code>.
  */
 
-public class PureLinkedHashMap<Key, Val>
-    extends AbstractPureMap<Key, Val>
-    implements Comparable<PureLinkedHashMap<Key, Val>>, Serializable
+public class FLinkedHashMap<Key, Val>
+    extends AbstractFMap<Key, Val>
+    implements Comparable<FLinkedHashMap<Key, Val>>, Serializable
 {
     /**
-     * Returns an empty PureLinkedHashMap.  Slightly more efficient than calling the constructor,
+     * Returns an empty FLinkedHashMap.  Slightly more efficient than calling the constructor,
      * because it returns a canonical instance.
      */
-    public static <Key, Val> PureLinkedHashMap<Key, Val> emptyMap() {
-	return (PureLinkedHashMap<Key, Val>)EMPTY_INSTANCE;
+    public static <Key, Val> FLinkedHashMap<Key, Val> emptyMap() {
+	return (FLinkedHashMap<Key, Val>)EMPTY_INSTANCE;
     }
 
-    public PureLinkedHashMap() {
+    public FLinkedHashMap() {
 	map_tree = null;
 	list_tree = null;
 	dflt = null;
     }
 
-    private PureLinkedHashMap(Object _map_tree, Object _list_tree, Val _dflt) {
+    private FLinkedHashMap(Object _map_tree, Object _list_tree, Val _dflt) {
 	map_tree = _map_tree;
 	list_tree = _list_tree;
 	dflt = _dflt;
@@ -56,72 +56,71 @@ public class PureLinkedHashMap<Key, Val>
     }
 
     public int size() {
-	return PureHashMap.treeSize(map_tree);
+	return FHashMap.treeSize(map_tree);
     }
 
     public Map.Entry<Key, Val> arb() {
-	return (Map.Entry<Key, Val>)PureHashMap.arb(map_tree);
+	return (Map.Entry<Key, Val>)FHashMap.arb(map_tree);
     }
 
     public Key firstKey() {
-	return (Key)PureHashMap.firstKey(map_tree);
+	return (Key)FHashMap.firstKey(map_tree);
     }
 
     public Key lastKey() {
-	return (Key)PureHashMap.lastKey(map_tree);
+	return (Key)FHashMap.lastKey(map_tree);
     }
 
     public boolean contains(Map.Entry<Key, Val> entry) {
 	Key key = entry.getKey();
-	Object val = PureHashMap.get(map_tree, key, hashCode(key));
-	return val != PureHashMap.NO_ELEMENT && eql(val, entry.getValue());
+	Object val = FHashMap.get(map_tree, key, hashCode(key));
+	return val != FHashMap.NO_ELEMENT && eql(val, entry.getValue());
     }
 
     public boolean containsKey(Object key) {
-	return PureHashMap.get(map_tree, key, hashCode(key)) != PureHashMap.NO_ELEMENT;
+	return FHashMap.get(map_tree, key, hashCode(key)) != FHashMap.NO_ELEMENT;
     }
 
     public Val get(Object key) {
-	Object val = PureHashMap.get(map_tree, key, hashCode(key));
-	if (val == PureHashMap.NO_ELEMENT) return dflt;
+	Object val = FHashMap.get(map_tree, key, hashCode(key));
+	if (val == FHashMap.NO_ELEMENT) return dflt;
 	else return (Val)val;
     }
 
-    public PureLinkedHashMap<Key, Val> with(Key key, Val value) {
+    public FLinkedHashMap<Key, Val> with(Key key, Val value) {
 	int khash = hashCode(key);
-	Object new_map_tree = PureHashMap.with(map_tree, key, khash, value);
+	Object new_map_tree = FHashMap.with(map_tree, key, khash, value);
 	if (new_map_tree == map_tree) return this;
-	if (PureHashMap.treeSize(new_map_tree) == PureHashMap.treeSize(map_tree))   // existing key?
-	    return new PureLinkedHashMap<Key, Val>(new_map_tree, list_tree, dflt);
+	if (FHashMap.treeSize(new_map_tree) == FHashMap.treeSize(map_tree))   // existing key?
+	    return new FLinkedHashMap<Key, Val>(new_map_tree, list_tree, dflt);
 	else {
-	    Object new_list_tree = PureTreeList.insert(list_tree, PureTreeList.treeSize(list_tree),
-						       key);
-	    return new PureLinkedHashMap<Key, Val>(new_map_tree, new_list_tree, dflt);
+	    Object new_list_tree = FTreeList.insert(list_tree, FTreeList.treeSize(list_tree), key);
+	    return new FLinkedHashMap<Key, Val>(new_map_tree, new_list_tree, dflt);
 	}
     }
 
-    public PureLinkedHashMap<Key, Val> less(Key key) {
+    public FLinkedHashMap<Key, Val> less(Key key) {
 	int khash = hashCode(key);
-	Object new_map_tree = PureHashMap.less(map_tree, key, khash);
+	Object new_map_tree = FHashMap.less(map_tree, key, khash);
 	if (new_map_tree == map_tree) return this;
 	// O(n) because we have to linearly search the list for the key.
-	Iterator<Key> it = new PureTreeList.PTLIterator(list_tree);
+	Iterator<Key> it = new FTreeList.PTLIterator(list_tree);
 	int i = 0;
 	while (!eql(key, it.next())) i++;
-	Object new_list_tree = PureTreeList.less(list_tree, i);
-	return new PureLinkedHashMap<Key, Val>(new_map_tree, new_list_tree, dflt);
+	Object new_list_tree = FTreeList.less(list_tree, i);
+	return new FLinkedHashMap<Key, Val>(new_map_tree, new_list_tree, dflt);
     }
 
     public Set<Key> keySet() {
 	return new AbstractSet<Key>() {
 	    public Iterator<Key> iterator() {
-		return new PureTreeList.PTLIterator<Key>(list_tree);
+		return new FTreeList.PTLIterator<Key>(list_tree);
 	    }
 	    public int size() {
-		return PureLinkedHashMap.this.size();
+		return FLinkedHashMap.this.size();
 	    }
 	    public boolean contains(Object key) {
-		return PureLinkedHashMap.this.containsKey(key);
+		return FLinkedHashMap.this.containsKey(key);
 	    }
 	};
     }
@@ -132,7 +131,7 @@ public class PureLinkedHashMap<Key, Val>
 		return new PLHMValueIterator<Val>(map_tree, list_tree);
 	    }
 	    public int size() {
-		return PureLinkedHashMap.this.size();
+		return FLinkedHashMap.this.size();
 	    }
 	};
     }
@@ -143,7 +142,7 @@ public class PureLinkedHashMap<Key, Val>
 		return new PLHMIterator<Key, Val>(map_tree, list_tree);
 	    }
 	    public int size() {
-		return PureLinkedHashMap.this.size();
+		return FLinkedHashMap.this.size();
 	    }
 	    public boolean remove(Object x) {
 		throw new UnsupportedOperationException();
@@ -154,47 +153,47 @@ public class PureLinkedHashMap<Key, Val>
 	};
     }
 
-    // &&& Or PureLinkedHashSet, when that exists
-    public PureHashSet<Key> domain() {
-	return PureHashSet.<Key>make(PureHashMap.domain(map_tree));
+    // &&& Or FLinkedHashSet, when that exists
+    public FHashSet<Key> domain() {
+	return FHashSet.<Key>make(FHashMap.domain(map_tree));
     }
 
-    public PureSet<Val> range() {
-	return (PureSet<Val>)PureHashMap.range(map_tree, new PureHashSet<Val>());
+    public FSet<Val> range() {
+	return (FSet<Val>)FHashMap.range(map_tree, new FHashSet<Val>());
     }
 
-    public PureSet<Val> range(PureSet<Val> initial_set) {
+    public FSet<Val> range(FSet<Val> initial_set) {
 	initial_set = initial_set.difference(initial_set);
-	return (PureSet<Val>)PureHashMap.range(map_tree, initial_set);
+	return (FSet<Val>)FHashMap.range(map_tree, initial_set);
     }
 
-    // &&& Or PureLinkedHashSet
-    public PureHashSet<Map.Entry<Key, Val>> toSet() {
-	return (PureHashSet<Map.Entry<Key, Val>>)toSet(new PureHashSet<Map.Entry<Key, Val>>());
+    // &&& Or FLinkedHashSet
+    public FHashSet<Map.Entry<Key, Val>> toSet() {
+	return (FHashSet<Map.Entry<Key, Val>>)toSet(new FHashSet<Map.Entry<Key, Val>>());
     }
 
-    public PureSet<Map.Entry<Key, Val>> toSet(PureSet<Map.Entry<Key, Val>> initial_set) {
-	PureSet<Map.Entry<Key, Val>> s = initial_set.difference(initial_set);
-	for (Iterator<Map.Entry<Key, Val>> it = new PureHashMap.PHMIterator<Key, Val>(map_tree);
+    public FSet<Map.Entry<Key, Val>> toSet(FSet<Map.Entry<Key, Val>> initial_set) {
+	FSet<Map.Entry<Key, Val>> s = initial_set.difference(initial_set);
+	for (Iterator<Map.Entry<Key, Val>> it = new FHashMap.PHMIterator<Key, Val>(map_tree);
 	     it.hasNext();)
 	    s = s.with(it.next());
 	return s;
     }
 
-    public PureLinkedHashMap<Key, Val> union(PureMap<? extends Key, ? extends Val> with_map) {
+    public FLinkedHashMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map) {
 	// O(n log n) rather than O(n), and probably with a worse constant factor too.
-	PureLinkedHashMap<Key, Val> m = this;
+	FLinkedHashMap<Key, Val> m = this;
 	for (Map.Entry<? extends Key, ? extends Val> ent : with_map)
 	    m = m.with(ent.getKey(), ent.getValue());
 	return m;
     }
 
-    public PureHashMap<Key, Val> restrictedTo(PureSet<Key> set) {
+    public FHashMap<Key, Val> restrictedTo(FSet<Key> set) {
 	// Maybe later -- I'm lazy
 	throw new UnsupportedOperationException();
     }
 
-    public PureHashMap<Key, Val> restrictedFrom(PureSet<Key> set) {
+    public FHashMap<Key, Val> restrictedFrom(FSet<Key> set) {
 	// Maybe later -- I'm lazy
 	throw new UnsupportedOperationException();
     }
@@ -207,30 +206,30 @@ public class PureLinkedHashMap<Key, Val>
 	return new PLHMIterator<Key, Val>(map_tree, list_tree);
     }
 
-    public int compareTo(PureLinkedHashMap<Key, Val> other) {
-	return PureHashMap.compareTo(map_tree, other.map_tree);
+    public int compareTo(FLinkedHashMap<Key, Val> other) {
+	return FHashMap.compareTo(map_tree, other.map_tree);
     }
 
     public boolean equals(Object obj) {
 	if (obj == this) return true;
-	else if (obj instanceof PureLinkedHashMap) {
-	    PureLinkedHashMap plhm = (PureLinkedHashMap)obj;
-	    return PureHashMap.equals(map_tree, plhm.map_tree);
-	} else if (obj instanceof PureHashMap) {
-	    PureHashMap phm = (PureHashMap)obj;
-	    return PureHashMap.equals(map_tree, phm.tree);
+	else if (obj instanceof FLinkedHashMap) {
+	    FLinkedHashMap plhm = (FLinkedHashMap)obj;
+	    return FHashMap.equals(map_tree, plhm.map_tree);
+	} else if (obj instanceof FHashMap) {
+	    FHashMap phm = (FHashMap)obj;
+	    return FHashMap.equals(map_tree, phm.tree);
 	} else if (!(obj instanceof Map)) return false;
 	else {
 	    Map<Object, Object> map = (Map<Object, Object>)obj;
 	    if (size() != map.size()) return false;
 	    for (Map.Entry<Object, Object> ent : map.entrySet())
-		if (!PureHashMap.contains(map_tree, ent)) return false;
+		if (!FHashMap.contains(map_tree, ent)) return false;
 	    return true;
 	}
     }
 
     public int hashCode() {
-	if (hash_code == Integer.MIN_VALUE) hash_code = PureHashMap.myHashCode(map_tree);
+	if (hash_code == Integer.MIN_VALUE) hash_code = FHashMap.myHashCode(map_tree);
 	return hash_code;
     }
 
@@ -238,12 +237,12 @@ public class PureLinkedHashMap<Key, Val>
     /* Internals */
 
     // The empty map can be a singleton.
-    private static final PureLinkedHashMap EMPTY_INSTANCE = new PureLinkedHashMap();
+    private static final FLinkedHashMap EMPTY_INSTANCE = new FLinkedHashMap();
 
-    // The map tree is managed by PureHashMap and contains the same pairs.
+    // The map tree is managed by FHashMap and contains the same pairs.
     /*package*/ transient Object map_tree;
     // The list tree contains the keys in the order in which they were first added.
-    // It is managed by PureTreeList.
+    // It is managed by FTreeList.
     private transient Object list_tree;
 
     private Val dflt;
@@ -255,7 +254,7 @@ public class PureLinkedHashMap<Key, Val>
     }
 
     private static int hashCode(Object x) {
-	return PureHashMap.hashCode(x);
+	return FHashMap.hashCode(x);
     }
 
     /****************/
@@ -263,11 +262,11 @@ public class PureLinkedHashMap<Key, Val>
 
     private static final class PLHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
 	Object map_tree;
-	PureTreeList.PTLIterator<Key> list_it;
+	FTreeList.PTLIterator<Key> list_it;
 
 	private PLHMIterator(Object _map_tree, Object _list_tree) {
 	    map_tree = _map_tree;
-	    list_it = new PureTreeList.PTLIterator<Key>(_list_tree);
+	    list_it = new FTreeList.PTLIterator<Key>(_list_tree);
 	}
 
 	public boolean hasNext() {
@@ -278,8 +277,8 @@ public class PureLinkedHashMap<Key, Val>
 	    Key key = list_it.next();
 	    // &&& This could be improved with a 'getEntry' method -- it would cons an
 	    // Entry only about half the time.  Worth the trouble?
-	    Val val = (Val)PureHashMap.get(map_tree, key, PureHashMap.hashCode(key));
-	    return (Map.Entry<Key, Val>)new PureHashMap.Entry(key, val);
+	    Val val = (Val)FHashMap.get(map_tree, key, FHashMap.hashCode(key));
+	    return (Map.Entry<Key, Val>)new FHashMap.Entry(key, val);
 	}
 
 	public void remove() {
@@ -289,11 +288,11 @@ public class PureLinkedHashMap<Key, Val>
 
     private static final class PLHMValueIterator<Val> implements Iterator<Val> {
 	Object map_tree;
-	PureTreeList.PTLIterator<Object> list_it;
+	FTreeList.PTLIterator<Object> list_it;
 
 	private PLHMValueIterator(Object _map_tree, Object _list_tree) {
 	    map_tree = _map_tree;
-	    list_it = new PureTreeList.PTLIterator<Object>(_list_tree);
+	    list_it = new FTreeList.PTLIterator<Object>(_list_tree);
 	}
 
 	public boolean hasNext() {
@@ -302,7 +301,7 @@ public class PureLinkedHashMap<Key, Val>
 
 	public Val next() {
 	    Object key = list_it.next();
-	    return (Val)PureHashMap.get(map_tree, key, PureHashMap.hashCode(key));
+	    return (Val)FHashMap.get(map_tree, key, FHashMap.hashCode(key));
 	}
 
 	public void remove() {
@@ -311,7 +310,7 @@ public class PureLinkedHashMap<Key, Val>
     }
 
     /**
-     * Saves the state of this <code>PureLinkedHashMap</code> to a stream.
+     * Saves the state of this <code>FLinkedHashMap</code> to a stream.
      *
      * @serialData Emits the internal data of the map, including the default it uses;
      * the size of the map [<code>int</code>]; and the key/value pairs in the order
@@ -321,14 +320,14 @@ public class PureLinkedHashMap<Key, Val>
 	strm.defaultWriteObject();	// writes `dflt'
         strm.writeInt(size());
 	for (Map.Entry ment : this) {
-            PureHashMap.Entry ent = (PureHashMap.Entry)ment;
+            FHashMap.Entry ent = (FHashMap.Entry)ment;
 	    strm.writeObject(ent.key);
 	    strm.writeObject(ent.value);
 	}
     }
 
     /**
-     * Reconstitutes the <code>PureLinkedHashMap</code> instance from a stream.
+     * Reconstitutes the <code>FLinkedHashMap</code> instance from a stream.
      */
     private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
 	strm.defaultReadObject();	// reads `dflt'
@@ -338,10 +337,10 @@ public class PureLinkedHashMap<Key, Val>
 	for (int i = 0; i < size; ++i) {
 	    Object key = strm.readObject();
 	    Object val = strm.readObject();
-	    map_tree = PureHashMap.with(map_tree, key, hashCode(key), val);
+	    map_tree = FHashMap.with(map_tree, key, hashCode(key), val);
 	    vals[i] = val;
 	}
-	list_tree = PureTreeList.fromCollection(vals);
+	list_tree = FTreeList.fromCollection(vals);
     }
 
 }

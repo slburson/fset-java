@@ -1,5 +1,5 @@
 /*
- * PureTreeList.java
+ * FTreeList.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -11,7 +11,7 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * A pure list implemented as a tree.
+ * A functional list implemented as a tree.
  *
  * <p>Time costs: <code>isEmpty</code> and <code>size</code> take O(1) (constant)
  * time.  <code>get</code>, <code>with</code>, <code>insert</code>,
@@ -22,14 +22,14 @@ import java.util.*;
  * <code>lastIndexOf</code>, <code>compareTo</code>, and <code>equals</code> take
  * O(n) (linear) time.  <code>sort</code> takes O(<i>n</i> log <i>n</i>) time.
  *
- * <p>Space costs: <code>PureTreeSet</code> uses a heterogeneous binary tree
+ * <p>Space costs: <code>FTreeSet</code> uses a heterogeneous binary tree
  * structure with bounded-length arrays at the leaves.  It uses much less space than
  * traditional homogeneous binary trees; typical space consumption is roughly twice
  * that of a plain array, or even less.
  *
- * <p><code>PureTreeList</code> accepts the null element.
+ * <p><code>FTreeList</code> accepts the null element.
  *
- * <p><code>PureTreeList</code> implements {@link RandomAccess}, even though the
+ * <p><code>FTreeList</code> implements {@link RandomAccess}, even though the
  * rule-of-thumb criterion suggested in the documentation for
  * <code>RandomAccess</code> is not satisfied: iterating through the list with the
  * iterator takes linear time, but doing so with <code>elt</code> takes O(<i>n</i>
@@ -37,78 +37,78 @@ import java.util.*;
  * decision facing an implementor of a List algorithm.  Given a sequential-access
  * list like {@link LinkedList}, it is imperative to use the
  * <code>ListIterator</code> for all accesses, to avoid quadratic behavior; but with
- * <code>PureTreeList</code>, it is much better to use <code>elt</code> unless the
+ * <code>FTreeList</code>, it is much better to use <code>elt</code> unless the
  * access pattern really is sequential.  For a good example, see the code for {@link
  * Collections.binarySearch} in the J2SDK sources.
  *
  * @author Scott L. Burson
- * @see PureList
+ * @see FList
  */
 
-public class PureTreeList<Elt>
-    extends AbstractPureList<Elt>
-    implements Comparable<PureTreeList<Elt>>, java.io.Serializable
+public class FTreeList<Elt>
+    extends AbstractFList<Elt>
+    implements Comparable<FTreeList<Elt>>, java.io.Serializable
 {
 
     /**
-     * Returns an empty PureTreeList whose <code>compareTo</code> method uses the
+     * Returns an empty FTreeList whose <code>compareTo</code> method uses the
      * natural ordering of the elements.  Slightly more efficient than calling the
      * constructor, because it returns a canonical instance.
      */
-    public static <Elt> PureTreeList<Elt> emptyList() {
-	return (PureTreeList<Elt>)EMPTY_INSTANCE;
+    public static <Elt> FTreeList<Elt> emptyList() {
+	return (FTreeList<Elt>)EMPTY_INSTANCE;
     }
 
     /**
-     * Constructs a new, empty <code>PureTreeList</code> whose
+     * Constructs a new, empty <code>FTreeList</code> whose
      * <code>compareTo</code> method uses the natural ordering of its elements.
      */
-    public PureTreeList() {
+    public FTreeList() {
 	tree = null;
 	elt_comp = null;
     }
 
     /**
-     * Constructs a new, empty <code>PureTreeList</code> whose
+     * Constructs a new, empty <code>FTreeList</code> whose
      * <code>compareTo</code> method uses the supplied <code>Comparator</code> to
      * compare elements.
      *
      * @param c the comparator
      */
-    public PureTreeList(Comparator<? super Elt> c) {
+    public FTreeList(Comparator<? super Elt> c) {
 	tree = null;
 	elt_comp = (Comparator<Elt>)c;		// we know Comparator is pure
     }
 
     /**
-     * Constructs a new <code>PureTreeList</code> containing the elements of
+     * Constructs a new <code>FTreeList</code> containing the elements of
      * <code>coll</code>, and whose <code>compareTo</code> method uses the natural
      * ordering of its elements.
      *
      * @param coll the collection to use the elements of
      */
-    public PureTreeList(Collection<? extends Elt> coll) {
+    public FTreeList(Collection<? extends Elt> coll) {
 	elt_comp = null;
-	if (coll instanceof PureTreeList) tree = ((PureTreeList)coll).tree;
+	if (coll instanceof FTreeList) tree = ((FTreeList)coll).tree;
 	else tree = fromCollection(coll);
     }
 
     /**
-     * Constructs a new <code>PureTreeList</code> containing the elements of
+     * Constructs a new <code>FTreeList</code> containing the elements of
      * <code>coll</code>, and whose <code>compareTo</code> method uses the supplied
      * <code>Comparator</code> to compare elements.
      *
      * @param coll the collection to use the elements of
      * @param c the comparator
      */
-    public PureTreeList(Collection<? extends Elt> coll, Comparator<? super Elt> c) {
+    public FTreeList(Collection<? extends Elt> coll, Comparator<? super Elt> c) {
 	elt_comp = (Comparator<Elt>)c;
-	if (coll instanceof PureTreeList) tree = ((PureTreeList)coll).tree;
+	if (coll instanceof FTreeList) tree = ((FTreeList)coll).tree;
 	else tree = fromCollection(coll);
     }
 
     /**
-     * Constructs a new <code>PureTreeList</code> containing the components of
+     * Constructs a new <code>FTreeList</code> containing the components of
      * <code>ary</code>, and whose <code>compareTo</code> method uses the natural
      * ordering of its elements.  That is, the elements are <code>ary[0]</code>,
      * <code>ary[1]</code>, etc.  (So, if <code>ary</code> is multidimensional, the
@@ -118,13 +118,13 @@ public class PureTreeList<Elt>
      * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array
      */
-    public <T extends Elt> PureTreeList(T[] ary) {
+    public <T extends Elt> FTreeList(T[] ary) {
 	elt_comp = null;
 	tree = fromCollection(ary);
     }
 
     /**
-     * Constructs a new <code>PureTreeList</code> containing the components of
+     * Constructs a new <code>FTreeList</code> containing the components of
      * <code>ary</code>, and whose <code>compareTo</code> method uses the supplied
      * comparator to compare elements.  That is, the elements are
      * <code>ary[0]</code>, <code>ary[1]</code>, etc.  (So, if <code>ary</code> is
@@ -135,7 +135,7 @@ public class PureTreeList<Elt>
      * @param ary the array
      * @param c the comparator
      */
-    public <T extends Elt> PureTreeList(T[] ary, Comparator<? super Elt> c) {
+    public <T extends Elt> FTreeList(T[] ary, Comparator<? super Elt> c) {
 	elt_comp = (Comparator<Elt>)c;
 	tree = fromCollection(ary);
     }
@@ -219,68 +219,68 @@ public class PureTreeList<Elt>
 	return new PTLIterator(tree, index);
     }
 
-    public PureTreeList<Elt> with(int index, Elt elt) {
+    public FTreeList<Elt> with(int index, Elt elt) {
 	int size = treeSize(tree);
 	if (index < 0 || index > size)
 	    throw new IndexOutOfBoundsException();
 	else if (index == size)
-	    return new PureTreeList<Elt>(insert(tree, index, elt), elt_comp);
-	else return new PureTreeList<Elt>(with(tree, index, elt), elt_comp);
+	    return new FTreeList<Elt>(insert(tree, index, elt), elt_comp);
+	else return new FTreeList<Elt>(with(tree, index, elt), elt_comp);
     }
 
-    public PureTreeList<Elt> withInserted(int index, Elt elt) {
+    public FTreeList<Elt> withInserted(int index, Elt elt) {
 	if (index < 0 || index > treeSize(tree))
 	    throw new IndexOutOfBoundsException();
-	else return new PureTreeList<Elt>(insert(tree, index, elt), elt_comp);
+	else return new FTreeList<Elt>(insert(tree, index, elt), elt_comp);
     }
 
-    public PureTreeList<Elt> withFirst(Elt elt) {
-	return new PureTreeList<Elt>(insert(tree, 0, elt), elt_comp);
+    public FTreeList<Elt> withFirst(Elt elt) {
+	return new FTreeList<Elt>(insert(tree, 0, elt), elt_comp);
     }
 
-    public PureTreeList<Elt> withLast(Elt elt) {
-	return new PureTreeList<Elt>(insert(tree, treeSize(tree), elt), elt_comp);
+    public FTreeList<Elt> withLast(Elt elt) {
+	return new FTreeList<Elt>(insert(tree, treeSize(tree), elt), elt_comp);
     }
 
-    public PureTreeList<Elt> less(int index) {
+    public FTreeList<Elt> less(int index) {
 	if (index < 0 || index >= treeSize(tree))
 	    throw new IndexOutOfBoundsException();
-	return new PureTreeList<Elt>(less(tree, index), elt_comp);
+	return new FTreeList<Elt>(less(tree, index), elt_comp);
     }
 
-    public PureTreeList<Elt> concat(List<? extends Elt> list) {
-	if (list instanceof PureTreeList)
-	    return new PureTreeList<Elt>(concat(tree, ((PureTreeList)list).tree), elt_comp);
-	else return new PureTreeList<Elt>(concat(tree, fromCollection(list)), elt_comp);
+    public FTreeList<Elt> concat(List<? extends Elt> list) {
+	if (list instanceof FTreeList)
+	    return new FTreeList<Elt>(concat(tree, ((FTreeList)list).tree), elt_comp);
+	else return new FTreeList<Elt>(concat(tree, fromCollection(list)), elt_comp);
     }
 
-    public PureTreeList<Elt> reverse() {
+    public FTreeList<Elt> reverse() {
 	if (tree == null) return this;
-	else return new PureTreeList<Elt>(reverse(tree), elt_comp);
+	else return new FTreeList<Elt>(reverse(tree), elt_comp);
     }
 
-    public PureTreeList<Elt> subseq(int fromIndex, int toIndex) {
+    public FTreeList<Elt> subseq(int fromIndex, int toIndex) {
 	int siz = treeSize(tree);
 	if (fromIndex < 0 || fromIndex > siz ||
 	    toIndex < 0 || toIndex > siz) throw new IndexOutOfBoundsException();
-	else return new PureTreeList<Elt>(subseq(tree, fromIndex, toIndex), elt_comp);
+	else return new FTreeList<Elt>(subseq(tree, fromIndex, toIndex), elt_comp);
     }
 
-    public PureList<Elt> subList(int fromIndex, int toIndex) {
+    public FList<Elt> subList(int fromIndex, int toIndex) {
 	if (toIndex < fromIndex) throw new IllegalArgumentException();
 	return subseq(fromIndex, toIndex);
     }
 
-    public PureTreeList<Elt> sort(Comparator<? super Elt> comp) {
+    public FTreeList<Elt> sort(Comparator<? super Elt> comp) {
 	// We could do our own tree sort -- the code is very similar (though alas, not
 	// identical) to the list-to-set conversion code -- but this is probably pretty
 	// close.
 	Object[] ary = toArray();
 	Arrays.sort(ary, (Comparator<Object>)comp);
-	return new PureTreeList<Elt>((Elt[])ary);
+	return new FTreeList<Elt>((Elt[])ary);
     }
 
-    public PureTreeList sort() {
+    public FTreeList sort() {
 	return sort(null);
     }
 
@@ -296,19 +296,19 @@ public class PureTreeList<Elt>
 	return lastIndexOf(tree, elt);
     }
 
-    public int compareTo(PureTreeList<Elt> obj) {
+    public int compareTo(FTreeList<Elt> obj) {
 	if (obj == this) return 0;
 	else if (obj == null ||
-		 !(obj instanceof PureTreeList) ||
-		 !eql(elt_comp, ((PureTreeList)obj).elt_comp))
+		 !(obj instanceof FTreeList) ||
+		 !eql(elt_comp, ((FTreeList)obj).elt_comp))
 	    throw new ClassCastException();
-	else return compareTo(tree, ((PureTreeList)obj).tree);
+	else return compareTo(tree, ((FTreeList)obj).tree);
     }
 
     public boolean equals(Object obj) {
 	if (obj == this) return true;
-	else if (obj instanceof PureTreeList) {
-	    PureTreeList ptl = (PureTreeList)obj;
+	else if (obj instanceof FTreeList) {
+	    FTreeList ptl = (FTreeList)obj;
 	    return equals(tree, ptl.tree);
 	} else if (!(obj instanceof List)) return false;
 	else {
@@ -347,14 +347,14 @@ public class PureTreeList<Elt>
     // This cuts space requirements roughly in half without costing much (if any) time.
 
     // The empty, naturally ordered list can be a singleton.
-    private static final PureTreeList EMPTY_INSTANCE = new PureTreeList();
+    private static final FTreeList EMPTY_INSTANCE = new FTreeList();
 
     /* Instance variables */
     private transient Object tree;
     private Comparator<Elt> elt_comp;
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
-    /*package*/ PureTreeList(Object _tree, Comparator<? super Elt> _elt_comp) {
+    /*package*/ FTreeList(Object _tree, Comparator<? super Elt> _elt_comp) {
 	tree = _tree;
 	elt_comp = (Comparator<Elt>)_elt_comp;
     }
@@ -705,7 +705,7 @@ public class PureTreeList<Elt>
 	return a;
     }
 
-    // Called `remove' in `PureTreeSet', but here I wanted to be consistent with
+    // Called `remove' in `FTreeSet', but here I wanted to be consistent with
     // its caller.
     private static Object[] less(Object[] ary, int idx) {
 	int len = ary.length - 1;
@@ -960,7 +960,7 @@ public class PureTreeList<Elt>
 			inode = new IteratorNode(node.right, RIGHT_END, inode);
 		    } else if (inode.index == 0)
 			inode = new IteratorNode(node.left, RIGHT_END, inode);
-		    else throw new RuntimeException("Bug in `PureTreeList.PTLIterator." +
+		    else throw new RuntimeException("Bug in `FTreeList.PTLIterator." +
 						    "canonicalizeRev'");
 		}
 	    }
@@ -1002,7 +1002,7 @@ public class PureTreeList<Elt>
     }
 
     /**
-     * Saves the state of this <code>PureTreeList</code> to a stream.
+     * Saves the state of this <code>FTreeList</code> to a stream.
      *
      * @serialData Emits the internal data of the list, including the comparator it
      * uses; the size of the list [<code>int</code>]; and the elements in order
@@ -1017,7 +1017,7 @@ public class PureTreeList<Elt>
     }
 
     /**
-     * Reconstitutes the <code>PureTreeSet</code> instance from a stream.
+     * Reconstitutes the <code>FTreeSet</code> instance from a stream.
      */
     private void readObject(java.io.ObjectInputStream strm)
         throws java.io.IOException, ClassNotFoundException {

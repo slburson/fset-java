@@ -1,5 +1,5 @@
 /*
- * AbstractPureSet.java
+ * AbstractFSet.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -11,7 +11,7 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * This class provides a skeletal implementation of the PureSet interface.
+ * This class provides a skeletal implementation of the FSet interface.
  * 
  * <p>The purpose of this class is to provide methods for all the mutating
  * operations of the {@link Set} interface, that throw
@@ -21,9 +21,9 @@ import java.util.*;
  * @author Scott L. Burson
  */
 
-public abstract class AbstractPureSet<Elt>
+public abstract class AbstractFSet<Elt>
     extends AbstractSet<Elt>
-    implements PureSet<Elt>
+    implements FSet<Elt>
 {
 
     /**

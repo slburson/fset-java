@@ -1,5 +1,5 @@
 /*
- * PureTreeMap.java
+ * FTreeMap.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -11,10 +11,10 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * A pure map that relies on a key ordering.  It is implemented as a binary tree.
+ * A functional map that relies on a key ordering.  It is implemented as a binary tree.
  * As with {@link SortedMap}, the keys must either implement {@link Comparable},
  * or must be acceptable to a {@link Comparator} which is supplied to the
- * <code>PureTreeMap</code> constructor.
+ * <code>FTreeMap</code> constructor.
  *
  * <p>Time costs: <code>isEmpty</code>, <code>size</code>, <code>arb</code>, and
  * <code>entrySet</code> take O(1) (constant) time.  <code>containsKey</code>,
@@ -24,23 +24,23 @@ import java.util.*;
  * <code>containsValue</code> take O(n) (linear) time.  <code>toSet</code>,
  * <code>range</code>, and <code>values</code> take O(<i>n</i> log <i>n</i>) time.
  * <code>union</code>, <code>restrict</code>, and <code>restrictNot</code> take O(n)
- * (linear) time if the other map or set involved is also a <code>PureTreeMap</code>
- * or <code>PureTreeSet</code> and uses the same ordering; otherwise, it takes
+ * (linear) time if the other map or set involved is also a <code>FTreeMap</code>
+ * or <code>FTreeSet</code> and uses the same ordering; otherwise, it takes
  * O(<i>n</i> log <i>n</i>) time.  <code>compareTo</code> (called, for instance, if
- * this map is an element in a containing <code>PureTreeSet</code>) takes O(n)
+ * this map is an element in a containing <code>FTreeSet</code>) takes O(n)
  * (linear) time.
  *
- * <p>Space costs: <code>PureTreeMap</code> uses a heterogeneous binary tree
+ * <p>Space costs: <code>FTreeMap</code> uses a heterogeneous binary tree
  * structure with bounded-length arrays at the leaves.  It uses much less space than
  * traditional homogeneous binary trees; typical space consumption is roughly twice
  * that of a pair of plain arrays, or even less.
  *
- * <p><code>PureTreeMap</code> is declared as implementing <code>SortedMap</code>.
+ * <p><code>FTreeMap</code> is declared as implementing <code>SortedMap</code>.
  * However, there are some subtle semantic differences which the user should be
- * aware of; <code>PureTreeMap</code> does not exactly fulfill the contract of
+ * aware of; <code>FTreeMap</code> does not exactly fulfill the contract of
  * <code>SortedMap</code>.
  *
- * <p>First, unlike <code>SortedMap</code>, <code>PureTreeMap</code> does not
+ * <p>First, unlike <code>SortedMap</code>, <code>FTreeMap</code> does not
  * require the key ordering to be consistent with <code>equals</code> in order for
  * it to fulfill the contract of the <code>Map</code> interface.  In cases where the
  * map contains <i>equivalent</i> keys (keys for which <code>equals</code> returns
@@ -67,14 +67,14 @@ import java.util.*;
  * <code>headMap</code> and <code>tailMap</code> do not throw
  * <code>IllegalArgumentException</code>.
  *
- * <p><code>PureTreeMap</code> accepts the null key; for ordering purposes, it
+ * <p><code>FTreeMap</code> accepts the null key; for ordering purposes, it
  * precedes all other keys.  It also accepts null values.
  *
- * <p>Although <code>PureTreeMap</code> functions correctly in the presence of
+ * <p>Although <code>FTreeMap</code> functions correctly in the presence of
  * equivalent but unequal keys, it does so with some loss of efficiency.  As long as
  * these are rare, however, the cost will not be significant.
  *
- * <p><code>PureTreeMap</code> also provides, corresponding to each constructor, a
+ * <p><code>FTreeMap</code> also provides, corresponding to each constructor, a
  * static factory method <code>withDefault</code> which, in addition to the
  * functionality of the constructor, also allows the specification of a default
  * value to be returned by the <code>get</code> method when it is called with a key
@@ -84,8 +84,8 @@ import java.util.*;
  * created like this:
  *
  * <pre>
- *     PureMap<K1, PureMap<K2, V>> map =
- *       PureTreeMap.<K1, PureMap<K2, V>>withDefault(new PureTreeMap<K2, V>());
+ *     FMap<K1, FMap<K2, V>> map =
+ *       FTreeMap.<K1, FMap<K2, V>>withDefault(new FTreeMap<K2, V>());
  * </pre>
  *
  * the chained mapping <code>key1 -> key2 -> val</code> can then be added like this:
@@ -97,107 +97,107 @@ import java.util.*;
  * which works even if <code>map</code> does not already contain an entry for
  * <code>key1</code>.
  *
- * <p>If <code>PureTreeMap</code> instances are used as elements of a
- * <code>PureTreeSet</code>, or as <i>keys</i> (not values) of a containing
- * <code>PureTreeMap</code>, the <code>PureTreeMap.compareTo</code> method will be
+ * <p>If <code>FTreeMap</code> instances are used as elements of a
+ * <code>FTreeSet</code>, or as <i>keys</i> (not values) of a containing
+ * <code>FTreeMap</code>, the <code>FTreeMap.compareTo</code> method will be
  * called to order the maps relative to one another.  Under some circumstances, this
  * method compares not just keys, but also values.  It compares values using their
  * natural ordering (there is currently no provision for a second Comparator to be
  * used for the values).  Thus, under these circumstances, the user must be sure that
  * the value objects implement <code>Comparable</code>.
  *
- * <p><code>PureTreeMap</code> implements {@link java.io.Serializable}; an instance
+ * <p><code>FTreeMap</code> implements {@link java.io.Serializable}; an instance
  * of it is serializable provided that all keys and values it contains, the
  * <code>Comparator</code> it uses if any, and the default value if nonnull, are
  * serializable.
  *
  * @author Scott L. Burson
- * @see PureMap
- * @see PureHashMap
+ * @see FMap
+ * @see FHashMap
  */
 
-public class PureTreeMap<Key, Val>
-    extends AbstractPureMap<Key, Val>
-    implements Comparable<PureTreeMap<Key, Val>>, SortedMap<Key, Val>, java.io.Serializable
+public class FTreeMap<Key, Val>
+    extends AbstractFMap<Key, Val>
+    implements Comparable<FTreeMap<Key, Val>>, SortedMap<Key, Val>, java.io.Serializable
 {
 
     /**
-     * Returns an empty PureTreeMap that uses the natural ordering of the keys.
+     * Returns an empty FTreeMap that uses the natural ordering of the keys.
      * Slightly more efficient than calling the constructor, because it returns a
      * canonical instance.
      */
-    public static <Key, Val> PureTreeMap<Key, Val> emptyMap() {
-	return (PureTreeMap<Key, Val>)EMPTY_INSTANCE;
+    public static <Key, Val> FTreeMap<Key, Val> emptyMap() {
+	return (FTreeMap<Key, Val>)EMPTY_INSTANCE;
     }
 
     /**
-     * Constructs an empty <code>PureTreeMap</code> that uses the natural ordering
+     * Constructs an empty <code>FTreeMap</code> that uses the natural ordering
      * of the keys.
      */
-    public PureTreeMap() {
+    public FTreeMap() {
 	tree = null;
 	comp = null;
     }
 
     /**
-     * Constructs an empty <code>PureTreeMap</code> that uses the supplied
+     * Constructs an empty <code>FTreeMap</code> that uses the supplied
      * comparator to compare keys.
      *
      * @param c the comparator
      */
-    public PureTreeMap(Comparator<? super Key> c) {
+    public FTreeMap(Comparator<? super Key> c) {
 	tree = null;
 	comp = (Comparator<Key>)c;
     }
 
     /**
-     * Constructs a <code>PureTreeMap</code> containing the same entries as
+     * Constructs a <code>FTreeMap</code> containing the same entries as
      * <code>map</code>, and that uses the natural ordering of the keys.
      *
      * @param map the map to use the entries of
      */
-    public PureTreeMap(Map<? extends Key, ? extends Val> map) {
+    public FTreeMap(Map<? extends Key, ? extends Val> map) {
 	fromMap((Map<Key, Val>)map, null);
     }
 
     /**
-     * Constructs a <code>PureTreeMap</code> containing the same entries as
+     * Constructs a <code>FTreeMap</code> containing the same entries as
      * <code>map</code>, and that uses the supplied <code>Comparator</code> to
      * compare keys.
      *
      * @param map the map to use the entries of
      * @param c the comparator
      */
-    public PureTreeMap(Map<? extends Key, ? extends Val> map, Comparator<? super Key> c) {
+    public FTreeMap(Map<? extends Key, ? extends Val> map, Comparator<? super Key> c) {
 	fromMap((Map<Key, Val>)map, c);
     }
 
     /**
-     * Constructs a <code>PureTreeMap</code> containing the same entries as
+     * Constructs a <code>FTreeMap</code> containing the same entries as
      * <code>map</code>, and that uses the same ordering as <code>map</code>.
      *
      * @param map the map to use the entries of
      */
-    public PureTreeMap(SortedMap<Key, Val> map) {
+    public FTreeMap(SortedMap<Key, Val> map) {
 	fromMap(map, map.comparator());
     }
 
     /**
-     * Constructs a <code>PureTreeMap</code> mapping each element of <code>keys</code>
+     * Constructs a <code>FTreeMap</code> mapping each element of <code>keys</code>
      * to the corresponding element of <code>vals</code>; the resulting map uses the
      * natural ordering of the keys.  If a key is duplicated, the value it will be
      * mapped to in the result will be the one corresponding to its last occurrence.
      *
      * @throws IllegalArgumentException if keys.length != vals.length
      */
-    public PureTreeMap(Key[] keys, Val[] vals) {
+    public FTreeMap(Key[] keys, Val[] vals) {
 	if (keys.length != vals.length) throw new IllegalArgumentException();
 	comp = null;
 	fromArrays(keys, vals);
     }
 
     /**
-     * Constructs a <code>PureTreeMap</code> mapping each element of <code>keys</code>
+     * Constructs a <code>FTreeMap</code> mapping each element of <code>keys</code>
      * to the corresponding element of <code>vals</code>; the resulting map will use the
      * supplied <code>Comparator> to compare keys.  If a key is duplicated, the value it
      * will be mapped to in the result will be the one corresponding to its last
@@ -205,62 +205,62 @@ public class PureTreeMap<Key, Val>
      *
      * @throws IllegalArgumentException if keys.length != vals.length
      */
-    public PureTreeMap(Key[] keys, Val[] vals, Comparator<? super Key> c) {
+    public FTreeMap(Key[] keys, Val[] vals, Comparator<? super Key> c) {
 	if (keys.length != vals.length) throw new IllegalArgumentException();
 	comp = (Comparator<Key>)c;
 	fromArrays(keys, vals);
     }
 
     /**
-     * Constructs and returns an empty <code>PureTreeMap</code> that uses the
+     * Constructs and returns an empty <code>FTreeMap</code> that uses the
      * natural ordering of the keys and values, and whose <code>get</code> method
      * returns <code>dflt</code> when called with a key which is not in the map.
      *
      * @param dflt the default value
-     * @return the new <code>PureTreeMap</code>
+     * @return the new <code>FTreeMap</code>
      */
-    public static <Key, Val> PureTreeMap<Key, Val> withDefault(Val dflt) {
-	PureTreeMap<Key, Val> m = new PureTreeMap<Key, Val>();
+    public static <Key, Val> FTreeMap<Key, Val> withDefault(Val dflt) {
+	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>();
 	m.dflt = dflt;
 	return m;
     }
 
     /**
-     * Constructs and returns an empty <code>PureTreeMap</code> that uses the
+     * Constructs and returns an empty <code>FTreeMap</code> that uses the
      * supplied <code>Comparator</code> to compare keys and values, and whose
      * <code>get</code> method returns <code>dflt</code> when called with a key
      * which is not in the map.
      *
      * @param dflt the default value
      * @param comp the comparator
-     * @return the new <code>PureTreeMap</code>
+     * @return the new <code>FTreeMap</code>
      */
-    public static <Key, Val> PureTreeMap<Key, Val> withDefault(Val dflt,
+    public static <Key, Val> FTreeMap<Key, Val> withDefault(Val dflt,
 							       Comparator<? super Key> comp) {
-	PureTreeMap<Key, Val> m = new PureTreeMap<Key, Val>(comp);
+	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>(comp);
 	m.dflt = dflt;
 	return m;
     }
 
     /**
-     * Constructs and returns a <code>PureTreeMap</code> containing the same entries
+     * Constructs and returns a <code>FTreeMap</code> containing the same entries
      * as <code>map</code>, and which uses the natural ordering of the keys and
      * values, and whose <code>get</code> method returns <code>dflt</code> when
      * called with a key which is not in the map.
      *
      * @param map the map to use the entries of
      * @param dflt the default value
-     * @return the new <code>PureTreeMap</code>
+     * @return the new <code>FTreeMap</code>
      */
-    public static <Key, Val> PureTreeMap<Key, Val>
-	   withDefault(PureTreeMap<Key, Val> map, Val dflt) {
-	PureTreeMap<Key, Val> m = new PureTreeMap<Key, Val>(map);
+    public static <Key, Val> FTreeMap<Key, Val>
+	   withDefault(FTreeMap<Key, Val> map, Val dflt) {
+	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>(map);
 	m.dflt = dflt;
 	return m;
     }
 
     /**
-     * Constructs and returns a <code>PureTreeMap</code> containing the same entries
+     * Constructs and returns a <code>FTreeMap</code> containing the same entries
      * as <code>map</code>, and which uses the supplied <code>Comparator</code> to
      * compare keys and values, and whose <code>get</code> method returns
      * <code>dflt</code> when called with a key which is not in the map.
@@ -268,19 +268,19 @@ public class PureTreeMap<Key, Val>
      * @param map the map to use the entries of
      * @param dflt the default value
      * @param comp the comparator
-     * @return the new <code>PureTreeMap</code>
+     * @return the new <code>FTreeMap</code>
      */
-    public static <Key, Val> PureTreeMap<Key, Val>
-	   withDefault(PureTreeMap<Key, Val> map, Val dflt, Comparator<? super Key> comp) {
-	PureTreeMap<Key, Val> m = new PureTreeMap<Key, Val>(map, comp);
+    public static <Key, Val> FTreeMap<Key, Val>
+	   withDefault(FTreeMap<Key, Val> map, Val dflt, Comparator<? super Key> comp) {
+	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>(map, comp);
 	m.dflt = dflt;
 	return m;
     }
 
     private void fromMap(Map<Key, Val> map, Comparator<? super Key> _comp) {
 	comp = (Comparator<Key>)_comp;
-	if (map instanceof PureTreeMap && eql(comp, ((PureTreeMap)map).comp))
-	    tree = ((PureTreeMap)map).tree;
+	if (map instanceof FTreeMap && eql(comp, ((FTreeMap)map).comp))
+	    tree = ((FTreeMap)map).tree;
 	else {
 	    tree = null;
 	    for (Map.Entry<Key, Val> ent : map.entrySet())
@@ -344,16 +344,16 @@ public class PureTreeMap<Key, Val>
 	else return (Val)val;
     }
 
-    public PureTreeMap<Key, Val> with(Key key, Val value) {
+    public FTreeMap<Key, Val> with(Key key, Val value) {
 	Object t = with(tree, key, value);
 	if (t == tree) return this;
-	else return new PureTreeMap<Key, Val>(t, dflt, comp);
+	else return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
-    public PureTreeMap<Key, Val> less(Key key) {
+    public FTreeMap<Key, Val> less(Key key) {
 	Object t = less(tree, key);
 	if (t == tree) return this;
-	else return new PureTreeMap<Key, Val>(t, dflt, comp);
+	else return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
     public Set<Key> keySet() {
@@ -362,7 +362,7 @@ public class PureTreeMap<Key, Val>
 		return new PTMKeyIterator<Key>(tree);
 	    }
 	    public int size() {
-		return PureTreeMap.this.size();
+		return FTreeMap.this.size();
 	    }
 	    public boolean contains(Object key) {
 		return containsKey(key);
@@ -377,7 +377,7 @@ public class PureTreeMap<Key, Val>
 		return new PTMValueIterator<Val>(tree);
 	    }
 	    public int size() {
-		return PureTreeMap.this.size();
+		return FTreeMap.this.size();
 	    }
 	};
     }
@@ -385,10 +385,10 @@ public class PureTreeMap<Key, Val>
     public Set<Map.Entry<Key, Val>> entrySet() {
 	return new AbstractSet<Map.Entry<Key, Val>>() {
 	    public Iterator iterator() {
-		return PureTreeMap.this.iterator();
+		return FTreeMap.this.iterator();
 	    }
 	    public int size() {
-		return PureTreeMap.this.size();
+		return FTreeMap.this.size();
 	    }
 	    public boolean contains(Object x) {
 		if (!(x instanceof Map.Entry)) return false;
@@ -410,67 +410,67 @@ public class PureTreeMap<Key, Val>
 	};
     }
 
-    public PureTreeSet<Key> domain() {
+    public FTreeSet<Key> domain() {
 	Object dom = domain(tree);
-	return PureTreeSet.<Key>make(dom, comp);
+	return FTreeSet.<Key>make(dom, comp);
     }
 
     /**
      * Returns the range of the map (the set of values it contains).  The returned set
-     * is a {@link PureTreeSet} which uses the natural ordering of elements.
+     * is a {@link FTreeSet} which uses the natural ordering of elements.
      *
      * @return the range set of this map
      */
-    public PureTreeSet<Val> range() {
-	return (PureTreeSet<Val>)range(tree, new PureTreeSet());
+    public FTreeSet<Val> range() {
+	return (FTreeSet<Val>)range(tree, new FTreeSet());
     }
 
-    public PureSet<Val> range(PureSet<Val> initial_set) {
+    public FSet<Val> range(FSet<Val> initial_set) {
 	// Gives us an empty set of the right class and comparator.
 	initial_set = initial_set.difference(initial_set);
-	return (PureSet<Val>)range(tree, initial_set);
+	return (FSet<Val>)range(tree, initial_set);
     }
 
     /**
      * Returns the map as a set of pairs, each pair being a <code>Map.Entry</code>.
      * Similar to <code>entrySet</code>, except that the return type is
-     * <code>PureTreeSet</code>.  If this map uses natural ordering then so does the
+     * <code>FTreeSet</code>.  If this map uses natural ordering then so does the
      * returned set; if it uses a <code>Comparator</code>, then the returned set uses
      * a new <code>Comparator</code> that invokes this map's <code>Comparator</code>
      * on the keys and uses the natural ordering of the values.
      *
      * @return the set of entries this map contains
      */
-    public PureTreeSet<Map.Entry<Key, Val>> toSet() {
-	return (PureTreeSet<Map.Entry<Key, Val>>)
-	       toSet(new PureTreeSet<Map.Entry<Key, Val>>(comp == null ? null :
+    public FTreeSet<Map.Entry<Key, Val>> toSet() {
+	return (FTreeSet<Map.Entry<Key, Val>>)
+	       toSet(new FTreeSet<Map.Entry<Key, Val>>(comp == null ? null :
 							  new EntryComparator(comp)));
     }
 
-    public PureSet<Map.Entry<Key, Val>> toSet(PureSet<Map.Entry<Key, Val>> initial_set) {
+    public FSet<Map.Entry<Key, Val>> toSet(FSet<Map.Entry<Key, Val>> initial_set) {
 	// Gives us an empty set of the right class and comparator.
-	PureSet s = initial_set.difference(initial_set);
+	FSet s = initial_set.difference(initial_set);
 	for (Iterator it = iterator(); it.hasNext(); )
 	    s = s.with(it.next());
 	return s;
     }
 
-    public PureTreeMap<Key, Val> union(PureMap<? extends Key, ? extends Val> with_map) {
-	PureTreeMap<Key, Val> with_ptm = new PureTreeMap<Key, Val>(with_map, comp);
+    public FTreeMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map) {
+	FTreeMap<Key, Val> with_ptm = new FTreeMap<Key, Val>(with_map, comp);
 	Object t = union(tree, with_ptm.tree);
-	return new PureTreeMap<Key, Val>(t, dflt, comp);
+	return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
-    public PureTreeMap<Key, Val> restrictedTo(PureSet<Key> set) {
-	PureTreeSet<Key> pts = new PureTreeSet<Key>(set, comp);
+    public FTreeMap<Key, Val> restrictedTo(FSet<Key> set) {
+	FTreeSet<Key> pts = new FTreeSet<Key>(set, comp);
 	Object t = restrictedTo(tree, pts.tree, pts);
-	return new PureTreeMap<Key, Val>(t, dflt, comp);
+	return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
-    public PureTreeMap<Key, Val> restrictedFrom(PureSet<Key> set) {
-	PureTreeSet<Key> pts = new PureTreeSet<Key>(set, comp);
+    public FTreeMap<Key, Val> restrictedFrom(FSet<Key> set) {
+	FTreeSet<Key> pts = new FTreeSet<Key>(set, comp);
 	Object t = restrictedFrom(tree, pts.tree, pts);
-	return new PureTreeMap<Key, Val>(t, dflt, comp);
+	return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
     public Val getDefault() {
@@ -485,22 +485,22 @@ public class PureTreeMap<Key, Val>
      * See the documentation for {@link Comparable#compareTo}.
      *
      * <p>This method throws <code>ClassCastException</code> even if
-     * <code>obj</code> is another <code>PureTreeMap</code>, if the two maps do not
+     * <code>obj</code> is another <code>FTreeMap</code>, if the two maps do not
      * use the same ordering for their keys and values (either natural ordering, or
      * the same <code>Comparator</code>).
      */
-    public int compareTo(PureTreeMap<Key, Val> other) {
+    public int compareTo(FTreeMap<Key, Val> other) {
 	return compareTo(tree, other.tree);
     }
 
     public boolean equals(Object obj) {
 	if (obj == this) return true;
-	else if (obj instanceof PureTreeMap && eql(comp, ((PureTreeMap)obj).comp)) {
-	    PureTreeMap ptm = (PureTreeMap)obj;
+	else if (obj instanceof FTreeMap && eql(comp, ((FTreeMap)obj).comp)) {
+	    FTreeMap ptm = (FTreeMap)obj;
 	    return equals(tree, ptm.tree);
 	} else if (!(obj instanceof Map)) return false;
 	else {
-	    // Either not a PureTreeMap, or has a different ordering.
+	    // Either not an FTreeMap, or has a different ordering.
 	    Map<Object, Object> map = (Map)obj;
 	    if (size() != map.size()) return false;
 	    for (Map.Entry ent : map.entrySet()) {
@@ -560,7 +560,7 @@ public class PureTreeMap<Key, Val>
 	    Object fk = firstKey(), lk = lastKey();
 	    if (compare(fromKey, toKey) >= 0 ||
 		compare(fk, toKey) >= 0 ||
-		compare(lk, fromKey) < 0) return new PureTreeMap<Key, Val>(null, dflt, comp);
+		compare(lk, fromKey) < 0) return new FTreeMap<Key, Val>(null, dflt, comp);
 	    else if (compare(fk, fromKey) >= 0  &&
 		     compare(lk, toKey) < 0) return this;
 	    else {
@@ -568,7 +568,7 @@ public class PureTreeMap<Key, Val>
 		// `split' excludes both endpoints.
 		Entry ent = findEquiv(tree, fromKey);
 		if (ent != null) t = with(t, ent.key, ent.value);
-		return new PureTreeMap<Key, Val>(t, dflt, comp);
+		return new FTreeMap<Key, Val>(t, dflt, comp);
 	    }
 	}
     }
@@ -588,8 +588,8 @@ public class PureTreeMap<Key, Val>
     public SortedMap<Key, Val> headMap(Key toKey) {
 	if (tree == null || compare(lastKey(), toKey) < 0) return this;
 	else if (compare(firstKey(), toKey) >= 0)
-	    return new PureTreeMap<Key, Val>(null, dflt, comp);
-	else return new PureTreeMap<Key, Val>(split(tree, NEGATIVE_INFINITY, toKey), dflt, comp);
+	    return new FTreeMap<Key, Val>(null, dflt, comp);
+	else return new FTreeMap<Key, Val>(split(tree, NEGATIVE_INFINITY, toKey), dflt, comp);
     }
 
     /**
@@ -608,12 +608,12 @@ public class PureTreeMap<Key, Val>
 	if (tree == null || compare(firstKey(), fromKey) >= 0)
 	    return this;
 	else if (compare(lastKey(), fromKey) < 0)
-	    return new PureTreeMap<Key, Val>(null, dflt, comp);
+	    return new FTreeMap<Key, Val>(null, dflt, comp);
 	else {
 	    Object t = split(tree, fromKey, POSITIVE_INFINITY);
 	    Entry ent = findEquiv(tree, fromKey);
 	    if (ent != null) t = with(t, ent.key, ent.value);
-	    return new PureTreeMap<Key, Val>(t, dflt, comp);
+	    return new FTreeMap<Key, Val>(t, dflt, comp);
 	}
     }
 
@@ -626,7 +626,7 @@ public class PureTreeMap<Key, Val>
     // This cuts space requirements roughly in half without costing much (if any) time.
 
     // The empty, naturally ordered map can be a singleton.
-    private static final PureTreeMap EMPTY_INSTANCE = new PureTreeMap();
+    private static final FTreeMap EMPTY_INSTANCE = new FTreeMap();
 
     /* Instance variables */
     private transient Object tree;	// a subtree (see below)
@@ -644,11 +644,11 @@ public class PureTreeMap<Key, Val>
 
     /* To represent negative and positive infinity, we create two objects.  All that
      * matters is that they are guaranteed to be distinct from any object that could
-     * be keys.  -- These have to be the same values `PureTreeSet' uses, for benefit
+     * be keys.  -- These have to be the same values `FTreeSet' uses, for benefit
      * of `restricted{To,From}'.
      */
-    static final Object NEGATIVE_INFINITY = PureTreeSet.NEGATIVE_INFINITY;
-    static final Object POSITIVE_INFINITY = PureTreeSet.POSITIVE_INFINITY;
+    static final Object NEGATIVE_INFINITY = FTreeSet.NEGATIVE_INFINITY;
+    static final Object POSITIVE_INFINITY = FTreeSet.POSITIVE_INFINITY;
 
     static class Entry implements Map.Entry<Object, Object> {
 	Entry(Object _key, Object _value) {
@@ -733,7 +733,7 @@ public class PureTreeMap<Key, Val>
 	else return 1;
     }
 
-    private PureTreeMap(Object _tree, Val _dflt, Comparator<Key> _comp) {
+    private FTreeMap(Object _tree, Val _dflt, Comparator<Key> _comp) {
 	tree = _tree;
 	dflt = _dflt;
 	comp = _comp;
@@ -899,13 +899,13 @@ public class PureTreeMap<Key, Val>
 		ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
 		ArrayList<Object> dom = new ArrayList<Object>(al.size());
 		for (int i = 0; i < al.size(); ++i) dom.add(((Entry)al.get(i)).key);
-		return PureTreeSet.makeNode(new PureTreeSet.EquivalentSet(dom),
+		return FTreeSet.makeNode(new FTreeSet.EquivalentSet(dom),
 					    ldom, rdom);
-	    } else return PureTreeSet.makeNode(node.key, ldom, rdom);
+	    } else return FTreeSet.makeNode(node.key, ldom, rdom);
 	}
     }
 
-    private PureSet range(Object subtree, PureSet initial) {
+    private FSet range(Object subtree, FSet initial) {
 	if (subtree == null) return initial;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -981,24 +981,24 @@ public class PureTreeMap<Key, Val>
 	}
     }
 
-    private Object restrictedTo(Object map_subtree, Object set_subtree, PureTreeSet set) {
+    private Object restrictedTo(Object map_subtree, Object set_subtree, FTreeSet set) {
 	return restrictedTo(map_subtree, set_subtree, set, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
-    private Object restrictedTo(Object map_subtree, Object set_subtree, PureTreeSet set,
+    private Object restrictedTo(Object map_subtree, Object set_subtree, FTreeSet set,
 				Object lo, Object hi) {
 	if (map_subtree == null) return null;
 	else if (set_subtree == null) return null;
 	else if (!(map_subtree instanceof Node)) {
 	    Object[] map_ary = (Object[])map_subtree;
-	    if (!(set_subtree instanceof PureTreeSet.Node))
+	    if (!(set_subtree instanceof FTreeSet.Node))
 		return restrictedTo2(map_ary, (Object[])set_subtree, lo, hi);
 	    else {
-		PureTreeSet.Node set_node = (PureTreeSet.Node)set_subtree;
+		FTreeSet.Node set_node = (FTreeSet.Node)set_subtree;
 		Object raw_elt = set_node.element;
 		Object set_elt;
-		if (raw_elt instanceof PureTreeSet.EquivalentSet)
-		    set_elt = ((PureTreeSet.EquivalentSet)raw_elt).contents.get(0);
+		if (raw_elt instanceof FTreeSet.EquivalentSet)
+		    set_elt = ((FTreeSet.EquivalentSet)raw_elt).contents.get(0);
 		else set_elt = raw_elt;
 		Object new_left = restrictedTo(trim(map_subtree, lo, set_elt),
 					       set.trim(set_node.left, lo, set_elt),
@@ -1031,7 +1031,7 @@ public class PureTreeMap<Key, Val>
 					    set.trim(set_subtree, map_key, hi),
 					    set, map_key, hi);
 	    Object set_elt = set.findEquiv(set_subtree, map_key);
-	    if (set_elt == PureTreeSet.NO_ELEMENT) return join(new_left, new_right);
+	    if (set_elt == FTreeSet.NO_ELEMENT) return join(new_left, new_right);
 	    else {
 		Object k = equivRestrictedTo(raw_key, map_node.value, set_elt);
 		if (k == null) return join(new_left, new_right);
@@ -1045,24 +1045,24 @@ public class PureTreeMap<Key, Val>
 	}
     }
 
-    private Object restrictedFrom(Object map_subtree, Object set_subtree, PureTreeSet set) {
+    private Object restrictedFrom(Object map_subtree, Object set_subtree, FTreeSet set) {
 	return restrictedFrom(map_subtree, set_subtree, set, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
-    private Object restrictedFrom(Object map_subtree, Object set_subtree, PureTreeSet set,
+    private Object restrictedFrom(Object map_subtree, Object set_subtree, FTreeSet set,
 				  Object lo, Object hi) {
 	if (map_subtree == null) return null;
 	else if (set_subtree == null) return split(map_subtree, lo, hi);
 	else if (!(map_subtree instanceof Node)) {
 	    Object[] map_ary = (Object[])map_subtree;
-	    if (!(set_subtree instanceof PureTreeSet.Node))
+	    if (!(set_subtree instanceof FTreeSet.Node))
 		return restrictedFrom2(map_ary, (Object[])set_subtree, lo, hi);
 	    else {
-		PureTreeSet.Node set_node = (PureTreeSet.Node)set_subtree;
+		FTreeSet.Node set_node = (FTreeSet.Node)set_subtree;
 		Object raw_elt = set_node.element;
 		Object set_elt;
-		if (raw_elt instanceof PureTreeSet.EquivalentSet)
-		    set_elt = ((PureTreeSet.EquivalentSet)raw_elt).contents.get(0);
+		if (raw_elt instanceof FTreeSet.EquivalentSet)
+		    set_elt = ((FTreeSet.EquivalentSet)raw_elt).contents.get(0);
 		else set_elt = raw_elt;
 		Object new_left = restrictedFrom(trim(map_subtree, lo, set_elt),
 						 set.trim(set_node.left, lo, set_elt),
@@ -1095,7 +1095,7 @@ public class PureTreeMap<Key, Val>
 					      set.trim(set_subtree, map_key, hi),
 					      set, map_key, hi);
 	    Object set_elt = set.findEquiv(set_subtree, map_key);
-	    if (set_elt == PureTreeSet.NO_ELEMENT)
+	    if (set_elt == FTreeSet.NO_ELEMENT)
 		return concat(raw_key, map_node.value, new_left, new_right);
 	    else {
 		Object k = equivRestrictedFrom(raw_key, map_node.value, set_elt);
@@ -1652,8 +1652,8 @@ public class PureTreeMap<Key, Val>
     private static Object equivRestrictedTo(Object map_key, Object map_val, Object set_elt) {
 	if (map_key instanceof EquivalentMap) {
 	    ArrayList<Entry> map_al = ((EquivalentMap)map_key).contents;
-	    if (set_elt instanceof PureTreeSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureTreeSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FTreeSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FTreeSet.EquivalentSet)set_elt).contents;
 		ArrayList<Entry> al = new ArrayList<Entry>();
 		for (int i = 0, siz = map_al.size(); i < siz; ++i) {
 		    Entry e = (Entry)map_al.get(i);
@@ -1673,8 +1673,8 @@ public class PureTreeMap<Key, Val>
 		return null;
 	    }
 	} else {
-	    if (set_elt instanceof PureTreeSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureTreeSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FTreeSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FTreeSet.EquivalentSet)set_elt).contents;
 		if (set_al.contains(map_key))
 		    return new Entry(map_key, map_val);
 		else return null;
@@ -1690,8 +1690,8 @@ public class PureTreeMap<Key, Val>
 	if (map_key instanceof EquivalentMap) {
 	    ArrayList<Entry> map_al = ((EquivalentMap)map_key).contents;
 	    ArrayList<Entry> al = new ArrayList<Entry>();
-	    if (set_elt instanceof PureTreeSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureTreeSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FTreeSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FTreeSet.EquivalentSet)set_elt).contents;
 		for (int i = 0, siz = map_al.size(); i < siz; ++i) {
 		    Entry e = (Entry)map_al.get(i);
 		    if (!set_al.contains(e.key)) al.add(e);
@@ -1709,8 +1709,8 @@ public class PureTreeMap<Key, Val>
 		return new EquivalentMap(al);
 	    }
 	} else {
-	    if (set_elt instanceof PureTreeSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureTreeSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FTreeSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FTreeSet.EquivalentSet)set_elt).contents;
 		if (!set_al.contains(map_key))
 		    return new Entry(map_key, map_val);
 		else return null;
@@ -1745,8 +1745,8 @@ public class PureTreeMap<Key, Val>
 		if (siz1 < siz2) return 1;
 		else if (siz1 > siz2) return -1;
 		else {
-		    PureTreeSet<Object> vals1 = new PureTreeSet<Object>();
-		    PureTreeSet<Object> vals2 = new PureTreeSet<Object>();
+		    FTreeSet<Object> vals1 = new FTreeSet<Object>();
+		    FTreeSet<Object> vals2 = new FTreeSet<Object>();
 		    for (int i = 0; i < siz1; ++i)
 			vals1 = vals1.with(al1.get(i).value);
 		    for (int i = 0; i < siz2; ++i)
@@ -2207,7 +2207,7 @@ public class PureTreeMap<Key, Val>
     }
 
     /**
-     * Saves the state of this <code>PureTreeMap</code> to a stream.
+     * Saves the state of this <code>FTreeMap</code> to a stream.
      *
      * @serialData Emits the internal data of the map, including the default and
      * comparator it uses; the size of the map [<code>int</code>]; and the key/value
@@ -2225,7 +2225,7 @@ public class PureTreeMap<Key, Val>
     }
 
     /**
-     * Reconstitutes the <code>PureTreeMap</code> instance from a stream.
+     * Reconstitutes the <code>FTreeMap</code> instance from a stream.
      */
     private void readObject(java.io.ObjectInputStream strm)
         throws java.io.IOException, ClassNotFoundException {

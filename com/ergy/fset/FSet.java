@@ -1,5 +1,5 @@
 /*
- * PureSet.java
+ * FSet.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -11,7 +11,7 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * A set for which the update operators are all pure (functional): they return a
+ * A set for which the update operators are all functional: they return a
  * new set rather than modifying the one they were invoked on.
  *
  * <p>Although this interface extends {@link Set} of the Java Collections Framework,
@@ -19,13 +19,13 @@ import java.util.*;
  * as the <code>java.util</code> classes that implement <code>Set</code>.  It does
  * not support the update operators declared by <code>Set</code> (which are
  * documented as optional, anyway); in their place it adds several new operators
- * which are "pure", in the sense that rather than modifying the set in place, they
- * construct and return a new set.
+ * which are functional, in the sense that rather than modifying the set in place,
+ * they construct and return a new set.
  *
  * @author Scott L. Burson
  */
 
-public interface PureSet<Elt> extends Set<Elt>
+public interface FSet<Elt> extends Set<Elt>
 {
 
     /**
@@ -57,7 +57,7 @@ public interface PureSet<Elt> extends Set<Elt>
      * @throws IllegalArgumentException if some aspect of <code>elt</code> makes it
      * incompatible with the set
      */
-    PureSet<Elt> with(Elt elt);
+    FSet<Elt> with(Elt elt);
 
     /**
      * Removes <code>elt</code>, returning a (possibly) new set.  More formally, if
@@ -75,7 +75,7 @@ public interface PureSet<Elt> extends Set<Elt>
      * @throws IllegalArgumentException if some aspect of <code>elt</code> makes it
      * incompatible with the set
      */
-    PureSet<Elt> less(Elt elt);
+    FSet<Elt> less(Elt elt);
 
     /**
      * Returns the union of this set with <code>coll</code>.  That is, returns a set
@@ -88,7 +88,7 @@ public interface PureSet<Elt> extends Set<Elt>
      * @throws ClassCastException if <code>coll</code> contains elements whose class is
      * incompatible with this set or its <code>Comparator</code>
      */
-    PureSet<Elt> union(Collection<? extends Elt> coll);
+    FSet<Elt> union(Collection<? extends Elt> coll);
 
     /**
      * Returns the intersection of this set with <code>coll</code>.  That is, returns a
@@ -100,7 +100,7 @@ public interface PureSet<Elt> extends Set<Elt>
      * @throws ClassCastException if elements of this set are incompatible with
      * <code>coll</code> or its comparator, or conversely
      */
-    PureSet<Elt> intersection(Collection<? extends Elt> coll);
+    FSet<Elt> intersection(Collection<? extends Elt> coll);
 
     /**
      * Returns the difference of this set less <code>coll</code>.  That is, returns a
@@ -112,7 +112,7 @@ public interface PureSet<Elt> extends Set<Elt>
      * @throws ClassCastException if elements of this set are incompatible with
      * <code>coll</code> or its comparator, or conversely
      */
-    PureSet<Elt> difference(Collection<? extends Elt> coll);
+    FSet<Elt> difference(Collection<? extends Elt> coll);
 
     /**
      * Returns true if this set is a subset of <code>coll</code>.  That is, returns
@@ -142,7 +142,7 @@ public interface PureSet<Elt> extends Set<Elt>
 
     /* ======== Deprecated Set Methods ========
      *
-     * We mark these deprecated to remind people not to use them on a PureSet.
+     * We mark these deprecated to remind people not to use them on an FSet.
      */
 
     @Deprecated

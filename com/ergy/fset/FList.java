@@ -1,5 +1,5 @@
 /*
- * PureList.java
+ * FList.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -11,7 +11,7 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * A list (sequence) for which the update operators are all pure (functional): they
+ * A list (sequence) for which the update operators are all functional: they
  * return a new list rather than modifying the existing one.
  *
  * <p>Although this interface extends {@link List} of the Java Collections Framework,
@@ -19,13 +19,13 @@ import java.util.*;
  * as the <code>java.util</code> classes that implement <code>List</code>.  It does
  * not support the update operators declared by <code>List</code> (which are
  * documented as optional, anyway); in their place it adds several new operators
- * which are "pure", in the sense that rather than modifying the list in place, they
- * construct and return a new list.
+ * which are functional, in the sense that rather than modifying the list in place,
+ * they construct and return a new list.
  * 
  * @author Scott L. Burson.
  */
 
-public interface PureList<Elt> extends List<Elt> {
+public interface FList<Elt> extends List<Elt> {
 
     /**
      * Returns a new list which has <code>elt</code> at position <code>index</code>,
@@ -39,7 +39,7 @@ public interface PureList<Elt> extends List<Elt> {
      * @throws IndexOutOfBoundsException if <code>index < 0</code> or
      * <code>index > size()</code>
      */
-    PureList<Elt> with(int index, Elt elt);
+    FList<Elt> with(int index, Elt elt);
 
     /**
      * Returns a new list which has <code>elt</code> inserted at position
@@ -53,7 +53,7 @@ public interface PureList<Elt> extends List<Elt> {
      * @throws IndexOutOfBoundsException if <code>index < 0</code> or
      * <code>index > size()</code>
      */
-    PureList<Elt> withInserted(int index, Elt elt);
+    FList<Elt> withInserted(int index, Elt elt);
 
     /**
      * Returns a new list which has <code>elt</code> prepended to the the contents
@@ -64,7 +64,7 @@ public interface PureList<Elt> extends List<Elt> {
      * @param elt the element to be prepended
      * @return the result list
      */
-    PureList<Elt> withFirst(Elt elt);
+    FList<Elt> withFirst(Elt elt);
 
     /**
      * Returns a new list which has <code>elt</code> appended to the contents of
@@ -74,7 +74,7 @@ public interface PureList<Elt> extends List<Elt> {
      * @param elt the element to be appended
      * @return the result list
      */
-    PureList<Elt> withLast(Elt elt);
+    FList<Elt> withLast(Elt elt);
 
     /**
      * Returns a new list from which the element at position <code>index</code> has
@@ -87,7 +87,7 @@ public interface PureList<Elt> extends List<Elt> {
      * @throws IndexOutOfBoundsException if <code>index < 0</code> or
      * <code>index >= size()</code>
      */
-    PureList<Elt> less(int index);
+    FList<Elt> less(int index);
 
     /**
      * Returns the concatenation of this list with the argument list.  The size is
@@ -97,14 +97,14 @@ public interface PureList<Elt> extends List<Elt> {
      * @param list the list to be concatenated
      * @return the result list
      */
-    PureList<Elt> concat(List<? extends Elt> list);
+    FList<Elt> concat(List<? extends Elt> list);
 
     /**
      * Returns this list in reverse order.
      *
      * @return the reversed list
      */
-    PureList<Elt> reverse();
+    FList<Elt> reverse();
 
     /**
      * Returns the portion of this list between position <code>fromIndex</code>,
@@ -112,7 +112,7 @@ public interface PureList<Elt> extends List<Elt> {
      *
      * @throws IndexOutOfBoundsException
      */
-    PureList<Elt> subList(int fromIndex, int toIndex);
+    FList<Elt> subList(int fromIndex, int toIndex);
 
     /**
      * Returns the portion of this list between position <code>fromIndex</code>,
@@ -124,7 +124,7 @@ public interface PureList<Elt> extends List<Elt> {
      *
      * @throws IndexOutOfBoundsException
      */
-    PureList<Elt> subseq(int fromIndex, int toIndex);
+    FList<Elt> subseq(int fromIndex, int toIndex);
 
     /**
      * Returns a new list in which the elements of this list are sorted by their
@@ -134,7 +134,7 @@ public interface PureList<Elt> extends List<Elt> {
      *
      * @return the sorted list
      */
-    PureList<Elt> sort();
+    FList<Elt> sort();
 
     /**
      * Returns a new list in which the elements of this list are sorted according to
@@ -143,12 +143,12 @@ public interface PureList<Elt> extends List<Elt> {
      * @param comp the comparator to use for sorting
      * @return the sorted list
      */
-    PureList<Elt> sort(Comparator<? super Elt> comp);
+    FList<Elt> sort(Comparator<? super Elt> comp);
 
 
     /* ======== Deprecated List Methods ========
      *
-     * We mark these deprecated to remind people not to use them on a PureList.
+     * We mark these deprecated to remind people not to use them on an FList.
      */
 
     @Deprecated

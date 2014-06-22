@@ -1,5 +1,5 @@
 /*
- * AbstractPureMap.java
+ * AbstractFMap.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -11,7 +11,7 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * This class provides a skeletal implementation of the PureMap interface.
+ * This class provides a skeletal implementation of the FMap interface.
  * It exists to provide methods for all the mutating operations which throw
  * <code>UnsupportedOperationException</code>, and to provide a method for
  * <code>clone</code> which simply returns <code>this</code>.
@@ -19,9 +19,9 @@ import java.util.*;
  * @author Scott L. Burson
  */
 
-public abstract class AbstractPureMap<Key, Val>
+public abstract class AbstractFMap<Key, Val>
     extends AbstractMap<Key, Val>
-    implements PureMap<Key, Val>
+    implements FMap<Key, Val>
 {
 
     /**
@@ -34,7 +34,7 @@ public abstract class AbstractPureMap<Key, Val>
     /**
      * Returns this map.
      */
-    public final AbstractPureMap<Key, Val> clone() {
+    public final AbstractFMap<Key, Val> clone() {
 	return this;
     }
 

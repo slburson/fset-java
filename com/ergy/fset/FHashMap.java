@@ -1,5 +1,5 @@
 /*
- * PureHashMap.java
+ * FHashMap.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -16,8 +16,8 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- * A pure map that uses hash codes to order objects.  The name notwithstanding, it is
- * implemented as a tree, not a hash table, but its ordering function is implemented
+ * A functional map that uses hash codes to order objects.  The name notwithstanding, it
+ * is implemented as a tree, not a hash table, but its ordering function is implemented
  * by calling <code>hashCode</code>.  Thus the key objects need not implement {@link
  * Comparable}; they need not even have any superclass in common other than
  * <code>Object</code>.  In the case where distinct keys have the same hash code, the
@@ -34,26 +34,26 @@ import java.util.*;
  * <code>domain</code>, <code>keySet</code>, and <code>containsValue</code> take O(n)
  * (linear) time.  <code>toSet</code>, <code>range</code>, and <code>values</code>
  * take O(<i>n</i> log <i>n</i>) time.  <code>union</code> takes O(n) (linear) time
- * if the other map involved is also a <code>PureHashMap</code>; otherwise, it takes
+ * if the other map involved is also a <code>FHashMap</code>; otherwise, it takes
  * O(<i>n</i> log <i>n</i>) time.  <code>compareTo</code> (called, for instance, if
- * this map is an element in a containing <code>PureTreeSet</code>) takes O(n)
+ * this map is an element in a containing <code>FTreeSet</code>) takes O(n)
  * (linear) time.
  *
- * <p>Space costs: <code>PureHashMap</code> uses a heterogeneous binary tree
+ * <p>Space costs: <code>FHashMap</code> uses a heterogeneous binary tree
  * structure with bounded-length arrays at the leaves.  It uses much less space than
  * traditional homogeneous binary trees; typical space consumption is roughly twice
  * that of a pair of plain arrays.
  *
- * Operations on a <code>PureHashMap</code> repeatedly call <code>hashCode</code> on
+ * Operations on a <code>FHashMap</code> repeatedly call <code>hashCode</code> on
  * the keys in the map.  It therefore is best for performance if this takes O(1)
  * time.  For classes whose hash code may depend on the hash codes of many other
  * objects, I recommend they cache their hash code after computing it.  If such
- * caching is not practical for some reason, <code>PureCachedHashMap</code> may be a
+ * caching is not practical for some reason, <code>FCachedHashMap</code> may be a
  * better choice.
  *
- * <p><code>PureHashMap</code> accepts the null key and the null value.
+ * <p><code>FHashMap</code> accepts the null key and the null value.
  *
- * <p><code>PureHashMap</code> also provides, corresponding to each constructor, a
+ * <p><code>FHashMap</code> also provides, corresponding to each constructor, a
  * static factory method <code>withDefault</code> which, in addition to the
  * functionality of the constructor, also allows the specification of a default
  * value to be returned by the <code>get</code> method when it is called with a key
@@ -63,8 +63,8 @@ import java.util.*;
  * created like this:
  *
  * <pre>
- *     PureMap<K1, PureMap<K2, V>> map =
- *       PureHashMap.<K1, PureMap<K2, V>>withDefault(new PureHashMap<K2, V>());
+ *     FMap<K1, FMap<K2, V>> map =
+ *       FHashMap.<K1, FMap<K2, V>>withDefault(new FHashMap<K2, V>());
  * </pre>
  *
  * the chained mapping <code>key1 -> key2 -> val</code> can then be added like this:
@@ -77,9 +77,9 @@ import java.util.*;
  * <code>key1</code>.  (Of course, the outer and inner maps do not have to be of the
  * same class.)
  *
- * <p>If <code>PureHashMap</code> instances are used as elements of a
- * <code>PureTreeSet</code>, or as <i>keys</i> (not values) of a containing
- * <code>PureTreeMap</code>, the <code>PureHashMap.compareTo</code> method will be
+ * <p>If <code>FHashMap</code> instances are used as elements of a
+ * <code>FTreeSet</code>, or as <i>keys</i> (not values) of a containing
+ * <code>FTreeMap</code>, the <code>FHashMap.compareTo</code> method will be
  * called to order the maps relative to one another.  Under some circumstances, this
  * method compares not just keys, but also values.  It uses the same comparison
  * method for the values that it does for the keys: either the supplied
@@ -87,49 +87,49 @@ import java.util.*;
  * these circumstances, the user must be sure that the value objects are acceptable
  * to the <code>Comparator</code>, or that they implement <code>Comparable</code>.
  *
- * <p><code>PureHashMap</code> implements {@link java.io.Serializable}; an instance
+ * <p><code>FHashMap</code> implements {@link java.io.Serializable}; an instance
  * of it is serializable provided that all keys and values it contains, the
  * <code>Comparator</code> it uses if any, and the default value if nonnull, are
  * serializable.
  *
  * @author Scott L. Burson
- * @see PureMap
- * @see PureCachedHashMap
+ * @see FMap
+ * @see FCachedHashMap
  */
 
-public class PureHashMap<Key, Val>
-    extends AbstractPureMap<Key, Val>
-    implements Comparable<PureHashMap<Key, Val>>, Serializable
+public class FHashMap<Key, Val>
+    extends AbstractFMap<Key, Val>
+    implements Comparable<FHashMap<Key, Val>>, Serializable
 {
 
     /**
-     * Returns an empty PureHashMap.  Slightly more efficient than calling the constructor,
+     * Returns an empty FHashMap.  Slightly more efficient than calling the constructor,
      * because it returns a canonical instance.
      */
-    public static <Key, Val> PureHashMap<Key, Val> emptyMap() {
-	return (PureHashMap<Key, Val>)EMPTY_INSTANCE;
+    public static <Key, Val> FHashMap<Key, Val> emptyMap() {
+	return (FHashMap<Key, Val>)EMPTY_INSTANCE;
     }
 
     /**
-     * Constructs an empty <code>PureHashMap</code>.
+     * Constructs an empty <code>FHashMap</code>.
      */
-    public PureHashMap() {
+    public FHashMap() {
 	tree = null;
     }
 
     /**
-     * Constructs a <code>PureHashMap</code> containing the same entries as
+     * Constructs a <code>FHashMap</code> containing the same entries as
      * <code>map</code>.
      *
      * @param map the map to use the entries of
      */
-    public PureHashMap(Map<? extends Key, ? extends Val> map) {
+    public FHashMap(Map<? extends Key, ? extends Val> map) {
 	fromMap(map);
     }
 
     private void fromMap(Map<? extends Key, ? extends Val> map) {
-	if (map instanceof PureHashMap)
-	    tree = ((PureHashMap)map).tree;
+	if (map instanceof FHashMap)
+	    tree = ((FHashMap)map).tree;
 	else {
 	    Object t = null;
 	    for (Iterator it = map.entrySet().iterator(); it.hasNext(); ) {
@@ -142,14 +142,14 @@ public class PureHashMap<Key, Val>
     }
 
     /**
-     * Constructs a <code>PureTreeMap</code> mapping each element of <code>keys</code>
+     * Constructs a <code>FTreeMap</code> mapping each element of <code>keys</code>
      * to the corresponding element of <code>vals</code>.  If a key is duplicated, the
      * value it will be mapped to in the result will be the one corresponding to its
      * last occurrence.
      *
      * @throws IllegalArgumentException if keys.length != vals.length
      */
-    public PureHashMap(Key[] keys, Val[] vals) {
+    public FHashMap(Key[] keys, Val[] vals) {
 	if (keys.length != vals.length) throw new IllegalArgumentException();
 	tree = null;
 	if (keys.length != vals.length)
@@ -159,31 +159,31 @@ public class PureHashMap<Key, Val>
     }
 
     /**
-     * Constructs and returns an empty <code>PureHashMap</code> with default
+     * Constructs and returns an empty <code>FHashMap</code> with default
      * <code>dflt</code>.  The resulting map's <code>get</code> method returns
      * <code>dflt</code> when called with a key which is not in the map.
      *
      * @param dflt the default value
-     * @return the new <code>PureHashMap</code>
+     * @return the new <code>FHashMap</code>
      */
-    public static <Key, Val> PureHashMap<Key, Val> withDefault(Val dflt) {
-	PureHashMap<Key, Val> m = new PureHashMap<Key, Val>();
+    public static <Key, Val> FHashMap<Key, Val> withDefault(Val dflt) {
+	FHashMap<Key, Val> m = new FHashMap<Key, Val>();
 	m.dflt = dflt;
 	return m;
     }
 
     /**
-     * Constructs and returns a <code>PureHashMap</code> with default
+     * Constructs and returns a <code>FHashMap</code> with default
      * <code>dflt</code>, containing the same entries as <code>map</code>.  The
      * resulting map's <code>get</code> method returns <code>dflt</code> when called
      * with a key which is not in the map.
      *
      * @param map the map to use the entries of
      * @param dflt the default value
-     * @return the new <code>PureHashMap</code>
+     * @return the new <code>FHashMap</code>
      */
-    public static <Key, Val> PureHashMap<Key, Val> withDefault(Map<Key, Val> map, Val dflt) {
-	PureHashMap<Key, Val> m = new PureHashMap<Key, Val>(map);
+    public static <Key, Val> FHashMap<Key, Val> withDefault(Map<Key, Val> map, Val dflt) {
+	FHashMap<Key, Val> m = new FHashMap<Key, Val>(map);
 	m.dflt = dflt;
 	return m;
     }
@@ -233,16 +233,16 @@ public class PureHashMap<Key, Val>
 	else return (Val)val;
     }
 
-    public PureHashMap<Key, Val> with(Key key, Val value) {
+    public FHashMap<Key, Val> with(Key key, Val value) {
 	Object t = with(tree, key, hashCode(key), value);
 	if (t == tree) return this;
-	else return new PureHashMap<Key, Val>(t, dflt);
+	else return new FHashMap<Key, Val>(t, dflt);
     }
 
-    public PureHashMap<Key, Val> less(Key key) {
+    public FHashMap<Key, Val> less(Key key) {
 	Object t = less(tree, key, hashCode(key));
 	if (t == tree) return this;
-	else return new PureHashMap<Key, Val>(t, dflt);
+	else return new FHashMap<Key, Val>(t, dflt);
     }
 
     public Set<Key> keySet() {
@@ -251,7 +251,7 @@ public class PureHashMap<Key, Val>
 		return new PHMKeyIterator<Key>(tree);
 	    }
 	    public int size() {
-		return PureHashMap.this.size();
+		return FHashMap.this.size();
 	    }
 	    public boolean contains(Object key) {
 		return containsKey(key);
@@ -265,7 +265,7 @@ public class PureHashMap<Key, Val>
 		return new PHMValueIterator<Val>(tree);
 	    }
 	    public int size() {
-		return PureHashMap.this.size();
+		return FHashMap.this.size();
 	    }
 	};
     }
@@ -275,16 +275,16 @@ public class PureHashMap<Key, Val>
     public Set<Map.Entry<Key, Val>> entrySet() {
 	return new AbstractSet<Map.Entry<Key, Val>>() {
 	    public Iterator<Map.Entry<Key, Val>> iterator() {
-		return PureHashMap.this.iterator();
+		return FHashMap.this.iterator();
 	    }
 	    public int size() {
-		return PureHashMap.this.size();
+		return FHashMap.this.size();
 	    }
 	    public boolean contains(Object x) {
 		if (!(x instanceof Map.Entry)) return false;
 		else {
 		    Map.Entry<Key, Val> ent = (Map.Entry)x;
-		    return PureHashMap.this.contains(ent);
+		    return FHashMap.this.contains(ent);
 		}
 	    }
 	    public boolean remove(Object x) {
@@ -296,55 +296,55 @@ public class PureHashMap<Key, Val>
 	};
     }
 
-    public PureHashSet<Key> domain() {
+    public FHashSet<Key> domain() {
 	Object dom = domain(tree);
-	return PureHashSet.<Key>make(dom);
+	return FHashSet.<Key>make(dom);
     }
 
     /**
      * Returns the range of the map (the set of values it contains).  The returned set
-     * is a {@link PureHashSet}.
+     * is a {@link FHashSet}.
      *
      * @return the range set of this map
      */
-    public PureSet<Val> range() {
-	return (PureSet<Val>)range(tree, new PureHashSet<Val>());
+    public FSet<Val> range() {
+	return (FSet<Val>)range(tree, new FHashSet<Val>());
     }
 
-    public PureSet<Val> range(PureSet<Val> initial_set) {
+    public FSet<Val> range(FSet<Val> initial_set) {
 	// Gives us an empty set of the right class and comparator.
 	initial_set = initial_set.difference(initial_set);
-	return (PureSet<Val>)range(tree, initial_set);
+	return (FSet<Val>)range(tree, initial_set);
     }
 
-    public PureHashSet<Map.Entry<Key, Val>> toSet() {
-	return (PureHashSet<Map.Entry<Key, Val>>)toSet(new PureHashSet<Map.Entry<Key, Val>>());
+    public FHashSet<Map.Entry<Key, Val>> toSet() {
+	return (FHashSet<Map.Entry<Key, Val>>)toSet(new FHashSet<Map.Entry<Key, Val>>());
     }
 
-    public PureSet<Map.Entry<Key, Val>> toSet(PureSet<Map.Entry<Key, Val>> initial_set) {
+    public FSet<Map.Entry<Key, Val>> toSet(FSet<Map.Entry<Key, Val>> initial_set) {
 	// Gives us an empty set of the right class and comparator.
-	PureSet<Map.Entry<Key, Val>> s = initial_set.difference(initial_set);
+	FSet<Map.Entry<Key, Val>> s = initial_set.difference(initial_set);
 	for (Map.Entry<Key, Val> ent : this)
 	    s = s.with(ent);
 	return s;
     }
 
-    public PureHashMap<Key, Val> union(PureMap<? extends Key, ? extends Val> with_map) {
-	PureHashMap<Key, Val> with_phm = new PureHashMap<Key, Val>(with_map);
+    public FHashMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map) {
+	FHashMap<Key, Val> with_phm = new FHashMap<Key, Val>(with_map);
 	Object t = union(tree, with_phm.tree);
-	return new PureHashMap<Key, Val>(t, dflt);
+	return new FHashMap<Key, Val>(t, dflt);
     }
 
-    public PureHashMap<Key, Val> restrictedTo(PureSet<Key> set) {
-	PureHashSet<Key> pts = new PureHashSet<Key>(set);
+    public FHashMap<Key, Val> restrictedTo(FSet<Key> set) {
+	FHashSet<Key> pts = new FHashSet<Key>(set);
 	Object t = restrictedTo(tree, pts.tree);
-	return new PureHashMap(t, dflt);
+	return new FHashMap(t, dflt);
     }
 
-    public PureHashMap<Key, Val> restrictedFrom(PureSet<Key> set) {
-	PureHashSet<Key> pts = new PureHashSet<Key>(set);
+    public FHashMap<Key, Val> restrictedFrom(FSet<Key> set) {
+	FHashSet<Key> pts = new FHashSet<Key>(set);
 	Object t = restrictedFrom(tree, pts.tree);
-	return new PureHashMap(t, dflt);
+	return new FHashMap(t, dflt);
     }
 
     public Val getDefault() {
@@ -356,17 +356,17 @@ public class PureHashMap<Key, Val>
     }
 
     // &&& Better to implement 'Comparable<Map<Key, Val>>' ?
-    public int compareTo(PureHashMap<Key, Val> other) {
+    public int compareTo(FHashMap<Key, Val> other) {
 	return compareTo(tree, other.tree);
     }
 
     public boolean equals(Object obj) {
 	if (obj == this) return true;
-	else if (obj instanceof PureHashMap) {
-	    PureHashMap phm = (PureHashMap)obj;
+	else if (obj instanceof FHashMap) {
+	    FHashMap phm = (FHashMap)obj;
 	    return equals(tree, phm.tree);
-	} else if (obj instanceof PureLinkedHashMap) {
-	    PureLinkedHashMap plhm = (PureLinkedHashMap)obj;
+	} else if (obj instanceof FLinkedHashMap) {
+	    FLinkedHashMap plhm = (FLinkedHashMap)obj;
 	    return equals(tree, plhm.map_tree);
 	} else if (!(obj instanceof Map)) return false;
 	else {
@@ -401,7 +401,7 @@ public class PureHashMap<Key, Val>
     // This cuts space requirements roughly in half without costing much (if any) time.
 
     // The empty map can be a singleton.
-    private static final PureHashMap EMPTY_INSTANCE = new PureHashMap();
+    private static final FHashMap EMPTY_INSTANCE = new FHashMap();
 
     /* Instance variables */
 
@@ -423,7 +423,7 @@ public class PureHashMap<Key, Val>
     /* To represent negative and positive infinity, we use the smallest and largest
      * available integers.  We arrange to make sure `hashCode(Object)' never returns
      * them.  (For the benefit of `restricted{to,from}', these must be the same values
-     * `PureHashSet' uses.)
+     * `FHashSet' uses.)
      */
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
@@ -502,7 +502,7 @@ public class PureHashMap<Key, Val>
 	else return 1;
     }
 
-    private PureHashMap(Object _tree, Val _dflt) {
+    private FHashMap(Object _tree, Val _dflt) {
 	tree = _tree;
 	dflt = _dflt;
     }
@@ -685,26 +685,26 @@ public class PureHashMap<Key, Val>
 		ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
 		ArrayList<Object> dom = new ArrayList<Object>(al.size());
 		for (int i = 0; i < al.size(); ++i) dom.add(al.get(i).key);
-		return PureHashSet.makeNode(new PureHashSet.EquivalentSet(dom), ldom, rdom);
-	    } else return PureHashSet.makeNode(node.key, ldom, rdom);
+		return FHashSet.makeNode(new FHashSet.EquivalentSet(dom), ldom, rdom);
+	    } else return FHashSet.makeNode(node.key, ldom, rdom);
 	}
     }
 
-    /*package*/ static <Val> PureSet<Object> range(Object subtree, PureSet<Val> initial) {
-	if (subtree == null) return (PureSet<Object>)initial;
+    /*package*/ static <Val> FSet<Object> range(Object subtree, FSet<Val> initial) {
+	if (subtree == null) return (FSet<Object>)initial;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    int nkeys = ary.length >> 1;
 	    for (int i = 0; i < nkeys; ++i)
 		initial = initial.with((Val)ary[nkeys + i]);
-	    return (PureSet<Object>)initial;
+	    return (FSet<Object>)initial;
 	} else {
 	    Node node = (Node)subtree;
 	    if (node.key instanceof EquivalentMap) {
 		ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
 		for (int i = 0; i < al.size(); ++i)
 		    initial = initial.with((Val)al.get(i).value);
-		return (PureSet<Object>)initial;
+		return (FSet<Object>)initial;
 	    } else return (range(node.left, initial).with(node.value)
 			   .union(range(node.right, initial)));
 	}
@@ -778,14 +778,14 @@ public class PureHashMap<Key, Val>
 	else if (set_subtree == null) return null;
 	else if (!(map_subtree instanceof Node)) {
 	    Object[] map_ary = (Object[])map_subtree;
-	    if (!(set_subtree instanceof PureHashSet.Node))
+	    if (!(set_subtree instanceof FHashSet.Node))
 		return restrictedTo2(map_ary, (Object[])set_subtree, lo, hi);
 	    else {
-		PureHashSet.Node set_node = (PureHashSet.Node)set_subtree;
+		FHashSet.Node set_node = (FHashSet.Node)set_subtree;
 		Object raw_elt = set_node.element;
 		Object set_elt;
-		if (raw_elt instanceof PureHashSet.EquivalentSet)
-		    set_elt = ((PureHashSet.EquivalentSet)raw_elt).contents.get(0);
+		if (raw_elt instanceof FHashSet.EquivalentSet)
+		    set_elt = ((FHashSet.EquivalentSet)raw_elt).contents.get(0);
 		else set_elt = raw_elt;
 		int se_hash = hashCode(set_elt);
 		Object new_left = restrictedTo(trim(map_subtree, lo, se_hash),
@@ -812,13 +812,13 @@ public class PureHashMap<Key, Val>
 	    else map_key = raw_key;
 	    int mk_hash = hashCode(map_key);
 	    Object new_left = restrictedTo(map_node.left,
-					   PureHashSet.trim(set_subtree, lo, mk_hash),
+					   FHashSet.trim(set_subtree, lo, mk_hash),
 					   lo, mk_hash);
 	    Object new_right = restrictedTo(map_node.right,
-					    PureHashSet.trim(set_subtree, mk_hash, hi),
+					    FHashSet.trim(set_subtree, mk_hash, hi),
 					    mk_hash, hi);
-	    Object set_elt = PureHashSet.findEquiv(set_subtree, mk_hash);
-	    if (set_elt == PureHashSet.NO_ELEMENT) return join(new_left, new_right);
+	    Object set_elt = FHashSet.findEquiv(set_subtree, mk_hash);
+	    if (set_elt == FHashSet.NO_ELEMENT) return join(new_left, new_right);
 	    else {
 		Object k = equivRestrictedTo(raw_key, map_node.value, set_elt);
 		if (k == null) return join(new_left, new_right);
@@ -843,21 +843,21 @@ public class PureHashMap<Key, Val>
 	else if (set_subtree == null) return split(map_subtree, lo, hi);
 	else if (!(map_subtree instanceof Node)) {
 	    Object[] map_ary = (Object[])map_subtree;
-	    if (!(set_subtree instanceof PureHashSet.Node))
+	    if (!(set_subtree instanceof FHashSet.Node))
 		return restrictedFrom2(map_ary, (Object[])set_subtree, lo, hi);
 	    else {
-		PureHashSet.Node set_node = (PureHashSet.Node)set_subtree;
+		FHashSet.Node set_node = (FHashSet.Node)set_subtree;
 		Object raw_elt = set_node.element;
 		Object set_elt;
-		if (raw_elt instanceof PureHashSet.EquivalentSet)
-		    set_elt = ((PureHashSet.EquivalentSet)raw_elt).contents.get(0);
+		if (raw_elt instanceof FHashSet.EquivalentSet)
+		    set_elt = ((FHashSet.EquivalentSet)raw_elt).contents.get(0);
 		else set_elt = raw_elt;
 		int se_hash = hashCode(set_elt);
 		Object new_left = restrictedFrom(trim(map_subtree, lo, se_hash),
-						 PureHashSet.trim(set_node.left, lo, se_hash),
+						 FHashSet.trim(set_node.left, lo, se_hash),
 						 lo, se_hash);
 		Object new_right = restrictedFrom(trim(map_subtree, se_hash, hi),
-						  PureHashSet.trim(set_node.right, se_hash, hi),
+						  FHashSet.trim(set_node.right, se_hash, hi),
 						  se_hash, hi);
 		Entry entry = findEquiv(map_subtree, se_hash);
 		if (entry == null) return join(new_left, new_right);
@@ -879,13 +879,13 @@ public class PureHashMap<Key, Val>
 	    else map_key = raw_key;
 	    int mk_hash = hashCode(map_key);
 	    Object new_left = restrictedFrom(map_node.left,
-					     PureHashSet.trim(set_subtree, lo, mk_hash),
+					     FHashSet.trim(set_subtree, lo, mk_hash),
 					     lo, mk_hash);
 	    Object new_right = restrictedFrom(map_node.right,
-					      PureHashSet.trim(set_subtree, mk_hash, hi),
+					      FHashSet.trim(set_subtree, mk_hash, hi),
 					      mk_hash, hi);
-	    Object set_elt = PureHashSet.findEquiv(set_subtree, mk_hash);
-	    if (set_elt == PureHashSet.NO_ELEMENT)
+	    Object set_elt = FHashSet.findEquiv(set_subtree, mk_hash);
+	    if (set_elt == FHashSet.NO_ELEMENT)
 		return concat(raw_key, mk_hash, map_node.value, new_left, new_right);
 	    else {
 		Object k = equivRestrictedFrom(raw_key, map_node.value, set_elt);
@@ -1432,8 +1432,8 @@ public class PureHashMap<Key, Val>
 					    Object set_elt) {
 	if (map_key instanceof EquivalentMap) {
 	    ArrayList<Entry> map_al = ((EquivalentMap)map_key).contents;
-	    if (set_elt instanceof PureHashSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureHashSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FHashSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FHashSet.EquivalentSet)set_elt).contents;
 		ArrayList<Entry> al = new ArrayList<Entry>();
 		for (int i = 0, siz = map_al.size(); i < siz; ++i) {
 		    Entry e = (Entry)map_al.get(i);
@@ -1453,8 +1453,8 @@ public class PureHashMap<Key, Val>
 		return null;
 	    }
 	} else {
-	    if (set_elt instanceof PureHashSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureHashSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FHashSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FHashSet.EquivalentSet)set_elt).contents;
 		if (set_al.contains(map_key))
 		    return new Entry(map_key, map_val);
 		else return null;
@@ -1470,8 +1470,8 @@ public class PureHashMap<Key, Val>
 	if (map_key instanceof EquivalentMap) {
 	    ArrayList<Entry> map_al = ((EquivalentMap)map_key).contents;
 	    ArrayList<Entry> al = new ArrayList<Entry>();
-	    if (set_elt instanceof PureHashSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureHashSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FHashSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FHashSet.EquivalentSet)set_elt).contents;
 		for (int i = 0, siz = map_al.size(); i < siz; ++i) {
 		    Entry e = (Entry)map_al.get(i);
 		    if (!set_al.contains(e.key)) al.add(e);
@@ -1489,8 +1489,8 @@ public class PureHashMap<Key, Val>
 		return new EquivalentMap(al);
 	    }
 	} else {
-	    if (set_elt instanceof PureHashSet.EquivalentSet) {
-		ArrayList<Object> set_al = ((PureHashSet.EquivalentSet)set_elt).contents;
+	    if (set_elt instanceof FHashSet.EquivalentSet) {
+		ArrayList<Object> set_al = ((FHashSet.EquivalentSet)set_elt).contents;
 		if (!set_al.contains(map_key))
 		    return new Entry(map_key, map_val);
 		else return null;
@@ -1527,8 +1527,8 @@ public class PureHashMap<Key, Val>
 		if (siz1 < siz2) return 1;
 		else if (siz1 > siz2) return -1;
 		else {
-		    PureHashSet<Object> vals1 = new PureHashSet<Object>();
-		    PureHashSet<Object> vals2 = new PureHashSet<Object>();
+		    FHashSet<Object> vals1 = new FHashSet<Object>();
+		    FHashSet<Object> vals2 = new FHashSet<Object>();
 		    for (int i = 0; i < siz1; ++i)
 			vals1 = vals1.with(((Entry)al1.get(i)).value);
 		    for (int i = 0; i < siz2; ++i)
@@ -2011,7 +2011,7 @@ public class PureHashMap<Key, Val>
     }
 
     /**
-     * Saves the state of this <code>PureHashMap</code> to a stream.
+     * Saves the state of this <code>FHashMap</code> to a stream.
      *
      * @serialData Emits the internal data of the map, including the default it uses;
      * the size of the map [<code>int</code>]; and the key/value pairs in key order
@@ -2028,7 +2028,7 @@ public class PureHashMap<Key, Val>
     }
 
     /**
-     * Reconstitutes the <code>PureHashMap</code> instance from a stream.
+     * Reconstitutes the <code>FHashMap</code> instance from a stream.
      */
     private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
 	strm.defaultReadObject();	// reads `comp' and `dflt'

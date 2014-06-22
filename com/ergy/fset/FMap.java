@@ -1,5 +1,5 @@
 /*
- * PureMap.java
+ * FMap.java
  *
  * Copyright (c) 2013, 2014 Scott L. Burson.
  *
@@ -11,7 +11,7 @@ package com.ergy.fset;
 import java.util.*;
 
 /**
- * A map for which the update operators are all pure (functional): they return a
+ * A map for which the update operators are all functional: they return a
  * new map rather than modifying the existing one.
  *
  * <p>Although this interface extends {@link Map} of the Java Collections Framework,
@@ -19,10 +19,10 @@ import java.util.*;
  * as the <code>java.util</code> classes that implement <code>Map</code>.  It does
  * not support the update operators declared by <code>Map</code> (which are
  * documented as optional, anyway); in their place it adds several new operators
- * which are "pure", in the sense that rather than modifying the map in place, they
- * construct and return a new map.
+ * which are functional, in the sense that rather than modifying the map in place,
+ * they construct and return a new map.
  *
- * <p>Classes implementing <code>PureMap</code> may also provide, corresponding to
+ * <p>Classes implementing <code>FMap</code> may also provide, corresponding to
  * each constructor, a static factory method <code>withDefault</code> which, in
  * addition to the functionality of the constructor, also allows the specification
  * of a default value to be returned by the <code>get</code> method when it is
@@ -32,8 +32,8 @@ import java.util.*;
  * example, if the outer map is created like this:
  *
  * <pre>
- *     PureMap<K1, PureMap<K2, V>> map =
- *         PureTreeMap.<K1, PureMap<K2, V>>withDefault(new PureTreeMap<K2, V>());
+ *     FMap<K1, FMap<K2, V>> map =
+ *         FTreeMap.<K1, FMap<K2, V>>withDefault(new FTreeMap<K2, V>());
  * </pre>
  *
  * the chained mapping <code>key1 -> key2 -> val</code> can then be added like this:
@@ -48,7 +48,7 @@ import java.util.*;
  * @author Scott L. Burson.
  */
 
-public interface PureMap<Key, Val>
+public interface FMap<Key, Val>
     extends Map<Key, Val>, Iterable<Map.Entry<Key, Val>>
 {
 
@@ -89,7 +89,7 @@ public interface PureMap<Key, Val>
      * @throws IllegalArgumentException if some aspect of the specified key or value
      * makes it incompatible with the map
      */
-    PureMap<Key, Val> with(Key key, Val value);
+    FMap<Key, Val> with(Key key, Val value);
 
     /**
      * Returns a new map which contains no mapping for <code>key</code>, and which
@@ -110,16 +110,16 @@ public interface PureMap<Key, Val>
      * @throws IllegalArgumentException if some aspect of the specified key or value
      * makes it incompatible with the map
      */
-    PureMap<Key, Val> less(Key key);
+    FMap<Key, Val> less(Key key);
 
     /**
      * Returns the domain of this map (the set of keys it contains).  Similar to
-     * <code>keySet</code>, but returns a <code>PureSet</code> with the same ordering
+     * <code>keySet</code>, but returns a <code>FSet</code> with the same ordering
      * as this map.
      *
      * @return the domain set of this map
      */
-    PureSet<Key> domain();
+    FSet<Key> domain();
 
     /**
      * Returns the range of the map (the set of values it contains).  Similar to
@@ -131,7 +131,7 @@ public interface PureMap<Key, Val>
      *
      * @return the range set of this map
      */
-    PureSet<Val> range();
+    FSet<Val> range();
 
     /**
      * Returns the range of the map (the set of values it contains).  This version
@@ -143,7 +143,7 @@ public interface PureMap<Key, Val>
      * result
      * @return the range set of this map
      */
-    PureSet<Val> range(PureSet<Val> initialSet);
+    FSet<Val> range(FSet<Val> initialSet);
 
     /**
      * Returns the map as a set of pairs, each pair being a <code>Map.Entry</code>.
@@ -151,7 +151,7 @@ public interface PureMap<Key, Val>
      *
      * @return the set of entries this map contains
      */
-    PureSet<Map.Entry<Key, Val>> toSet();
+    FSet<Map.Entry<Key, Val>> toSet();
 
     /**
      * Returns the map as a set of pairs, each pair being a <code>Map.Entry</code>.
@@ -164,7 +164,7 @@ public interface PureMap<Key, Val>
      * result
      * @return the set of entries this map contains
      */
-    PureSet<Map.Entry<Key, Val>> toSet(PureSet<Map.Entry<Key, Val>> initialSet);
+    FSet<Map.Entry<Key, Val>> toSet(FSet<Map.Entry<Key, Val>> initialSet);
 
     /**
      * Adds the pairs of <code>withMap</code> to this map, returning the result.
@@ -179,7 +179,7 @@ public interface PureMap<Key, Val>
      * @param withMap the map to merge with
      * @return the result of the merge
      */
-    PureMap<Key, Val> union(PureMap<? extends Key, ? extends Val> withMap);
+    FMap<Key, Val> union(FMap<? extends Key, ? extends Val> withMap);
 
     /**
      * Returns a new map whose domain is the intersection of the domain of this
@@ -193,7 +193,7 @@ public interface PureMap<Key, Val>
      * @param set the set of keys to appear in the result
      * @return the restricted map
      */
-    PureMap<Key, Val> restrictedTo(PureSet<Key> set);
+    FMap<Key, Val> restrictedTo(FSet<Key> set);
 
     /**
      * Returns a new map whose domain is the difference of the domain of this map
@@ -207,7 +207,7 @@ public interface PureMap<Key, Val>
      * @param set the set of keys to appear in the result
      * @return the restricted map
      */
-    PureMap<Key, Val> restrictedFrom(PureSet<Key> set);
+    FMap<Key, Val> restrictedFrom(FSet<Key> set);
 
     /**
      * Returns the default value for the map.
@@ -226,7 +226,7 @@ public interface PureMap<Key, Val>
      *
      * <p>{@link Map} does not declare an <code>iterator</code> method.  Rather, it
      * requires clients to call <code>entrySet</code>, then call
-     * <code>iterator</code> on the result.  We encourage <code>PureMap</code>
+     * <code>iterator</code> on the result.  We encourage <code>FMap</code>
      * clients to call <code>iterator</code> directly on the map, though both
      * protocols are supported.
      *
@@ -237,7 +237,7 @@ public interface PureMap<Key, Val>
 
     /* ======== Deprecated Map Methods ========
      *
-     * We mark these deprecated to remind people not to use them on a PureMap.
+     * We mark these deprecated to remind people not to use them on an FMap.
      */
 
     @Deprecated
