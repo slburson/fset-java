@@ -18,21 +18,21 @@ public class TestSuite {
 	    /* Some basic tests to see if anything is working at all */
 	    int[] test0 = { 130, 115, 90, 1025, 330, 475, 190, 515, 290, 1770, 1505, 25,
 			    180, 115, 325, 660, 1920, 1440, 960, 1280 };
-	    PureTreeSet<MyInteger> set0 = new PureTreeSet<MyInteger>(conv(test0));
+	    FTreeSet<MyInteger> set0 = new FTreeSet<MyInteger>(conv(test0));
 	    println(set0.dump());
 	    println(set0);
 	    int[] test1 = { 215, 775, 180, 625, 1960, 25, 525, 415, 325, 705, 800, 360,
 			    485, 270, 1025, 890, 830, 715, 665, 305, 240, 695, 215 };
-	    PureTreeSet<MyInteger> set1 = new PureTreeSet<MyInteger>(conv(test1));
+	    FTreeSet<MyInteger> set1 = new FTreeSet<MyInteger>(conv(test1));
 	    println(set1.dump());
 	    println(set1);
-	    PureTreeSet<MyInteger> set0u1 = set0.union(set1);
+	    FTreeSet<MyInteger> set0u1 = set0.union(set1);
 	    println(set0u1.dump());
 	    println(set0u1);
-	    PureTreeSet<MyInteger> set0i1 = set0.intersection(set1);
+	    FTreeSet<MyInteger> set0i1 = set0.intersection(set1);
 	    println(set0i1.dump());
 	    println(set0i1);
-	    PureTreeSet<MyInteger> set0d1 = set0.difference(set1);
+	    FTreeSet<MyInteger> set0d1 = set0.difference(set1);
 	    println(set0d1.dump());
 	    println(set0d1);
 	}
@@ -44,39 +44,39 @@ public class TestSuite {
 	// For now, use a fixed seed for repeatability.
 	Random rand = new Random(0xdeadbeefcafeL);
 	for (int i = 0; i < n_iterations; ++i) {
-	    PureTreeSet<MyInteger> pts = testPureTreeSet(rand, i);
-	    PureHashSet<MyInteger> phs = testPureHashSet(rand, i);
-	    //PureSet pchs = testPureCachedHashSet(rand, i);
-	    testPureTreeMap(rand, i, pts);
-	    testPureHashMap(rand, i, phs);
-	    //testPureCachedHashMap(rand, i, pchs);
-	    testPureTreeList(rand, i);
+	    FTreeSet<MyInteger> pts = testFTreeSet(rand, i);
+	    FHashSet<MyInteger> phs = testFHashSet(rand, i);
+	    //FSet pchs = testFCachedHashSet(rand, i);
+	    testFTreeMap(rand, i, pts);
+	    testFHashMap(rand, i, phs);
+	    //testFCachedHashMap(rand, i, pchs);
+	    testFTreeList(rand, i);
 	}
 	println("All tests passed.");
     }
 
-    static PureTreeSet<MyInteger> testPureTreeSet(Random rand, int i) {
-	PureTreeSet<MyInteger> pts0 = new PureTreeSet<MyInteger>(TestComparator.Instance);
+    static FTreeSet<MyInteger> testFTreeSet(Random rand, int i) {
+	FTreeSet<MyInteger> pts0 = new FTreeSet<MyInteger>(TestComparator.Instance);
 	TreeSet<MyInteger> ts0 = new TreeSet<MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = new MyInteger(r);
-	    PureTreeSet<MyInteger> tmp = pts0.with(R);
+	    FTreeSet<MyInteger> tmp = pts0.with(R);
 	    ts0.add(R);
 	    if (!tmp.verify()) {
-		println("PureTreeSet Verification failure on iteration " + i);
+		println("FTreeSet Verification failure on iteration " + i);
 		println(pts0.dump());
 		println("Adding " + R);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.size() != ts0.size()) {
-		println("PureTreeSet size failed on iteration " + i);
+		println("FTreeSet size failed on iteration " + i);
 		exit();
 	    }
 	    if (!pts0.isSubset(tmp) || !tmp.isSuperset(pts0) ||
 		(!pts0.contains(R) && (tmp.isSubset(pts0) || pts0.isSuperset(tmp)))) {
-		println("PureTreeSet is{Sub,Super}set failed on iteration " + i);
+		println("FTreeSet is{Sub,Super}set failed on iteration " + i);
 		println(pts0.isSubset(tmp) + ", " + tmp.isSuperset(pts0) + ", " +
 			pts0.contains(R) + ", " + tmp.isSubset(pts0) + ", " +
 			pts0.isSuperset(tmp));
@@ -84,27 +84,27 @@ public class TestSuite {
 	    }
 	    pts0 = tmp;
 	}
-	PureTreeSet<MyInteger> pts1 = new PureTreeSet<MyInteger>(TestComparator.Instance);
+	FTreeSet<MyInteger> pts1 = new FTreeSet<MyInteger>(TestComparator.Instance);
 	TreeSet<MyInteger> ts1 = new TreeSet<MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = new MyInteger(r);
-	    PureTreeSet<MyInteger> tmp = pts1.with(R);
+	    FTreeSet<MyInteger> tmp = pts1.with(R);
 	    ts1.add(R);
 	    if (!tmp.verify()) {
-		println("PureTreeSet Verification failure on iteration " + i);
+		println("FTreeSet Verification failure on iteration " + i);
 		println(pts1.dump());
 		println("Adding " + R);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.size() != ts1.size()) {
-		println("PureTreeSet size failed on iteration " + i);
+		println("FTreeSet size failed on iteration " + i);
 		exit();
 	    }
 	    if (!pts1.isSubset(tmp) || !tmp.isSuperset(pts1) ||
 		(!pts1.contains(R) && (tmp.isSubset(pts1) || pts1.isSuperset(tmp)))) {
-		println("PureTreeSet is{Sub,Super}set failed on iteration " + i);
+		println("FTreeSet is{Sub,Super}set failed on iteration " + i);
 		println(pts1.isSubset(tmp) + ", " + tmp.isSuperset(pts1) + ", " +
 			pts1.contains(R) + ", " + tmp.isSubset(pts1) + ", " +
 			pts1.isSuperset(tmp));
@@ -116,20 +116,20 @@ public class TestSuite {
 	    int r = rand.nextInt(200);
 	    MyInteger R = new MyInteger(r);
 	    if (pts0.contains(R) != ts0.contains(R)) {
-		println("PureTreeSet contains failed (pts0) on iteration " + i);
+		println("FTreeSet contains failed (pts0) on iteration " + i);
 		exit();
 	    }
-	    PureTreeSet<MyInteger> tmp = pts0.less(R);
+	    FTreeSet<MyInteger> tmp = pts0.less(R);
 	    ts0.remove(R);
 	    if (!tmp.verify()) {
-		println("PureTreeSet Verification failure on iteration " + i);
+		println("FTreeSet Verification failure on iteration " + i);
 		println(pts0.dump());
 		println("Removing " + R);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.size() != ts0.size()) {
-		println("PureTreeSet size failed on iteration " + i);
+		println("FTreeSet size failed on iteration " + i);
 		exit();
 	    }
 	    pts0 = tmp;
@@ -138,28 +138,28 @@ public class TestSuite {
 	    int r = rand.nextInt(200);
 	    MyInteger R = new MyInteger(r);
 	    if (pts1.contains(R) != ts1.contains(R)) {
-		println("PureTreeSet contains failed (pts1) on iteration " + i);
+		println("FTreeSet contains failed (pts1) on iteration " + i);
 		exit();
 	    }
-	    PureTreeSet<MyInteger> tmp = pts1.less(R);
+	    FTreeSet<MyInteger> tmp = pts1.less(R);
 	    ts1.remove(R);
 	    if (!tmp.verify()) {
-		println("PureTreeSet Verification failure on iteration " + i);
+		println("FTreeSet Verification failure on iteration " + i);
 		println(pts1.dump());
 		println("Removing " + R);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.size() != ts1.size()) {
-		println("PureTreeSet size failed on iteration " + i);
+		println("FTreeSet size failed on iteration " + i);
 		exit();
 	    }
 	    pts1 = tmp;
 	}
 	if (i == 0) {
-	    PureTreeSet<MyInteger> tmp = pts0.with(null);
+	    FTreeSet<MyInteger> tmp = pts0.with(null);
 	    if (!tmp.verify() || !tmp.contains(null) || tmp.first() != null) {
-		println("PureTreeSet Verification failure on iteration " + i);
+		println("FTreeSet Verification failure on iteration " + i);
 		println(pts0.dump());
 		println("Adding null");
 		println(tmp.dump());
@@ -167,7 +167,7 @@ public class TestSuite {
 	    }
 	    tmp = tmp.less(null);
 	    if (!tmp.verify() || tmp.contains(null)) {
-		println("PureTreeSet Verification failure on iteration " + i);
+		println("FTreeSet Verification failure on iteration " + i);
 		println(pts0.dump());
 		println("Removing null");
 		println(tmp.dump());
@@ -175,77 +175,77 @@ public class TestSuite {
 	    }
 	}		
 	if (pts0.hashCode() != ts0.hashCode()) {
-	    println("PureTreeSet hashCode failed on pts0 on iteration " + i);
+	    println("FTreeSet hashCode failed on pts0 on iteration " + i);
 	    println(pts0);
 	    println(ts0);
 	    exit();
 	}
 	if (pts1.hashCode() != ts1.hashCode()) {
-	    println("PureTreeSet hashCode failed on pts1 on iteration " + i);
+	    println("FTreeSet hashCode failed on pts1 on iteration " + i);
 	    exit();
 	}
 	if (!pts0.equals(ts0)) {
-	    println("PureTreeSet Equality failed (pts0, A) on iteration " + i);
+	    println("FTreeSet Equality failed (pts0, A) on iteration " + i);
 	    exit();
 	}
-	if (!pts0.equals(new PureTreeSet<MyInteger>(ts0))) {
-	    println("PureTreeSet Equality failed (pts0, B) on iteration " + i);
+	if (!pts0.equals(new FTreeSet<MyInteger>(ts0))) {
+	    println("FTreeSet Equality failed (pts0, B) on iteration " + i);
 	    exit();
 	}
-	if (!pts0.equals(new PureTreeSet<MyInteger>(ts0, TestComparator.Instance))) {
-	    println("PureTreeSet Equality failed (pts0, C) on iteration " + i);
+	if (!pts0.equals(new FTreeSet<MyInteger>(ts0, TestComparator.Instance))) {
+	    println("FTreeSet Equality failed (pts0, C) on iteration " + i);
 	    println(pts0);
-	    PureTreeSet<MyInteger> npts0 = new PureTreeSet<MyInteger>(ts0, TestComparator.Instance);
+	    FTreeSet<MyInteger> npts0 = new FTreeSet<MyInteger>(ts0, TestComparator.Instance);
 	    println(npts0);
 	    println(npts0.dump());
 	    exit();
 	}
-	if (!pts0.equals(new PureTreeSet<MyInteger>(new ArrayList<MyInteger>(ts0)))) {
-	    println("PureTreeSet construction from ArrayList failed (pts0) on iteration "
+	if (!pts0.equals(new FTreeSet<MyInteger>(new ArrayList<MyInteger>(ts0)))) {
+	    println("FTreeSet construction from ArrayList failed (pts0) on iteration "
 		    + i);
 	    exit();
 	}
-	if (!pts0.equals(new PureTreeSet<MyInteger>(ts0.toArray(new MyInteger[0])))) {
-	    println("PureTreeSet construction from array failed (pts0) on iteration "
+	if (!pts0.equals(new FTreeSet<MyInteger>(ts0.toArray(new MyInteger[0])))) {
+	    println("FTreeSet construction from array failed (pts0) on iteration "
 		    + i);
 	    exit();
 	}
 	if (!pts1.equals(ts1)) {
-	    println("PureTreeSet Equality failed (pts1, A) on iteration " + i);
+	    println("FTreeSet Equality failed (pts1, A) on iteration " + i);
 	    exit();
 	}
 	// Next line also tests constructor from `MyInteger[]'
-	if (!pts1.equals(new PureTreeSet<MyInteger>(ts1.toArray(new MyInteger[0])))) {
-	    println("PureTreeSet Equality failed (pts1, B) on iteration " + i);
+	if (!pts1.equals(new FTreeSet<MyInteger>(ts1.toArray(new MyInteger[0])))) {
+	    println("FTreeSet Equality failed (pts1, B) on iteration " + i);
 	    exit();
 	}
 	// Next line also tests constructor from `MyInteger[]'
-	if (!pts1.equals(new PureTreeSet<MyInteger>(ts1.toArray(new MyInteger[0]),
+	if (!pts1.equals(new FTreeSet<MyInteger>(ts1.toArray(new MyInteger[0]),
 						    TestComparator.Instance))) {
-	    println("PureTreeSet Equality failed (pts1, C) on iteration " + i);
+	    println("FTreeSet Equality failed (pts1, C) on iteration " + i);
 	    exit();
 	}
 	if (pts0.first().intValue() / 2 != ts0.first().intValue() / 2) {
-	    println("PureTreeSet `first' failed (pts0) on iteration " + i);
+	    println("FTreeSet `first' failed (pts0) on iteration " + i);
 	    exit();
 	}
 	if (pts1.first().intValue() / 2 != ts1.first().intValue() / 2) {
-	    println("PureTreeSet `first' failed (pts1) on iteration " + i);
+	    println("FTreeSet `first' failed (pts1) on iteration " + i);
 	    exit();
 	}
 	if (pts0.last().intValue() / 2 != ts0.last().intValue() / 2) {
-	    println("PureTreeSet `last' failed (pts0) on iteration " + i);
+	    println("FTreeSet `last' failed (pts0) on iteration " + i);
 	    exit();
 	}
 	if (pts1.last().intValue() / 2 != ts1.last().intValue() / 2) {
-	    println("PureTreeSet `last' failed (pts1) on iteration " + i);
+	    println("FTreeSet `last' failed (pts1) on iteration " + i);
 	    exit();
 	}
-	PureTreeSet<MyInteger> ptsu = pts0.union(pts1);
+	FTreeSet<MyInteger> ptsu = pts0.union(pts1);
 	TreeSet<MyInteger> tsu = (TreeSet<MyInteger>)ts0.clone();
 	tsu.addAll(ts1);
-	if (!((PureTreeSet<MyInteger>)ptsu).verify() || !ptsu.equals(tsu)) {
-	    println("PureTreeSet Union failed on iteration " + i);
+	if (!((FTreeSet<MyInteger>)ptsu).verify() || !ptsu.equals(tsu)) {
+	    println("FTreeSet Union failed on iteration " + i);
 	    println(pts0);
 	    println(pts1);
 	    if (!ptsu.verify())
@@ -255,14 +255,14 @@ public class TestSuite {
 	    println(tsu);
 	    exit();
 	}
-	if (!ptsu.equals(new PureTreeSet<MyInteger>(tsu))) {
-	    println("PureTreeSet Equality failed (ptsu) on iteration " + i);
+	if (!ptsu.equals(new FTreeSet<MyInteger>(tsu))) {
+	    println("FTreeSet Equality failed (ptsu) on iteration " + i);
 	}
-	PureTreeSet<MyInteger> ptsi = pts0.intersection(pts1);
+	FTreeSet<MyInteger> ptsi = pts0.intersection(pts1);
 	TreeSet<MyInteger> tsi = (TreeSet<MyInteger>)ts0.clone();
 	tsi.retainAll(ts1);
 	if (!ptsi.verify() || !ptsi.equals(tsi)) {
-	    println("PureTreeSet Intersection failed on iteration " + i);
+	    println("FTreeSet Intersection failed on iteration " + i);
 	    println(pts0);
 	    println(pts1);
 	    if (!ptsi.verify())
@@ -273,36 +273,36 @@ public class TestSuite {
 	    exit();
 	}
 	if (!ptsi.isSubset(pts0) || !ptsi.isSubset(pts1)) {
-	    println("PureTreeSet isSubset failed on iteration " + i);
+	    println("FTreeSet isSubset failed on iteration " + i);
 	    exit();
 	}
-	if (!ptsi.equals(new PureTreeSet<MyInteger>(tsi))) {
-	    println("PureTreeSet Equality failed (ptsi) on iteration " + i);
+	if (!ptsi.equals(new FTreeSet<MyInteger>(tsi))) {
+	    println("FTreeSet Equality failed (ptsi) on iteration " + i);
 	}
-	PureTreeSet<MyInteger> ptsd = pts0.difference(pts1);
+	FTreeSet<MyInteger> ptsd = pts0.difference(pts1);
 	TreeSet<MyInteger> tsd = (TreeSet<MyInteger>)ts0.clone();
 	tsd.removeAll(ts1);
 	if (!ptsd.verify() || !ptsd.equals(tsd)) {
-	    println("PureTreeSet Difference failed on iteration " + i);
+	    println("FTreeSet Difference failed on iteration " + i);
 	    println(pts0);
 	    println(pts0.dump());
 	    println(pts1);
 	    println(pts1.dump());
-	    //if (!((PureTreeSet)ptsd).verify())
+	    //if (!((FTreeSet)ptsd).verify())
 	    println(ptsd.size() + ", " + tsd.size());
 	    println(ptsd);
 	    println(ptsd.dump());
 	    println(tsd);
 	    exit();
 	}
-	if (!ptsd.equals(new PureTreeSet<MyInteger>(tsd))) {
-	    println("PureTreeSet Equality failed (ptsd) on iteration " + i);
+	if (!ptsd.equals(new FTreeSet<MyInteger>(tsd))) {
+	    println("FTreeSet Equality failed (ptsd) on iteration " + i);
 	}
-	PureTreeSet<MyInteger> npts0 = new PureTreeSet<MyInteger>(pts0, TestComparator.Instance);
+	FTreeSet<MyInteger> npts0 = new FTreeSet<MyInteger>(pts0, TestComparator.Instance);
 	npts0 = npts0.less(pick(rand, npts0));
-	PureTreeSet<MyInteger> pts0a = pts0.less(pick(rand, pts0));
+	FTreeSet<MyInteger> pts0a = pts0.less(pick(rand, pts0));
 	if (sgn(pts0a.compareTo(npts0)) != compare(pts0a, npts0)) {
-	    println("PureTreeSet Compare failed (pts0) on iteration " + i);
+	    println("FTreeSet Compare failed (pts0) on iteration " + i);
 	    println(pts0a.dump());
 	    println(npts0.dump());
 	    println(pts0a);
@@ -312,14 +312,14 @@ public class TestSuite {
 	    exit();
 	}
 	if (pts0a.equals(npts0) != equals(pts0a, npts0)) {
-	    println("PureTreeSet equality failed (pts0a) on iteration " + i);
+	    println("FTreeSet equality failed (pts0a) on iteration " + i);
 	    exit();
 	}
-	PureTreeSet<MyInteger> npts1 = new PureTreeSet<MyInteger>(pts1, TestComparator.Instance);
+	FTreeSet<MyInteger> npts1 = new FTreeSet<MyInteger>(pts1, TestComparator.Instance);
 	npts1 = npts1.less(pick(rand, npts1));
-	PureTreeSet<MyInteger> pts1a = pts1.less(pick(rand, pts1));
+	FTreeSet<MyInteger> pts1a = pts1.less(pick(rand, pts1));
 	if (sgn(pts1a.compareTo(npts1)) != compare(pts1a, npts1)) {
-	    println("PureTreeSet Compare failed (pts1) on iteration " + i);
+	    println("FTreeSet Compare failed (pts1) on iteration " + i);
 	    println(pts1a.dump());
 	    println(npts1.dump());
 	    println(pts1a.compareTo(npts1));
@@ -327,7 +327,7 @@ public class TestSuite {
 	    exit();
 	}
 	if (pts1a.equals(npts1) != equals(pts1a, npts1)) {
-	    println("PureTreeSet equality failed (pts1a) on iteration " + i);
+	    println("FTreeSet equality failed (pts1a) on iteration " + i);
 	    exit();
 	}
 	int lo = rand.nextInt(150) - 25;
@@ -339,76 +339,76 @@ public class TestSuite {
 	SortedSet<MyInteger> ptss = pts0.subSet(Lo, Hi);
 	SortedSet<MyInteger> tss = ts0.subSet(Lo, Hi);
 	if (!ptss.equals(tss)) {
-	    println("PureTreeSet subSet failed on iteration " + i);
+	    println("FTreeSet subSet failed on iteration " + i);
 	    println("[" + lo + ", " + hi + ")");
 	    println(ptss);
 	    println(tss);
 	    exit();
 	}
 	if (!pts0.headSet(Hi).equals(ts0.headSet(Hi))) {
-	    println("PureTreeSet headSet failed on iteration " + i);
+	    println("FTreeSet headSet failed on iteration " + i);
 	    exit();
 	}
 	if (!pts0.tailSet(Lo).equals(ts0.tailSet(Lo))) {
-	    println("PureTreeSet tailSet failed on iteration " + i);
+	    println("FTreeSet tailSet failed on iteration " + i);
 	    exit();
 	}
 	while (!pts0.isEmpty()) {
 	    MyInteger x = pts0.arb();
 	    if (!pts0.contains(x) || !ts0.contains(x)) {
-		println("PureTreeSet arb/contains failed on iteration " + i);
+		println("FTreeSet arb/contains failed on iteration " + i);
 		exit();
 	    }
 	    pts0 = pts0.less(x);
 	    ts0.remove(x);
 	    if (ts0.isEmpty() != pts0.isEmpty()) {
-		println("PureTreeSet less/isEmpty failed on iteration " + i);
+		println("FTreeSet less/isEmpty failed on iteration " + i);
 		exit();
 	    }
 	}
 	if (i % 50 == 0) {
 	    // Check handling of null set
 	    try {
-		PureSet<MyInteger> ptsser = (i == 0 ? pts0 : pts1);
+		FSet<MyInteger> ptsser = (i == 0 ? pts0 : pts1);
 		FileOutputStream fos = new FileOutputStream("pts.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
 		oos.writeObject(ptsser);
 		oos.close();
 		FileInputStream fis = new FileInputStream("pts.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		PureSet<MyInteger> nptsser = (PureSet<MyInteger>)ois.readObject();
+		FSet<MyInteger> nptsser = (FSet<MyInteger>)ois.readObject();
 		ois.close();
 		if (!ptsser.equals(nptsser)) {
-		    println("PureTreeSet read/write failed on iteration " + i);
+		    println("FTreeSet read/write failed on iteration " + i);
 		    exit();
 		}
 	    } catch (IOException e) {
-		println("PureTreeSet read/write: exception " + e);
+		println("FTreeSet read/write: exception " + e);
 		exit();
 	    } catch (ClassNotFoundException e) {
-		println("PureTreeSet read/write: exception " + e);
+		println("FTreeSet read/write: exception " + e);
 	    }
 	}
 	return pts1;
     }
 
-    static PureHashSet<MyInteger> testPureHashSet(Random rand, int i) {
-	PureHashSet<MyInteger> phs0 = new PureHashSet<MyInteger>();
+    static FHashSet<MyInteger> testFHashSet(Random rand, int i) {
+	FHashSet<MyInteger> phs0 = new FHashSet<MyInteger>();
 	HashSet<MyInteger> hs0 = new HashSet<MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureHashSet<MyInteger> tmp = phs0.with(R);
+	    FHashSet<MyInteger> tmp = phs0.with(R);
 	    hs0.add(R);
 	    if (!tmp.verify()) {
-		println("PureHashSet Verification failure on iteration " + i);
+		println("FHashSet Verification failure on iteration " + i);
 		println(phs0.dump());
 		println("Adding " + (R == null ? "null" : "" + R));
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != hs0.hashCode()) {
-		println("PureHashSet hashCode failed on phs0 on iteration " + i);
+		println("FHashSet hashCode failed on phs0 on iteration " + i);
 		println(tmp);
 		println(hs0);
 		println("Adding " + R + "; " + tmp.hashCode() + ", " + hs0.hashCode());
@@ -416,34 +416,34 @@ public class TestSuite {
 	    }
 	    if (!phs0.isSubset(tmp) || !tmp.isSuperset(phs0) ||
 		(!phs0.contains(R) && (tmp.isSubset(phs0) || phs0.isSuperset(tmp)))) {
-		println("PureHashSet is{Sub,Super}set failed (phs0) on iteration " + i);
+		println("FHashSet is{Sub,Super}set failed (phs0) on iteration " + i);
 		println(phs0.isSubset(tmp) + ", " + tmp.isSuperset(phs0) + ", " +
 			phs0.contains(R) + ", " + tmp.isSubset(phs0) + ", " +
 			phs0.isSuperset(tmp) + "; " + R);
 		println(phs0);
 		println(tmp);
-		//PureHashSet.debug = true;
+		//FHashSet.debug = true;
 		//phs0.isSubset(tmp);
 		exit();
 	    }
 	    phs0 = tmp;
 	}
-	PureHashSet<MyInteger> phs1 = new PureHashSet<MyInteger>();
+	FHashSet<MyInteger> phs1 = new FHashSet<MyInteger>();
 	HashSet<MyInteger> hs1 = new HashSet<MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureHashSet<MyInteger> tmp = phs1.with(R);
+	    FHashSet<MyInteger> tmp = phs1.with(R);
 	    hs1.add(R);
 	    if (!tmp.verify()) {
-		println("PureHashSet Verification failure on iteration " + i);
+		println("FHashSet Verification failure on iteration " + i);
 		println(phs1.dump());
 		println("Adding " + R);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != hs1.hashCode()) {
-		println("PureHashSet hashCode failed on phs1 on iteration " + i);
+		println("FHashSet hashCode failed on phs1 on iteration " + i);
 		println(tmp);
 		println(hs1);
 		println("Adding " + R + "; " + tmp.hashCode() + ", " + hs1.hashCode());
@@ -451,7 +451,7 @@ public class TestSuite {
 	    }
 	    if (!phs1.isSubset(tmp) || !tmp.isSuperset(phs1) ||
 		(!phs1.contains(R) && (tmp.isSubset(phs1) || phs1.isSuperset(tmp)))) {
-		println("PureHashSet is{Sub,Super}set failed (phs1) on iteration " + i);
+		println("FHashSet is{Sub,Super}set failed (phs1) on iteration " + i);
 		println(phs1.isSubset(tmp) + ", " + tmp.isSuperset(phs1) + ", " +
 			phs1.contains(R) + ", " + tmp.isSubset(phs1) + ", " +
 			phs1.isSuperset(tmp) + "; " + R);
@@ -464,10 +464,10 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureHashSet<MyInteger> tmp = phs0.less(R);
+	    FHashSet<MyInteger> tmp = phs0.less(R);
 	    hs0.remove(R);
 	    if (!tmp.verify()) {
-		println("PureHashSet Verification failure on iteration " + i);
+		println("FHashSet Verification failure on iteration " + i);
 		println(phs0.dump());
 		println("Removing " + (R == null ? "null" : "" + R));
 		println(tmp.dump());
@@ -478,83 +478,83 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureHashSet<MyInteger> tmp = phs1.less(R);
+	    FHashSet<MyInteger> tmp = phs1.less(R);
 	    hs1.remove(R);
 	    if (!tmp.verify()) {
-		println("PureHashSet Verification failure on iteration " + i);
+		println("FHashSet Verification failure on iteration " + i);
 		println(phs1.dump());
 		println("Removing " + (R == null ? "null" : "" + R));
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != hs1.hashCode()) {
-		println("PureHashSet hashCode failed on phs1 on iteration " + i);
+		println("FHashSet hashCode failed on phs1 on iteration " + i);
 		println(tmp);
 		println(hs1);
 		println("Removing " + R + "; " + tmp.hashCode() + ", " + hs1.hashCode());
 		exit();
 	    }
 	    if (!tmp.equals(hs1)) {
-		println("PureHashSet equality failed on phs1 on iteration " + i);
+		println("FHashSet equality failed on phs1 on iteration " + i);
 		println(tmp);
 		println(hs1);
-		println(new PureHashSet<MyInteger>(hs1));
+		println(new FHashSet<MyInteger>(hs1));
 		println("Removing " + R + "; " + tmp.hashCode() + ", " + hs1.hashCode());
 		exit();
 	    }
 	    phs1 = tmp;
 	}
 	if (phs0.hashCode() != hs0.hashCode()) {
-	    println("PureHashSet hashCode failed on phs0 on iteration " + i);
+	    println("FHashSet hashCode failed on phs0 on iteration " + i);
 	    println(phs0);
 	    println(hs0);
 	    exit();
 	}
 	if (phs1.hashCode() != hs1.hashCode()) {
-	    println("PureHashSet hashCode failed on phs1 on iteration " + i);
+	    println("FHashSet hashCode failed on phs1 on iteration " + i);
 	    exit();
 	}
 	if (!phs0.equals(hs0)) {
-	    println("PureHashSet Equality failed (phs0, A) on iteration " + i);
+	    println("FHashSet Equality failed (phs0, A) on iteration " + i);
 	    println(phs0);
 	    println(phs0.dump());
 	    println(new TreeSet<MyInteger>(hs0));
 	    exit();
 	}
-	if (!phs0.equals(new PureHashSet<MyInteger>(hs0))) {
-	    println("PureHashSet Equality failed (phs0, B) on iteration " + i);
+	if (!phs0.equals(new FHashSet<MyInteger>(hs0))) {
+	    println("FHashSet Equality failed (phs0, B) on iteration " + i);
 	    println(phs0);
 	    println(phs0.dump());
-	    PureHashSet<MyInteger> nphs0 = new PureHashSet<MyInteger>(hs0);
+	    FHashSet<MyInteger> nphs0 = new FHashSet<MyInteger>(hs0);
 	    println(nphs0);
 	    println(nphs0.dump());
 	    exit();
 	}
-	if (!phs0.equals(new PureHashSet<MyInteger>(new ArrayList<MyInteger>(hs0)))) {
-	    println("PureHashSet construction from ArrayList failed (phs0) on iteration " + i);
+	if (!phs0.equals(new FHashSet<MyInteger>(new ArrayList<MyInteger>(hs0)))) {
+	    println("FHashSet construction from ArrayList failed (phs0) on iteration " + i);
 	    exit();
 	}
-	if (!phs0.equals(new PureHashSet<MyInteger>(hs0.toArray(new MyInteger[0])))) {
-	    println("PureHashSet construction from array failed (phs0) on iteration " + i);
+	if (!phs0.equals(new FHashSet<MyInteger>(hs0.toArray(new MyInteger[0])))) {
+	    println("FHashSet construction from array failed (phs0) on iteration " + i);
 	    exit();
 	}
 	if (!phs1.equals(hs1)) {
-	    println("PureHashSet Equality failed (phs1, A) on iteration " + i);
+	    println("FHashSet Equality failed (phs1, A) on iteration " + i);
 	    println(phs1);
 	    println(hs1);
-	    println(new PureHashSet<MyInteger>(hs1));
+	    println(new FHashSet<MyInteger>(hs1));
 	    exit();
 	}
 	// Next line also tests constructor from `Object[]'
-	if (!phs1.equals(new PureHashSet<MyInteger>(hs1.toArray(new MyInteger[0])))) {
-	    println("PureHashSet Equality failed (phs1, B) on iteration " + i);
+	if (!phs1.equals(new FHashSet<MyInteger>(hs1.toArray(new MyInteger[0])))) {
+	    println("FHashSet Equality failed (phs1, B) on iteration " + i);
 	    exit();
 	}
-	PureHashSet<MyInteger> phsu = phs0.union(phs1);
+	FHashSet<MyInteger> phsu = phs0.union(phs1);
 	HashSet<MyInteger> hsu = (HashSet<MyInteger>)hs0.clone();
 	hsu.addAll(hs1);
 	if (!phsu.verify() || !phsu.equals(hsu)) {
-	    println("PureHashSet Union failed on iteration " + i);
+	    println("FHashSet Union failed on iteration " + i);
 	    println(phs0);
 	    println(phs1);
 	    if (!phsu.verify()) println(phsu.dump());
@@ -563,14 +563,14 @@ public class TestSuite {
 	    println(hsu);
 	    exit();
 	}
-	if (!phsu.equals(new PureHashSet<MyInteger>(hsu))) {
-	    println("PureHashSet Equality failed (phsu) on iteration " + i);
+	if (!phsu.equals(new FHashSet<MyInteger>(hsu))) {
+	    println("FHashSet Equality failed (phsu) on iteration " + i);
 	}
-	PureHashSet<MyInteger> phsi = phs0.intersection(phs1);
+	FHashSet<MyInteger> phsi = phs0.intersection(phs1);
 	HashSet<MyInteger> hsi = (HashSet<MyInteger>)hs0.clone();
 	hsi.retainAll(hs1);
 	if (!phsi.verify() || !phsi.equals(hsi)) {
-	    println("PureHashSet Intersection failed on iteration " + i);
+	    println("FHashSet Intersection failed on iteration " + i);
 	    println(phs0);
 	    println(phs0.dump());
 	    println(phs1);
@@ -582,17 +582,17 @@ public class TestSuite {
 	    exit();
 	}
 	if (!phsi.isSubset(phs0) || !phsi.isSubset(phs1)) {
-	    println("PureHashSet isSubset failed on iteration " + i);
+	    println("FHashSet isSubset failed on iteration " + i);
 	    exit();
 	}
-	if (!phsi.equals(new PureHashSet<MyInteger>(hsi))) {
-	    println("PureHashSet Equality failed (phsi) on iteration " + i);
+	if (!phsi.equals(new FHashSet<MyInteger>(hsi))) {
+	    println("FHashSet Equality failed (phsi) on iteration " + i);
 	}
-	PureHashSet<MyInteger> phsd = phs0.difference(phs1);
+	FHashSet<MyInteger> phsd = phs0.difference(phs1);
 	HashSet<MyInteger> hsd = (HashSet<MyInteger>)hs0.clone();
 	hsd.removeAll(hs1);
 	if (!phsd.verify() || !phsd.equals(hsd)) {
-	    println("PureHashSet Difference failed on iteration " + i);
+	    println("FHashSet Difference failed on iteration " + i);
 	    println(phs0);
 	    println((phs0).dump());
 	    println(phs1);
@@ -604,14 +604,14 @@ public class TestSuite {
 	    println(hsd);
 	    exit();
 	}
-	if (!phsd.equals(new PureHashSet<MyInteger>(hsd))) {
-	    println("PureHashSet Equality failed (phsd) on iteration " + i);
+	if (!phsd.equals(new FHashSet<MyInteger>(hsd))) {
+	    println("FHashSet Equality failed (phsd) on iteration " + i);
 	}
-	PureHashSet<MyInteger> nphs0 = new PureHashSet<MyInteger>(phs0);
+	FHashSet<MyInteger> nphs0 = new FHashSet<MyInteger>(phs0);
 	nphs0 = nphs0.less(pick(rand, nphs0));
-	PureHashSet<MyInteger> phs0a = phs0.less(pick(rand, phs0));
+	FHashSet<MyInteger> phs0a = phs0.less(pick(rand, phs0));
 	if (sgn(phs0a.compareTo(nphs0)) != compare(phs0a, nphs0)) {
-	    println("PureHashSet Compare failed (phs0) on iteration " + i);
+	    println("FHashSet Compare failed (phs0) on iteration " + i);
 	    println(phs0a.compareTo(nphs0) + ", " + compare(phs0a, nphs0));
 	    println(phs0a);
 	    println(phs0a.dump());
@@ -620,77 +620,77 @@ public class TestSuite {
 	    exit();
 	}
 	if (phs0a.equals(nphs0) != equals(phs0a, nphs0)) {
-	    println("PureHashSet equality failed (phs0a) on iteration " + i);
+	    println("FHashSet equality failed (phs0a) on iteration " + i);
 	    exit();
 	}
-	PureHashSet<MyInteger> nphs1 = new PureHashSet<MyInteger>(phs1);
+	FHashSet<MyInteger> nphs1 = new FHashSet<MyInteger>(phs1);
 	nphs1 = nphs1.less(pick(rand, nphs1));
-	PureHashSet<MyInteger> phs1a = phs1.less(pick(rand, phs1));
+	FHashSet<MyInteger> phs1a = phs1.less(pick(rand, phs1));
 	if (sgn(phs1a.compareTo(nphs1)) != compare(phs1a, nphs1)) {
-	    println("PureHashSet Compare failed (phs1) on iteration " + i);
+	    println("FHashSet Compare failed (phs1) on iteration " + i);
 	    exit();
 	}
 	if (phs1a.equals(nphs1) != equals(phs1a, nphs1)) {
-	    println("PureHashSet equality failed (phs1a) on iteration " + i);
+	    println("FHashSet equality failed (phs1a) on iteration " + i);
 	    exit();
 	}
 	while (!phs0.isEmpty()) {
 	    MyInteger x = phs0.arb();
 	    if (!phs0.contains(x) || !hs0.contains(x)) {
-		println("PureHashSet arb/contains failed on iteration " + i);
+		println("FHashSet arb/contains failed on iteration " + i);
 		exit();
 	    }
 	    phs0 = phs0.less(x);
 	    hs0.remove(x);
 	    if (hs0.isEmpty() != phs0.isEmpty()) {
-		println("PureHashSet less/isEmpty failed on iteration " + i);
+		println("FHashSet less/isEmpty failed on iteration " + i);
 		exit();
 	    }
 	}
 	if (i % 50 == 0) {
 	    try {
 		// Check handling of null set
-		PureSet<MyInteger> phsser = (i == 0 ? phs0 : phs1);
+		FSet<MyInteger> phsser = (i == 0 ? phs0 : phs1);
 		FileOutputStream fos = new FileOutputStream("phs.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
 		oos.writeObject(phsser);
 		oos.close();
 		FileInputStream fis = new FileInputStream("phs.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		PureSet<MyInteger> nphsser = (PureSet<MyInteger>)ois.readObject();
+		FSet<MyInteger> nphsser = (FSet<MyInteger>)ois.readObject();
 		ois.close();
 		if (!phsser.equals(nphsser)) {
-		    println("PureHashSet read/write failed on iteration " + i);
+		    println("FHashSet read/write failed on iteration " + i);
 		    exit();
 		}
 	    } catch (IOException e) {
-		println("PureHashSet read/write: exception " + e);
+		println("FHashSet read/write: exception " + e);
 		exit();
 	    } catch (ClassNotFoundException e) {
-		println("PureHashSet read/write: exception " + e);
+		println("FHashSet read/write: exception " + e);
 	    }
 	}
 	return phs1;
     }
 
 /********
-    static PureSet testPureCachedHashSet(Random rand, int i) {
-	PureSet phs0 = new PureCachedHashSet();
+    static FSet testFCachedHashSet(Random rand, int i) {
+	FSet phs0 = new FCachedHashSet();
 	HashSet hs0 = new HashSet();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureSet tmp = phs0.with(R);
+	    FSet tmp = phs0.with(R);
 	    hs0.add(R);
-	    if (!((PureCachedHashSet)tmp).verify()) {
-		println("PureCachedHashSet Verification failure on iteration " + i);
-		println(((PureCachedHashSet)phs0).dump());
+	    if (!((FCachedHashSet)tmp).verify()) {
+		println("FCachedHashSet Verification failure on iteration " + i);
+		println(((FCachedHashSet)phs0).dump());
 		println("Adding " + (R == null ? "null" : "" + R));
-		println(((PureCachedHashSet)tmp).dump());
+		println(((FCachedHashSet)tmp).dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != hs0.hashCode()) {
-		println("PureCachedHashSet hashCode failed on phs0 on iteration " + i);
+		println("FCachedHashSet hashCode failed on phs0 on iteration " + i);
 		println(tmp);
 		println(hs0);
 		println("Adding " + R + "; " + tmp.hashCode() + ", " + hs0.hashCode());
@@ -698,34 +698,34 @@ public class TestSuite {
 	    }
 	    if (!phs0.isSubset(tmp) || !tmp.isSuperset(phs0) ||
 		(!phs0.contains(R) && (tmp.isSubset(phs0) || phs0.isSuperset(tmp)))) {
-		println("PureCachedHashSet is{Sub,Super}set failed (phs0) on iteration " + i);
+		println("FCachedHashSet is{Sub,Super}set failed (phs0) on iteration " + i);
 		println(phs0.isSubset(tmp) + ", " + tmp.isSuperset(phs0) + ", " +
 			phs0.contains(R) + ", " + tmp.isSubset(phs0) + ", " +
 			phs0.isSuperset(tmp) + "; " + R);
 		println(phs0);
 		println(tmp);
-		//PureCachedHashSet.debug = true;
+		//FCachedHashSet.debug = true;
 		//phs0.isSubset(tmp);
 		exit();
 	    }
 	    phs0 = tmp;
 	}
-	PureSet phs1 = new PureCachedHashSet();
+	FSet phs1 = new FCachedHashSet();
 	HashSet hs1 = new HashSet();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureSet tmp = phs1.with(R);
+	    FSet tmp = phs1.with(R);
 	    hs1.add(R);
-	    if (!((PureCachedHashSet)tmp).verify()) {
-		println("PureCachedHashSet Verification failure on iteration " + i);
-		println(((PureCachedHashSet)phs1).dump());
+	    if (!((FCachedHashSet)tmp).verify()) {
+		println("FCachedHashSet Verification failure on iteration " + i);
+		println(((FCachedHashSet)phs1).dump());
 		println("Adding " + R);
-		println(((PureCachedHashSet)tmp).dump());
+		println(((FCachedHashSet)tmp).dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != hs1.hashCode()) {
-		println("PureCachedHashSet hashCode failed on phs1 on iteration " + i);
+		println("FCachedHashSet hashCode failed on phs1 on iteration " + i);
 		println(tmp);
 		println(hs1);
 		println("Adding " + R + "; " + tmp.hashCode() + ", " + hs1.hashCode());
@@ -733,7 +733,7 @@ public class TestSuite {
 	    }
 	    if (!phs1.isSubset(tmp) || !tmp.isSuperset(phs1) ||
 		(!phs1.contains(R) && (tmp.isSubset(phs1) || phs1.isSuperset(tmp)))) {
-		println("PureCachedHashSet is{Sub,Super}set failed (phs1) on iteration " + i);
+		println("FCachedHashSet is{Sub,Super}set failed (phs1) on iteration " + i);
 		println(phs1.isSubset(tmp) + ", " + tmp.isSuperset(phs1) + ", " +
 			phs1.contains(R) + ", " + tmp.isSubset(phs1) + ", " +
 			phs1.isSuperset(tmp) + "; " + R);
@@ -746,13 +746,13 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureSet tmp = phs0.less(R);
+	    FSet tmp = phs0.less(R);
 	    hs0.remove(R);
-	    if (!((PureCachedHashSet)tmp).verify()) {
-		println("PureCachedHashSet Verification failure on iteration " + i);
-		println(((PureCachedHashSet)phs0).dump());
+	    if (!((FCachedHashSet)tmp).verify()) {
+		println("FCachedHashSet Verification failure on iteration " + i);
+		println(((FCachedHashSet)phs0).dump());
 		println("Removing " + (R == null ? "null" : "" + R));
-		println(((PureCachedHashSet)tmp).dump());
+		println(((FCachedHashSet)tmp).dump());
 		exit();
 	    }
 	    phs0 = tmp;
@@ -760,227 +760,227 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureSet tmp = phs1.less(R);
+	    FSet tmp = phs1.less(R);
 	    hs1.remove(R);
-	    if (!((PureCachedHashSet)tmp).verify()) {
-		println("PureCachedHashSet Verification failure on iteration " + i);
-		println(((PureCachedHashSet)phs1).dump());
+	    if (!((FCachedHashSet)tmp).verify()) {
+		println("FCachedHashSet Verification failure on iteration " + i);
+		println(((FCachedHashSet)phs1).dump());
 		println("Removing " + (R == null ? "null" : "" + R));
-		println(((PureCachedHashSet)tmp).dump());
+		println(((FCachedHashSet)tmp).dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != hs1.hashCode()) {
-		println("PureCachedHashSet hashCode failed on phs1 on iteration " + i);
+		println("FCachedHashSet hashCode failed on phs1 on iteration " + i);
 		println(tmp);
 		println(hs1);
 		println("Removing " + R + "; " + tmp.hashCode() + ", " + hs1.hashCode());
 		exit();
 	    }
 	    if (!tmp.equals(hs1)) {
-		println("PureCachedHashSet equality failed on phs1 on iteration " + i);
+		println("FCachedHashSet equality failed on phs1 on iteration " + i);
 		println(tmp);
 		println(hs1);
-		println(new PureCachedHashSet(hs1));
+		println(new FCachedHashSet(hs1));
 		println("Removing " + R + "; " + tmp.hashCode() + ", " + hs1.hashCode());
 		exit();
 	    }
 	    phs1 = tmp;
 	}
 	if (phs0.hashCode() != hs0.hashCode()) {
-	    println("PureCachedHashSet hashCode failed on phs0 on iteration " + i);
+	    println("FCachedHashSet hashCode failed on phs0 on iteration " + i);
 	    println(phs0);
 	    println(hs0);
 	    exit();
 	}
 	if (phs1.hashCode() != hs1.hashCode()) {
-	    println("PureCachedHashSet hashCode failed on phs1 on iteration " + i);
+	    println("FCachedHashSet hashCode failed on phs1 on iteration " + i);
 	    exit();
 	}
 	if (!phs0.equals(hs0)) {
-	    println("PureCachedHashSet Equality failed (phs0, A) on iteration " + i);
+	    println("FCachedHashSet Equality failed (phs0, A) on iteration " + i);
 	    println(phs0);
-	    println(((PureCachedHashSet)phs0).dump());
+	    println(((FCachedHashSet)phs0).dump());
 	    println(new TreeSet(hs0));
 	    exit();
 	}
-	if (!phs0.equals(new PureCachedHashSet(hs0))) {
-	    println("PureCachedHashSet Equality failed (phs0, B) on iteration " + i);
+	if (!phs0.equals(new FCachedHashSet(hs0))) {
+	    println("FCachedHashSet Equality failed (phs0, B) on iteration " + i);
 	    println(phs0);
-	    println(((PureCachedHashSet)phs0).dump());
-	    PureCachedHashSet nphs0 = new PureCachedHashSet(hs0);
+	    println(((FCachedHashSet)phs0).dump());
+	    FCachedHashSet nphs0 = new FCachedHashSet(hs0);
 	    println(nphs0);
 	    println(nphs0.dump());
 	    exit();
 	}
-	if (!phs0.equals(new PureCachedHashSet(new ArrayList(hs0)))) {
-	    println("PureCachedHashSet construction from ArrayList failed (phs0) on iteration "
+	if (!phs0.equals(new FCachedHashSet(new ArrayList(hs0)))) {
+	    println("FCachedHashSet construction from ArrayList failed (phs0) on iteration "
 		    + i);
 	    exit();
 	}
-	if (!phs0.equals(new PureCachedHashSet(hs0.toArray()))) {
-	    println("PureCachedHashSet construction from array failed (phs0) on iteration "
+	if (!phs0.equals(new FCachedHashSet(hs0.toArray()))) {
+	    println("FCachedHashSet construction from array failed (phs0) on iteration "
 		    + i);
 	    exit();
 	}
 	if (!phs1.equals(hs1)) {
-	    println("PureCachedHashSet Equality failed (phs1, A) on iteration " + i);
+	    println("FCachedHashSet Equality failed (phs1, A) on iteration " + i);
 	    println(phs1);
 	    println(hs1);
-	    println(new PureCachedHashSet(hs1));
+	    println(new FCachedHashSet(hs1));
 	    exit();
 	}
 	// Next line also tests constructor from `Object[]'
-	if (!phs1.equals(new PureCachedHashSet(hs1.toArray()))) {
-	    println("PureCachedHashSet Equality failed (phs1, B) on iteration " + i);
+	if (!phs1.equals(new FCachedHashSet(hs1.toArray()))) {
+	    println("FCachedHashSet Equality failed (phs1, B) on iteration " + i);
 	    exit();
 	}
-	PureSet phsu = phs0.union(phs1);
+	FSet phsu = phs0.union(phs1);
 	HashSet hsu = (HashSet)hs0.clone();
 	hsu.addAll(hs1);
-	if (!((PureCachedHashSet)phsu).verify() || !phsu.equals(hsu)) {
-	    println("PureCachedHashSet Union failed on iteration " + i);
+	if (!((FCachedHashSet)phsu).verify() || !phsu.equals(hsu)) {
+	    println("FCachedHashSet Union failed on iteration " + i);
 	    println(phs0);
 	    println(phs1);
-	    if (!((PureCachedHashSet)phsu).verify())
-		println(((PureCachedHashSet)phsu).dump());
+	    if (!((FCachedHashSet)phsu).verify())
+		println(((FCachedHashSet)phsu).dump());
 	    println(phsu.size() + ", " + hsu.size());
 	    println(phsu);
 	    println(hsu);
 	    exit();
 	}
-	if (!phsu.equals(new PureCachedHashSet(hsu))) {
-	    println("PureCachedHashSet Equality failed (phsu) on iteration " + i);
+	if (!phsu.equals(new FCachedHashSet(hsu))) {
+	    println("FCachedHashSet Equality failed (phsu) on iteration " + i);
 	}
-	PureSet phsi = phs0.intersection(phs1);
+	FSet phsi = phs0.intersection(phs1);
 	HashSet hsi = (HashSet)hs0.clone();
 	hsi.retainAll(hs1);
-	if (!((PureCachedHashSet)phsi).verify() || !phsi.equals(hsi)) {
-	    println("PureCachedHashSet Intersection failed on iteration " + i);
+	if (!((FCachedHashSet)phsi).verify() || !phsi.equals(hsi)) {
+	    println("FCachedHashSet Intersection failed on iteration " + i);
 	    println(phs0);
-	    println(((PureCachedHashSet)phs0).dump());
+	    println(((FCachedHashSet)phs0).dump());
 	    println(phs1);
-	    println(((PureCachedHashSet)phs1).dump());
-	    if (!((PureCachedHashSet)phsi).verify())
-		println(((PureCachedHashSet)phsi).dump());
+	    println(((FCachedHashSet)phs1).dump());
+	    if (!((FCachedHashSet)phsi).verify())
+		println(((FCachedHashSet)phsi).dump());
 	    println(phsi.size() + ", " + hsi.size());
 	    println(phsi);
 	    println(new TreeSet(hsi));
 	    exit();
 	}
 	if (!phsi.isSubset(phs0) || !phsi.isSubset(phs1)) {
-	    println("PureCachedHashSet isSubset failed on iteration " + i);
+	    println("FCachedHashSet isSubset failed on iteration " + i);
 	    exit();
 	}
-	if (!phsi.equals(new PureCachedHashSet(hsi))) {
-	    println("PureCachedHashSet Equality failed (phsi) on iteration " + i);
+	if (!phsi.equals(new FCachedHashSet(hsi))) {
+	    println("FCachedHashSet Equality failed (phsi) on iteration " + i);
 	}
-	PureSet phsd = phs0.difference(phs1);
+	FSet phsd = phs0.difference(phs1);
 	HashSet hsd = (HashSet)hs0.clone();
 	hsd.removeAll(hs1);
-	if (!((PureCachedHashSet)phsd).verify() || !phsd.equals(hsd)) {
-	    println("PureCachedHashSet Difference failed on iteration " + i);
+	if (!((FCachedHashSet)phsd).verify() || !phsd.equals(hsd)) {
+	    println("FCachedHashSet Difference failed on iteration " + i);
 	    println(phs0);
-	    println(((PureCachedHashSet)phs0).dump());
+	    println(((FCachedHashSet)phs0).dump());
 	    println(phs1);
-	    println(((PureCachedHashSet)phs1).dump());
-	    //if (!((PureCachedHashSet)phsd).verify())
+	    println(((FCachedHashSet)phs1).dump());
+	    //if (!((FCachedHashSet)phsd).verify())
 	    println(phsd.size() + ", " + hsd.size());
 	    println(phsd);
-	    println(((PureCachedHashSet)phsd).dump());
+	    println(((FCachedHashSet)phsd).dump());
 	    println(hsd);
 	    exit();
 	}
-	if (!phsd.equals(new PureCachedHashSet(hsd))) {
-	    println("PureCachedHashSet Equality failed (phsd) on iteration " + i);
+	if (!phsd.equals(new FCachedHashSet(hsd))) {
+	    println("FCachedHashSet Equality failed (phsd) on iteration " + i);
 	}
-	PureSet nphs0 = new PureCachedHashSet(phs0);
+	FSet nphs0 = new FCachedHashSet(phs0);
 	nphs0 = nphs0.less(pick(rand, nphs0));
-	PureSet phs0a = phs0.less(pick(rand, phs0));
-	if (sgn(((PureCachedHashSet)phs0a).compareTo(nphs0)) !=
+	FSet phs0a = phs0.less(pick(rand, phs0));
+	if (sgn(((FCachedHashSet)phs0a).compareTo(nphs0)) !=
 	      compare(phs0a, nphs0)) {
-	    println("PureCachedHashSet Compare failed (phs0) on iteration " + i);
-	    println(((PureCachedHashSet)phs0a).compareTo(nphs0) + ", " +
+	    println("FCachedHashSet Compare failed (phs0) on iteration " + i);
+	    println(((FCachedHashSet)phs0a).compareTo(nphs0) + ", " +
 		    compare(phs0a, nphs0));
 	    println(phs0a);
-	    println(((PureCachedHashSet)phs0a).dump());
+	    println(((FCachedHashSet)phs0a).dump());
 	    println(nphs0);
-	    println(((PureCachedHashSet)nphs0).dump());
+	    println(((FCachedHashSet)nphs0).dump());
 	    exit();
 	}
 	if (phs0a.equals(nphs0) != equals(phs0a, nphs0)) {
-	    println("PureCachedHashSet equality failed (phs0a) on iteration " + i);
+	    println("FCachedHashSet equality failed (phs0a) on iteration " + i);
 	    exit();
 	}
-	PureSet nphs1 = new PureCachedHashSet(phs1);
+	FSet nphs1 = new FCachedHashSet(phs1);
 	nphs1 = nphs1.less(pick(rand, nphs1));
-	PureSet phs1a = phs1.less(pick(rand, phs1));
-	if (sgn(((PureCachedHashSet)phs1a).compareTo(nphs1)) !=
+	FSet phs1a = phs1.less(pick(rand, phs1));
+	if (sgn(((FCachedHashSet)phs1a).compareTo(nphs1)) !=
 	      compare(phs1a, nphs1)) {
-	    println("PureCachedHashSet Compare failed (phs1) on iteration " + i);
+	    println("FCachedHashSet Compare failed (phs1) on iteration " + i);
 	    exit();
 	}
 	if (phs1a.equals(nphs1) != equals(phs1a, nphs1)) {
-	    println("PureCachedHashSet equality failed (phs1a) on iteration " + i);
+	    println("FCachedHashSet equality failed (phs1a) on iteration " + i);
 	    exit();
 	}
 	while (!phs0.isEmpty()) {
 	    MyInteger x = phs0.arb();
 	    if (!phs0.contains(x) || !hs0.contains(x)) {
-		println("PureCachedHashSet arb/contains failed on iteration " + i);
+		println("FCachedHashSet arb/contains failed on iteration " + i);
 		exit();
 	    }
 	    phs0 = phs0.less(x);
 	    hs0.remove(x);
 	    if (hs0.isEmpty() != phs0.isEmpty()) {
-		println("PureCachedHashSet less/isEmpty failed on iteration " + i);
+		println("FCachedHashSet less/isEmpty failed on iteration " + i);
 		exit();
 	    }
 	}
 	if (i % 50 == 0) {
 	    try {
 		// Check handling of null set
-		PureSet phsser = (i == 0 ? phs0 : phs1);
+		FSet phsser = (i == 0 ? phs0 : phs1);
 		FileOutputStream fos = new FileOutputStream("phs.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
 		oos.writeObject(phsser);
 		oos.close();
 		FileInputStream fis = new FileInputStream("phs.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		PureSet nphsser = (PureSet)ois.readObject();
+		FSet nphsser = (FSet)ois.readObject();
 		ois.close();
 		if (!phsser.equals(nphsser)) {
-		    println("PureCachedHashSet read/write failed on iteration " + i);
+		    println("FCachedHashSet read/write failed on iteration " + i);
 		    exit();
 		}
 	    } catch (IOException e) {
-		println("PureCachedHashSet read/write: exception " + e);
+		println("FCachedHashSet read/write: exception " + e);
 		exit();
 	    } catch (ClassNotFoundException e) {
-		println("PureCachedHashSet read/write: exception " + e);
+		println("FCachedHashSet read/write: exception " + e);
 	    }
 	}
 	return phs1;
     }
 */
 
-    static void testPureTreeMap(Random rand, int i, PureTreeSet<MyInteger> set) {
-	PureTreeMap<MyInteger, MyInteger> ptm0 =
-	    new PureTreeMap<MyInteger, MyInteger>(TestComparator.Instance);
+    static void testFTreeMap(Random rand, int i, FTreeSet<MyInteger> set) {
+	FTreeMap<MyInteger, MyInteger> ptm0 =
+	    new FTreeMap<MyInteger, MyInteger>(TestComparator.Instance);
 	TreeMap<MyInteger, MyInteger> tm0 = new TreeMap<MyInteger, MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200), v = rand.nextInt(3);
 	    MyInteger R = new MyInteger(r), V = new MyInteger(v);
-	    PureTreeMap<MyInteger, MyInteger> tmp = ptm0.with(R, V);
+	    FTreeMap<MyInteger, MyInteger> tmp = ptm0.with(R, V);
 	    tm0.put(R, V);
 	    if (!tmp.verify()) {
-		println("PureTreeMap Verification failure on iteration " + i);
+		println("FTreeMap Verification failure on iteration " + i);
 		println(ptm0.dump());
 		println("Adding " + R + ", " + V);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != tm0.hashCode()) {
-		println("PureTreeMap hashCode failed on ptm0 on iteration " + i);
+		println("FTreeMap hashCode failed on ptm0 on iteration " + i);
 		println(ptm0);
 		println(ptm0.dump());
 		println("Adding " + r + " -> " + v);
@@ -990,22 +990,22 @@ public class TestSuite {
 	    }
 	    ptm0 = tmp;
 	}
-	PureTreeMap<MyInteger, MyInteger> ptm1 = new PureTreeMap<MyInteger, MyInteger>(TestComparator.Instance);
+	FTreeMap<MyInteger, MyInteger> ptm1 = new FTreeMap<MyInteger, MyInteger>(TestComparator.Instance);
 	TreeMap<MyInteger, MyInteger> tm1 = new TreeMap<MyInteger, MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200), v = rand.nextInt(3);
 	    MyInteger R = new MyInteger(r), V = new MyInteger(v);
-	    PureTreeMap<MyInteger, MyInteger> tmp = ptm1.with(R, V);
+	    FTreeMap<MyInteger, MyInteger> tmp = ptm1.with(R, V);
 	    tm1.put(R, V);
 	    if (!tmp.verify()) {
-		println("PureTreeMap Verification failure on iteration " + i);
+		println("FTreeMap Verification failure on iteration " + i);
 		println(ptm1.dump());
 		println("Adding " + R + ", " + V);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != tm1.hashCode()) {
-		println("PureTreeMap hashCode failed on ptm1 on iteration " + i);
+		println("FTreeMap hashCode failed on ptm1 on iteration " + i);
 		println(ptm1);
 		println(ptm1.dump());
 		println("Adding " + r + " -> " + v);
@@ -1019,20 +1019,20 @@ public class TestSuite {
 	    int r = rand.nextInt(200);
 	    MyInteger R = new MyInteger(r);
 	    if (!equals(ptm0.get(R), tm0.get(R))) {
-		println("PureTreeMap get (ptm0) failed on iteration " + i);
+		println("FTreeMap get (ptm0) failed on iteration " + i);
 		exit();
 	    }
-	    PureTreeMap<MyInteger, MyInteger> tmp = ptm0.less(R);
+	    FTreeMap<MyInteger, MyInteger> tmp = ptm0.less(R);
 	    tm0.remove(R);
 	    if (!tmp.verify()) {
-		println("PureTreeMap Verification failure on iteration " + i);
+		println("FTreeMap Verification failure on iteration " + i);
 		println(ptm0.dump());
 		println("Removing " + R);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != tm0.hashCode()) {
-		println("PureTreeMap hashCode failed on ptm0 on iteration " + i);
+		println("FTreeMap hashCode failed on ptm0 on iteration " + i);
 		println(ptm0);
 		println(ptm0.dump());
 		println("Removing " + r);
@@ -1046,20 +1046,20 @@ public class TestSuite {
 	    int r = rand.nextInt(200);
 	    MyInteger R = new MyInteger(r);
 	    if (!equals(ptm1.get(R), tm1.get(R))) {
-		println("PureTreeMap get failed (ptm1) on iteration " + i);
+		println("FTreeMap get failed (ptm1) on iteration " + i);
 		exit();
 	    }
-	    PureTreeMap<MyInteger, MyInteger> tmp = ptm1.less(R);
+	    FTreeMap<MyInteger, MyInteger> tmp = ptm1.less(R);
 	    tm1.remove(R);
 	    if (!tmp.verify()) {
-		println("PureTreeMap Verification failure on iteration " + i);
+		println("FTreeMap Verification failure on iteration " + i);
 		println(ptm1.dump());
 		println("Removing " + R);
 		println(tmp.dump());
 		exit();
 	    }
 	    if (tmp.hashCode() != tm1.hashCode()) {
-		println("PureTreeMap hashCode failed on ptm1 on iteration " + i);
+		println("FTreeMap hashCode failed on ptm1 on iteration " + i);
 		println(ptm1);
 		println(ptm1.dump());
 		println("Removing " + r);
@@ -1070,9 +1070,9 @@ public class TestSuite {
 	    ptm1 = tmp;
 	}
 	if (i == 0) {
-	    PureTreeMap<MyInteger, MyInteger> tmp = ptm0.with(null, null);
+	    FTreeMap<MyInteger, MyInteger> tmp = ptm0.with(null, null);
 	    if (!tmp.verify() || !tmp.containsKey(null) || tmp.firstKey() != null) {
-		println("PureTreeMap Verification failure on iteration " + i);
+		println("FTreeMap Verification failure on iteration " + i);
 		println(ptm0.dump());
 		println("Adding null");
 		println(tmp.dump());
@@ -1080,7 +1080,7 @@ public class TestSuite {
 	    }
 	    tmp = tmp.less(null);
 	    if (!tmp.verify() || tmp.containsKey(null)) {
-		println("PureTreeMap Verification failure on iteration " + i);
+		println("FTreeMap Verification failure on iteration " + i);
 		println(ptm0.dump());
 		println("Removing null");
 		println(tmp.dump());
@@ -1088,93 +1088,93 @@ public class TestSuite {
 	    }
 	}		
 	if (ptm0.hashCode() != tm0.hashCode()) {
-	    println("PureTreeMap hashCode failed on ptm0 on iteration " + i);
+	    println("FTreeMap hashCode failed on ptm0 on iteration " + i);
 	    println(ptm0);
 	    println(tm0);
 	    exit();
 	}
 	if (ptm1.hashCode() != tm1.hashCode()) {
-	    println("PureTreeMap hashCode failed on ptm1 on iteration " + i);
+	    println("FTreeMap hashCode failed on ptm1 on iteration " + i);
 	    exit();
 	}
 	if (!ptm0.equals(tm0)) {
-	    println("PureTreeMap Equality failed (ptm0, A) on iteration " + i);
+	    println("FTreeMap Equality failed (ptm0, A) on iteration " + i);
 	    println(ptm0.dump());
 	    println(tm0);
 	    exit();
 	}
-	if (!ptm0.equals(new PureTreeMap<MyInteger, MyInteger>(tm0))) {
-	    println("PureTreeMap Equality failed (ptm0, B) on iteration " + i);
+	if (!ptm0.equals(new FTreeMap<MyInteger, MyInteger>(tm0))) {
+	    println("FTreeMap Equality failed (ptm0, B) on iteration " + i);
 	    println(ptm0.dump());
 	    println(tm0);
 	    exit();
 	}
-	if (!ptm0.equals(new PureTreeMap<MyInteger, MyInteger>(tm0, TestComparator.Instance))) {
-	    println("PureTreeMap Equality failed (ptm0, C) on iteration " + i);
+	if (!ptm0.equals(new FTreeMap<MyInteger, MyInteger>(tm0, TestComparator.Instance))) {
+	    println("FTreeMap Equality failed (ptm0, C) on iteration " + i);
 	    println(ptm0.dump());
 	    println(tm0);
 	    exit();
 	}
 	if (!ptm1.equals(tm1)) {
-	    println("PureTreeMap Equality failed (ptm1, A) on iteration " + i);
+	    println("FTreeMap Equality failed (ptm1, A) on iteration " + i);
 	    println(ptm1.dump());
 	    println(tm1);
 	    exit();
 	}
-	if (!ptm1.equals(new PureTreeMap<MyInteger, MyInteger>(tm1))) {
-	    println("PureTreeMap Equality failed (ptm1, B) on iteration " + i);
+	if (!ptm1.equals(new FTreeMap<MyInteger, MyInteger>(tm1))) {
+	    println("FTreeMap Equality failed (ptm1, B) on iteration " + i);
 	    println(ptm1.dump());
 	    exit();
 	}
-	if (!ptm1.equals(new PureTreeMap<MyInteger, MyInteger>(tm1, TestComparator.Instance))) {
-	    println("PureTreeMap Equality failed (ptm1, C) on iteration " + i);
+	if (!ptm1.equals(new FTreeMap<MyInteger, MyInteger>(tm1, TestComparator.Instance))) {
+	    println("FTreeMap Equality failed (ptm1, C) on iteration " + i);
 	    println(ptm1.dump());
 	    exit();
 	}
 	if (ptm0.firstKey().intValue() / 2 != tm0.firstKey().intValue() / 2) {
-	    println("PureTreeMap `firstKey' failed (ptm0) on iteration " + i);
+	    println("FTreeMap `firstKey' failed (ptm0) on iteration " + i);
 	    exit();
 	}
 	if (ptm1.firstKey().intValue() / 2 != tm1.firstKey().intValue() / 2) {
-	    println("PureTreeMap `firstKey' failed (ptm1) on iteration " + i);
+	    println("FTreeMap `firstKey' failed (ptm1) on iteration " + i);
 	    exit();
 	}
 	if (ptm0.lastKey().intValue() / 2 != tm0.lastKey().intValue() / 2) {
-	    println("PureTreeMap `lastKey' failed (ptm0) on iteration " + i);
+	    println("FTreeMap `lastKey' failed (ptm0) on iteration " + i);
 	    exit();
 	}
 	if (ptm1.lastKey().intValue() / 2 != tm1.lastKey().intValue() / 2) {
-	    println("PureTreeMap `lastKey' failed (ptm1) on iteration " + i);
+	    println("FTreeMap `lastKey' failed (ptm1) on iteration " + i);
 	    exit();
 	}
-	PureTreeMap<MyInteger, MyInteger> ptmm = ptm0.union(ptm1);
+	FTreeMap<MyInteger, MyInteger> ptmm = ptm0.union(ptm1);
 	TreeMap<MyInteger, MyInteger> tmm = (TreeMap<MyInteger, MyInteger>)tm0.clone();
 	tmm.putAll(tm1);
 	if (!ptmm.verify() || !ptmm.equals(tmm)) {
-	    println("PureTreeMap Union failed on iteration " + i);
+	    println("FTreeMap Union failed on iteration " + i);
 	    println(ptm0);
 	    println(ptm0.dump());
 	    println(ptm1);
 	    println(ptm1.dump());
-	    //if (!((PureTreeMap)ptmm).verify())
+	    //if (!((FTreeMap)ptmm).verify())
 	    println(ptmm.size() + ", " + tmm.size());
 	    println(ptmm);
 	    println(ptmm.dump());
 	    println(tmm);
 	    exit();
 	}
-	if (!ptmm.equals(new PureTreeMap<MyInteger, MyInteger>(tmm))) {
-	    println("PureTreeMap Equality failed (ptmm) on iteration " + i);
+	if (!ptmm.equals(new FTreeMap<MyInteger, MyInteger>(tmm))) {
+	    println("FTreeMap Equality failed (ptmm) on iteration " + i);
 	    exit();
 	}
-	PureTreeMap<MyInteger, MyInteger> ptmr = ptm0.restrictedTo(set);
+	FTreeMap<MyInteger, MyInteger> ptmr = ptm0.restrictedTo(set);
 	TreeMap<MyInteger, MyInteger> tmr = (TreeMap<MyInteger, MyInteger>)tm0.clone();
 	for (Iterator it = tmr.keySet().iterator(); it.hasNext(); ) {
 	    Object k = it.next();
 	    if (!set.contains(k)) it.remove();
 	}
 	if (!ptmr.verify() || !ptmr.equals(tmr)) {
-	    println("PureTreeMap restrict failed on iteration " + i);
+	    println("FTreeMap restrict failed on iteration " + i);
 	    exit();
 	}
 	ptmr = ptm0.restrictedFrom(set);
@@ -1184,19 +1184,19 @@ public class TestSuite {
 	    if (set.contains(k)) it.remove();
 	}
 	if (!ptmr.verify() || !ptmr.equals(tmr)) {
-	    println("PureTreeMap restrictNot failed on iteration " + i);
+	    println("FTreeMap restrictNot failed on iteration " + i);
 	    exit();
 	}
 	ptm0 = ptm0.less(null);		// for benefit of `compare' below
-	PureSet<MyInteger> ptm0_dom = ptm0.domain();
-	PureTreeMap<MyInteger, MyInteger> ptm0a =
+	FSet<MyInteger> ptm0_dom = ptm0.domain();
+	FTreeMap<MyInteger, MyInteger> ptm0a =
 	    ptm0.less(pick(rand, ptm0_dom)).with(pick(rand, ptm0_dom),
 						 new MyInteger(rand.nextInt(3)));
-	PureTreeMap<MyInteger, MyInteger> ptm0b =
+	FTreeMap<MyInteger, MyInteger> ptm0b =
 	    ptm0.less(pick(rand, ptm0_dom)).with(pick(rand, ptm0_dom),
 						 new MyInteger(rand.nextInt(3)));
 	if (sgn(ptm0a.compareTo(ptm0b)) != compare(ptm0a, ptm0b)) {
-	    println("PureTreeMap Compare failed (ptm0) on iteration " + i);
+	    println("FTreeMap Compare failed (ptm0) on iteration " + i);
 	    println(ptm0a.dump());
 	    println(ptm0b.dump());
 	    println(ptm0a);
@@ -1206,15 +1206,15 @@ public class TestSuite {
 	    exit();
 	}
 	ptm1 = ptm1.less(null);
-	PureSet<MyInteger> ptm1_dom = ptm1.domain();
-	PureTreeMap<MyInteger, MyInteger> ptm1a =
+	FSet<MyInteger> ptm1_dom = ptm1.domain();
+	FTreeMap<MyInteger, MyInteger> ptm1a =
 	    ptm1.less(pick(rand, ptm1_dom)).with(pick(rand, ptm1_dom),
 						 new MyInteger(rand.nextInt(3)));
-	PureTreeMap<MyInteger, MyInteger> ptm1b =
+	FTreeMap<MyInteger, MyInteger> ptm1b =
 	    ptm1.less(pick(rand, ptm1_dom)).with(pick(rand, ptm1_dom),
 						 new MyInteger(rand.nextInt(3)));
 	if (sgn(ptm1a.compareTo(ptm1b)) != compare(ptm1a, ptm1b)) {
-	    println("PureTreeMap Compare failed (ptm1) on iteration " + i);
+	    println("FTreeMap Compare failed (ptm1) on iteration " + i);
 	    println(ptm1a.dump());
 	    println(ptm1b.dump());
 	    println(ptm1a);
@@ -1232,25 +1232,25 @@ public class TestSuite {
 	SortedMap<MyInteger, MyInteger> ptsm = ptm0.subMap(Lo, Hi);
 	SortedMap<MyInteger, MyInteger> tsm = tm0.subMap(Lo, Hi);
 	if (!ptsm.equals(tsm)) {
-	    println("PureTreeMap subMap failed on iteration " + i);
+	    println("FTreeMap subMap failed on iteration " + i);
 	    println("[" + lo + ", " + hi + ")");
 	    println(ptsm);
 	    println(tsm);
 	    exit();
 	}
 	if (!ptm0.headMap(Hi).equals(tm0.headMap(Hi))) {
-	    println("PureTreeMap headMap failed on iteration " + i);
+	    println("FTreeMap headMap failed on iteration " + i);
 	    exit();
 	}
 	if (!ptm0.tailMap(Lo).equals(tm0.tailMap(Lo))) {
-	    println("PureTreeMap tailMap failed on iteration " + i);
+	    println("FTreeMap tailMap failed on iteration " + i);
 	    exit();
 	}
 	if (i % 50 == 0) {
 	    try {
 		// Check handling of null map
-		PureMap<MyInteger, MyInteger> ptmser =
-		    (i == 0 ? new PureTreeMap<MyInteger, MyInteger>(TestComparator.Instance)
+		FMap<MyInteger, MyInteger> ptmser =
+		    (i == 0 ? new FTreeMap<MyInteger, MyInteger>(TestComparator.Instance)
 		     : ptm0);
 		FileOutputStream fos = new FileOutputStream("ptm.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -1258,32 +1258,32 @@ public class TestSuite {
 		oos.close();
 		FileInputStream fis = new FileInputStream("ptm.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		PureMap<MyInteger, MyInteger> nptmser =
-		    (PureMap<MyInteger, MyInteger>)ois.readObject();
+		FMap<MyInteger, MyInteger> nptmser =
+		    (FMap<MyInteger, MyInteger>)ois.readObject();
 		ois.close();
 		if (!ptmser.equals(nptmser)) {
-		    println("PureTreeMap read/write failed on iteration " + i);
+		    println("FTreeMap read/write failed on iteration " + i);
 		    exit();
 		}
 	    } catch (IOException e) {
-		println("PureTreeMap read/write: exception " + e);
+		println("FTreeMap read/write: exception " + e);
 		exit();
 	    } catch (ClassNotFoundException e) {
-		println("PureTreeMap read/write: exception " + e);
+		println("FTreeMap read/write: exception " + e);
 	    }
 	}
     }
 
-    static void testPureHashMap(Random rand, int i, PureHashSet<MyInteger> set) {
-	PureHashMap<MyInteger, MyInteger> phm0 = new PureHashMap<MyInteger, MyInteger>();
+    static void testFHashMap(Random rand, int i, FHashSet<MyInteger> set) {
+	FHashMap<MyInteger, MyInteger> phm0 = new FHashMap<MyInteger, MyInteger>();
 	HashMap<MyInteger, MyInteger> hm0 = new HashMap<MyInteger, MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200), v = rand.nextInt(3);
 	    MyInteger R = r == 57 ? null : new MyInteger(r), V = new MyInteger(v);
-	    PureHashMap<MyInteger, MyInteger> tmp = phm0.with(R, V);
+	    FHashMap<MyInteger, MyInteger> tmp = phm0.with(R, V);
 	    hm0.put(R, V);
 	    if (!tmp.verify()) {
-		println("PureHashMap Verification failure on iteration " + i);
+		println("FHashMap Verification failure on iteration " + i);
 		println(phm0.dump());
 		println("Adding " + R + ", " + V);
 		println(tmp.dump());
@@ -1291,15 +1291,15 @@ public class TestSuite {
 	    }
 	    phm0 = tmp;
 	}
-	PureHashMap<MyInteger, MyInteger> phm1 = new PureHashMap<MyInteger, MyInteger>();
+	FHashMap<MyInteger, MyInteger> phm1 = new FHashMap<MyInteger, MyInteger>();
 	HashMap<MyInteger, MyInteger> hm1 = new HashMap<MyInteger, MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200), v = rand.nextInt(3);
 	    MyInteger R = r == 57 ? null : new MyInteger(r), V = new MyInteger(v);
-	    PureHashMap<MyInteger, MyInteger> tmp = phm1.with(R, V);
+	    FHashMap<MyInteger, MyInteger> tmp = phm1.with(R, V);
 	    hm1.put(R, V);
 	    if (!tmp.verify()) {
-		println("PureHashMap Verification failure on iteration " + i);
+		println("FHashMap Verification failure on iteration " + i);
 		println(phm1.dump());
 		println("Adding " + R + ", " + V);
 		println(tmp.dump());
@@ -1310,10 +1310,10 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureHashMap<MyInteger, MyInteger> tmp = phm0.less(R);
+	    FHashMap<MyInteger, MyInteger> tmp = phm0.less(R);
 	    hm0.remove(R);
 	    if (!tmp.verify()) {
-		println("PureHashMap Verification failure on iteration " + i);
+		println("FHashMap Verification failure on iteration " + i);
 		println(phm0.dump());
 		println("Removing " + R);
 		println(tmp.dump());
@@ -1324,10 +1324,10 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureHashMap<MyInteger, MyInteger> tmp = phm1.less(R);
+	    FHashMap<MyInteger, MyInteger> tmp = phm1.less(R);
 	    hm1.remove(R);
 	    if (!tmp.verify()) {
-		println("PureHashMap Verification failure on iteration " + i);
+		println("FHashMap Verification failure on iteration " + i);
 		println(phm1.dump());
 		println("Removing " + R);
 		println(tmp.dump());
@@ -1336,35 +1336,35 @@ public class TestSuite {
 	    phm1 = tmp;
 	}
 	if (!phm0.equals(hm0)) {
-	    println("PureHashMap Equality failed (phm0, A) on iteration " + i);
+	    println("FHashMap Equality failed (phm0, A) on iteration " + i);
 	    println(phm0.dump());
 	    println(phm0);
 	    println(hm0);
 	    exit();
 	}
-	if (!phm0.equals(new PureHashMap<MyInteger, MyInteger>(hm0))) {
-	    println("PureHashMap Equality failed (phm0, B) on iteration " + i);
+	if (!phm0.equals(new FHashMap<MyInteger, MyInteger>(hm0))) {
+	    println("FHashMap Equality failed (phm0, B) on iteration " + i);
 	    println(phm0.dump());
 	    println(hm0);
 	    exit();
 	}
 	if (!phm1.equals(hm1)) {
-	    println("PureHashMap Equality failed (phm1, A) on iteration " + i);
+	    println("FHashMap Equality failed (phm1, A) on iteration " + i);
 	    println(phm1.dump());
 	    println(phm1);
 	    println(hm1);
 	    exit();
 	}
-	if (!phm1.equals(new PureHashMap<MyInteger, MyInteger>(hm1))) {
-	    println("PureHashMap Equality failed (phm1, B) on iteration " + i);
+	if (!phm1.equals(new FHashMap<MyInteger, MyInteger>(hm1))) {
+	    println("FHashMap Equality failed (phm1, B) on iteration " + i);
 	    println(phm1.dump());
 	    exit();
 	}
-	PureHashMap<MyInteger, MyInteger> phmm = phm0.union(phm1);
+	FHashMap<MyInteger, MyInteger> phmm = phm0.union(phm1);
 	HashMap<MyInteger, MyInteger> hmm = (HashMap<MyInteger, MyInteger>)hm0.clone();
 	hmm.putAll(hm1);
 	if (!phmm.verify() || !phmm.equals(hmm)) {
-	    println("PureHashMap Union failed on iteration " + i);
+	    println("FHashMap Union failed on iteration " + i);
 	    println(phm0);
 	    println(phm0.dump());
 	    println(phm1);
@@ -1376,17 +1376,17 @@ public class TestSuite {
 	    println(hmm);
 	    exit();
 	}
-	if (!phmm.equals(new PureHashMap<MyInteger, MyInteger>(hmm))) {
-	    println("PureHashMap Equality failed (phmm) on iteration " + i);
+	if (!phmm.equals(new FHashMap<MyInteger, MyInteger>(hmm))) {
+	    println("FHashMap Equality failed (phmm) on iteration " + i);
 	}
-	PureHashMap<MyInteger, MyInteger> phmr = phm0.restrictedTo(set);
+	FHashMap<MyInteger, MyInteger> phmr = phm0.restrictedTo(set);
 	HashMap<MyInteger, MyInteger> hmr = (HashMap<MyInteger, MyInteger>)hm0.clone();
 	for (Iterator it = hmr.keySet().iterator(); it.hasNext(); ) {
 	    Object k = it.next();
 	    if (!set.contains(k)) it.remove();
 	}
 	if (!phmr.verify() || !phmr.equals(hmr)) {
-	    println("PureHashMap restrictedTo failed on iteration " + i);
+	    println("FHashMap restrictedTo failed on iteration " + i);
 	    println(phmr);
 	    println(hmr);
 	    exit();
@@ -1398,21 +1398,21 @@ public class TestSuite {
 	    if (set.contains(k)) it.remove();
 	}
 	if (!phmr.verify() || !phmr.equals(hmr)) {
-	    println("PureHashMap restrictedFrom failed on iteration " + i);
+	    println("FHashMap restrictedFrom failed on iteration " + i);
 	    println(phmr);
 	    println(hmr);
 	    exit();
 	}
 	phm0 = phm0.less(null);		// for benefit of `compare' below
-	PureSet<MyInteger> phm0_dom = phm0.domain();
-	PureHashMap<MyInteger, MyInteger> phm0a =
+	FSet<MyInteger> phm0_dom = phm0.domain();
+	FHashMap<MyInteger, MyInteger> phm0a =
 	    phm0.less(pick(rand, phm0_dom)).with(pick(rand, phm0_dom),
 						 new MyInteger(rand.nextInt(3)));
-	PureHashMap<MyInteger, MyInteger> phm0b =
+	FHashMap<MyInteger, MyInteger> phm0b =
 	    phm0.less(pick(rand, phm0_dom)).with(pick(rand, phm0_dom),
 						 new MyInteger(rand.nextInt(3)));
 	if (sgn(phm0a.compareTo(phm0b)) != compare(phm0a, phm0b)) {
-	    println("PureHashMap Compare failed (phm0) on iteration " + i);
+	    println("FHashMap Compare failed (phm0) on iteration " + i);
 	    println(phm0a.dump());
 	    println(phm0b.dump());
 	    println(phm0a);
@@ -1422,15 +1422,15 @@ public class TestSuite {
 	    exit();
 	}
 	phm1 = phm1.less(null);
-	PureSet<MyInteger> phm1_dom = phm1.domain();
-	PureHashMap<MyInteger, MyInteger> phm1a =
+	FSet<MyInteger> phm1_dom = phm1.domain();
+	FHashMap<MyInteger, MyInteger> phm1a =
 	    phm1.less(pick(rand, phm1_dom)).with(pick(rand, phm1_dom),
 						 new MyInteger(rand.nextInt(3)));
-	PureHashMap<MyInteger, MyInteger> phm1b =
+	FHashMap<MyInteger, MyInteger> phm1b =
 	    phm1.less(pick(rand, phm1_dom)).with(pick(rand, phm1_dom),
 						 new MyInteger(rand.nextInt(3)));
 	if (sgn(phm1a.compareTo(phm1b)) != compare(phm1a, phm1b)) {
-	    println("PureHashMap Compare failed (phm1) on iteration " + i);
+	    println("FHashMap Compare failed (phm1) on iteration " + i);
 	    println(phm1a.dump());
 	    println(phm1b.dump());
 	    println(phm1a);
@@ -1442,59 +1442,59 @@ public class TestSuite {
 	if (i % 50 == 0) {
 	    try {
 		// Check handling of null map
-		PureMap<MyInteger, MyInteger> phmser =
-		    (i == 0 ? new PureHashMap<MyInteger, MyInteger>() : phm0);
+		FMap<MyInteger, MyInteger> phmser =
+		    (i == 0 ? new FHashMap<MyInteger, MyInteger>() : phm0);
 		FileOutputStream fos = new FileOutputStream("phm.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
 		oos.writeObject(phmser);
 		oos.close();
 		FileInputStream fis = new FileInputStream("phm.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		PureMap<MyInteger, MyInteger> nphmser = (PureMap<MyInteger, MyInteger>)ois.readObject();
+		FMap<MyInteger, MyInteger> nphmser = (FMap<MyInteger, MyInteger>)ois.readObject();
 		ois.close();
 		if (!phmser.equals(nphmser)) {
-		    println("PureHashMap read/write failed on iteration " + i);
+		    println("FHashMap read/write failed on iteration " + i);
 		    exit();
 		}
 	    } catch (IOException e) {
-		println("PureHashMap read/write: exception " + e);
+		println("FHashMap read/write: exception " + e);
 		exit();
 	    } catch (ClassNotFoundException e) {
-		println("PureHashMap read/write: exception " + e);
+		println("FHashMap read/write: exception " + e);
 	    }
 	}
     }
 
 /********
-    static void testPureCachedHashMap(Random rand, int i, PureSet set) {
-	PureMap phm0 = new PureCachedHashMap();
+    static void testFCachedHashMap(Random rand, int i, FSet set) {
+	FMap phm0 = new FCachedHashMap();
 	HashMap hm0 = new HashMap();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200), v = rand.nextInt(3);
 	    MyInteger R = r == 57 ? null : new MyInteger(r), V = new MyInteger(v);
-	    PureMap tmp = phm0.with(R, V);
+	    FMap tmp = phm0.with(R, V);
 	    hm0.put(R, V);
-	    if (!((PureCachedHashMap)tmp).verify()) {
-		println("PureCachedHashMap Verification failure on iteration " + i);
-		println(((PureCachedHashMap)phm0).dump());
+	    if (!((FCachedHashMap)tmp).verify()) {
+		println("FCachedHashMap Verification failure on iteration " + i);
+		println(((FCachedHashMap)phm0).dump());
 		println("Adding " + R + ", " + V);
-		println(((PureCachedHashMap)tmp).dump());
+		println(((FCachedHashMap)tmp).dump());
 		exit();
 	    }
 	    phm0 = tmp;
 	}
-	PureMap phm1 = new PureCachedHashMap();
+	FMap phm1 = new FCachedHashMap();
 	HashMap hm1 = new HashMap();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200), v = rand.nextInt(3);
 	    MyInteger R = r == 57 ? null : new MyInteger(r), V = new MyInteger(v);
-	    PureMap tmp = phm1.with(R, V);
+	    FMap tmp = phm1.with(R, V);
 	    hm1.put(R, V);
-	    if (!((PureCachedHashMap)tmp).verify()) {
-		println("PureCachedHashMap Verification failure on iteration " + i);
-		println(((PureCachedHashMap)phm1).dump());
+	    if (!((FCachedHashMap)tmp).verify()) {
+		println("FCachedHashMap Verification failure on iteration " + i);
+		println(((FCachedHashMap)phm1).dump());
 		println("Adding " + R + ", " + V);
-		println(((PureCachedHashMap)tmp).dump());
+		println(((FCachedHashMap)tmp).dump());
 		exit();
 	    }
 	    phm1 = tmp;
@@ -1502,13 +1502,13 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureMap tmp = phm0.less(R);
+	    FMap tmp = phm0.less(R);
 	    hm0.remove(R);
-	    if (!((PureCachedHashMap)tmp).verify()) {
-		println("PureCachedHashMap Verification failure on iteration " + i);
-		println(((PureCachedHashMap)phm0).dump());
+	    if (!((FCachedHashMap)tmp).verify()) {
+		println("FCachedHashMap Verification failure on iteration " + i);
+		println(((FCachedHashMap)phm0).dump());
 		println("Removing " + R);
-		println(((PureCachedHashMap)tmp).dump());
+		println(((FCachedHashMap)tmp).dump());
 		exit();
 	    }
 	    phm0 = tmp;
@@ -1516,68 +1516,68 @@ public class TestSuite {
 	for (int j = 0; j < 20; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
-	    PureMap tmp = phm1.less(R);
+	    FMap tmp = phm1.less(R);
 	    hm1.remove(R);
-	    if (!((PureCachedHashMap)tmp).verify()) {
-		println("PureCachedHashMap Verification failure on iteration " + i);
-		println(((PureCachedHashMap)phm1).dump());
+	    if (!((FCachedHashMap)tmp).verify()) {
+		println("FCachedHashMap Verification failure on iteration " + i);
+		println(((FCachedHashMap)phm1).dump());
 		println("Removing " + R);
-		println(((PureCachedHashMap)tmp).dump());
+		println(((FCachedHashMap)tmp).dump());
 		exit();
 	    }
 	    phm1 = tmp;
 	}
 	if (!phm0.equals(hm0)) {
-	    println("PureCachedHashMap Equality failed (phm0, A) on iteration " + i);
-	    println(((PureCachedHashMap)phm0).dump());
+	    println("FCachedHashMap Equality failed (phm0, A) on iteration " + i);
+	    println(((FCachedHashMap)phm0).dump());
 	    println(phm0);
 	    println(hm0);
 	    exit();
 	}
-	if (!phm0.equals(new PureCachedHashMap(hm0))) {
-	    println("PureCachedHashMap Equality failed (phm0, B) on iteration " + i);
-	    println(((PureCachedHashMap)phm0).dump());
+	if (!phm0.equals(new FCachedHashMap(hm0))) {
+	    println("FCachedHashMap Equality failed (phm0, B) on iteration " + i);
+	    println(((FCachedHashMap)phm0).dump());
 	    println(hm0);
 	    exit();
 	}
 	if (!phm1.equals(hm1)) {
-	    println("PureCachedHashMap Equality failed (phm1, A) on iteration " + i);
-	    println(((PureCachedHashMap)phm1).dump());
+	    println("FCachedHashMap Equality failed (phm1, A) on iteration " + i);
+	    println(((FCachedHashMap)phm1).dump());
 	    println(hm1);
 	    exit();
 	}
-	if (!phm1.equals(new PureCachedHashMap(hm1))) {
-	    println("PureCachedHashMap Equality failed (phm1, B) on iteration " + i);
-	    println(((PureCachedHashMap)phm1).dump());
+	if (!phm1.equals(new FCachedHashMap(hm1))) {
+	    println("FCachedHashMap Equality failed (phm1, B) on iteration " + i);
+	    println(((FCachedHashMap)phm1).dump());
 	    exit();
 	}
-	PureMap phmm = phm0.union(phm1);
+	FMap phmm = phm0.union(phm1);
 	HashMap hmm = (HashMap)hm0.clone();
 	hmm.putAll(hm1);
-	if (!((PureCachedHashMap)phmm).verify() || !phmm.equals(hmm)) {
-	    println("PureCachedHashMap Union failed on iteration " + i);
+	if (!((FCachedHashMap)phmm).verify() || !phmm.equals(hmm)) {
+	    println("FCachedHashMap Union failed on iteration " + i);
 	    println(phm0);
-	    println(((PureCachedHashMap)phm0).dump());
+	    println(((FCachedHashMap)phm0).dump());
 	    println(phm1);
-	    println(((PureCachedHashMap)phm1).dump());
-	    //if (!((PureCachedHashMap)phmm).verify())
+	    println(((FCachedHashMap)phm1).dump());
+	    //if (!((FCachedHashMap)phmm).verify())
 	    println(phmm.size() + ", " + hmm.size());
 	    println(phmm);
-	    println(((PureCachedHashMap)phmm).dump());
+	    println(((FCachedHashMap)phmm).dump());
 	    println(hmm);
 	    exit();
 	}
-	if (!phmm.equals(new PureCachedHashMap(hmm))) {
-	    println("PureCachedHashMap Equality failed (phmm) on iteration " + i);
+	if (!phmm.equals(new FCachedHashMap(hmm))) {
+	    println("FCachedHashMap Equality failed (phmm) on iteration " + i);
 	}
-	PureMap phmr = phm0.restrict(set);
+	FMap phmr = phm0.restrict(set);
 	HashMap hmr = (HashMap)hm0.clone();
 	for (Iterator it = hmr.keySet().iterator(); it.hasNext(); ) {
 	    Object k = it.next();
 	    if (!set.contains(k)) it.remove();
 	}
-	if (!((PureCachedHashMap)phmr).verify() || !phmr.equals(hmr)) {
-	    println("PureCachedHashMap restrict failed on iteration " + i);
+	if (!((FCachedHashMap)phmr).verify() || !phmr.equals(hmr)) {
+	    println("FCachedHashMap restrict failed on iteration " + i);
 	    println(phmr);
 	    println(hmr);
 	    exit();
@@ -1588,74 +1588,74 @@ public class TestSuite {
 	    Object k = it.next();
 	    if (set.contains(k)) it.remove();
 	}
-	if (!((PureCachedHashMap)phmr).verify() || !phmr.equals(hmr)) {
-	    println("PureCachedHashMap restrictNot failed on iteration " + i);
+	if (!((FCachedHashMap)phmr).verify() || !phmr.equals(hmr)) {
+	    println("FCachedHashMap restrictNot failed on iteration " + i);
 	    println(phmr);
 	    println(hmr);
 	    exit();
 	}
 	phm0 = phm0.less(null);		// for benefit of `compare' below
-	PureSet phm0_dom = phm0.domain();
-	PureMap phm0a = phm0.less(pick(rand, phm0_dom))
+	FSet phm0_dom = phm0.domain();
+	FMap phm0a = phm0.less(pick(rand, phm0_dom))
 			.with(pick(rand, phm0_dom), new MyInteger(rand.nextInt(3)));
-	PureMap phm0b = phm0.less(pick(rand, phm0_dom))
+	FMap phm0b = phm0.less(pick(rand, phm0_dom))
 			.with(pick(rand, phm0_dom), new MyInteger(rand.nextInt(3)));
-	if (sgn(((PureCachedHashMap)phm0a).compareTo(phm0b)) !=
+	if (sgn(((FCachedHashMap)phm0a).compareTo(phm0b)) !=
 	      compare(phm0a, phm0b)) {
-	    println("PureHashMap Compare failed (phm0) on iteration " + i);
-	    println(((PureHashMap)phm0a).dump());
-	    println(((PureHashMap)phm0b).dump());
+	    println("FHashMap Compare failed (phm0) on iteration " + i);
+	    println(((FHashMap)phm0a).dump());
+	    println(((FHashMap)phm0b).dump());
 	    println(phm0a);
 	    println(phm0b);
-	    println(((PureHashMap)phm0a).compareTo(phm0b));
+	    println(((FHashMap)phm0a).compareTo(phm0b));
 	    println(compare(phm0a, phm0b));
 	    exit();
 	}
 	phm1 = phm1.less(null);
-	PureSet phm1_dom = phm1.domain();
-	PureMap phm1a = phm1.less(pick(rand, phm1_dom))
+	FSet phm1_dom = phm1.domain();
+	FMap phm1a = phm1.less(pick(rand, phm1_dom))
 			.with(pick(rand, phm1_dom), new MyInteger(rand.nextInt(3)));
-	PureMap phm1b = phm1.less(pick(rand, phm1_dom))
+	FMap phm1b = phm1.less(pick(rand, phm1_dom))
 			.with(pick(rand, phm1_dom), new MyInteger(rand.nextInt(3)));
-	if (sgn(((PureCachedHashMap)phm1a).compareTo(phm1b)) !=
+	if (sgn(((FCachedHashMap)phm1a).compareTo(phm1b)) !=
 	      compare(phm1a, phm1b)) {
-	    println("PureHashMap Compare failed (phm1) on iteration " + i);
-	    println(((PureHashMap)phm1a).dump());
-	    println(((PureHashMap)phm1b).dump());
+	    println("FHashMap Compare failed (phm1) on iteration " + i);
+	    println(((FHashMap)phm1a).dump());
+	    println(((FHashMap)phm1b).dump());
 	    println(phm1a);
 	    println(phm1b);
-	    println(((PureHashMap)phm1a).compareTo(phm1b));
+	    println(((FHashMap)phm1a).compareTo(phm1b));
 	    println(compare(phm1a, phm1b));
 	    exit();
 	}
 	if (i % 50 == 0) {
 	    try {
 		// Check handling of null map
-		PureMap phmser = (i == 0 ? new PureCachedHashMap() : phm0);
+		FMap phmser = (i == 0 ? new FCachedHashMap() : phm0);
 		FileOutputStream fos = new FileOutputStream("phm.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
 		oos.writeObject(phmser);
 		oos.close();
 		FileInputStream fis = new FileInputStream("phm.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		PureMap nphmser = (PureMap)ois.readObject();
+		FMap nphmser = (FMap)ois.readObject();
 		ois.close();
 		if (!phmser.equals(nphmser)) {
-		    println("PureCachedHashMap read/write failed on iteration " + i);
+		    println("FCachedHashMap read/write failed on iteration " + i);
 		    exit();
 		}
 	    } catch (IOException e) {
-		println("PureCachedHashMap read/write: exception " + e);
+		println("FCachedHashMap read/write: exception " + e);
 		exit();
 	    } catch (ClassNotFoundException e) {
-		println("PureCachedHashMap read/write: exception " + e);
+		println("FCachedHashMap read/write: exception " + e);
 	    }
 	}
     }
 */
 
-    static void testPureTreeList(Random rand, int i) {
-	PureTreeList<MyInteger> ptl0 = new PureTreeList<MyInteger>();
+    static void testFTreeList(Random rand, int i) {
+	FTreeList<MyInteger> ptl0 = new FTreeList<MyInteger>();
 	// No `java.util' List class has both log-time-or-better indexing and
 	// log-time-or-better insertion.  So we're going to have a quadraticism
 	// somewhere.
@@ -1665,14 +1665,14 @@ public class TestSuite {
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
 	    int pos = al0.isEmpty() ? 0 : rand.nextInt(al0.size());
 	    int which = rand.nextInt(6);
-	    PureTreeList<MyInteger> tmp;
+	    FTreeList<MyInteger> tmp;
 	    if (ptl0.indexOf(R) != al0.indexOf(R)) {
-		println("PureTreeList indexOf failed (ptl0) on iteration " + i);
+		println("FTreeList indexOf failed (ptl0) on iteration " + i);
 		exit();
 	    }
 	    if (which == 0 && !al0.isEmpty()) {
 		if (!equals(ptl0.get(pos), al0.get(pos))) {
-		    println("PureTreeList get failed (ptl0) on iteration " + i);
+		    println("FTreeList get failed (ptl0) on iteration " + i);
 		    exit();
 		}
 		tmp = ptl0.with(pos, R);
@@ -1685,7 +1685,7 @@ public class TestSuite {
 		al0.add(pos, R);
 	    }
 	    if (!tmp.verify()) {
-		println("PureTreeList Verification failed on iteration " + i);
+		println("FTreeList Verification failed on iteration " + i);
 		println(ptl0.dump());
 		if (which == 1)
 		    println("Deleting at " + pos);
@@ -1695,7 +1695,7 @@ public class TestSuite {
 		exit();
 	    }
 	    if (tmp.hashCode() != al0.hashCode()) {
-		println("PureTreeList hashCode failed on iteration " + i);
+		println("FTreeList hashCode failed on iteration " + i);
 		println(ptl0);
 		println(ptl0.dump());
 		if (which == 1)
@@ -1710,21 +1710,21 @@ public class TestSuite {
 	    }
 	    ptl0 = tmp;
 	}
-	PureTreeList<MyInteger> ptl1 = new PureTreeList<MyInteger>();
+	FTreeList<MyInteger> ptl1 = new FTreeList<MyInteger>();
 	ArrayList<MyInteger> al1 = new ArrayList<MyInteger>();
 	for (int j = 0; j < 100; ++j) {
 	    int r = rand.nextInt(200);
 	    MyInteger R = r == 57 ? null : new MyInteger(r);
 	    int pos = al1.isEmpty() ? 0 : rand.nextInt(al1.size());
 	    int which = rand.nextInt(5);
-	    PureTreeList<MyInteger> tmp;
+	    FTreeList<MyInteger> tmp;
 	    if (ptl1.lastIndexOf(R) != al1.lastIndexOf(R)) {
-		println("PureTreeList lastIndexOf failed (ptl1) on iteration " + i);
+		println("FTreeList lastIndexOf failed (ptl1) on iteration " + i);
 		exit();
 	    }
 	    if (which == 0 && !al1.isEmpty()) {
 		if (!equals(ptl1.get(pos), al1.get(pos))) {
-		    println("PureTreeList get failed (ptl1) on iteration " + i);
+		    println("FTreeList get failed (ptl1) on iteration " + i);
 		    exit();
 		}
 		tmp = ptl1.with(pos, R);
@@ -1737,7 +1737,7 @@ public class TestSuite {
 		al1.add(pos, R);
 	    }
 	    if (!tmp.verify()) {
-		println("PureTreeList Verification failed on iteration " + i);
+		println("FTreeList Verification failed on iteration " + i);
 		println(ptl1.dump());
 		if (which == 1)
 		    println("Deleting at " + pos);
@@ -1747,7 +1747,7 @@ public class TestSuite {
 		exit();
 	    }
 	    if (tmp.hashCode() != al1.hashCode()) {
-		println("PureTreeList hashCode failed on iteration " + i);
+		println("FTreeList hashCode failed on iteration " + i);
 		println(tmp);
 		println(tmp.hashCode() + ", " + al1.hashCode());
 		exit();
@@ -1755,41 +1755,41 @@ public class TestSuite {
 	    ptl1 = tmp;
 	}
 	if (!ptl0.equals(al0)) {
-	    println("PureTreeList Equality failed (ptl0, A) on iteration " + i);
+	    println("FTreeList Equality failed (ptl0, A) on iteration " + i);
 	    println(ptl0.dump());
 	    println(ptl0);
 	    println(al0);
 	    exit();
 	}
-	if (!ptl0.equals(new PureTreeList<MyInteger>(al0))) {
-	    println("PureTreeList Equality failed (ptl0, B) on iteration " + i);
+	if (!ptl0.equals(new FTreeList<MyInteger>(al0))) {
+	    println("FTreeList Equality failed (ptl0, B) on iteration " + i);
 	    println(ptl0.dump());
 	    println(al0);
 	    exit();
 	}
 	if (!ptl1.equals(al1)) {
-	    println("PureTreeList Equality failed (ptl1, A) on iteration " + i);
+	    println("FTreeList Equality failed (ptl1, A) on iteration " + i);
 	    println(ptl1.dump());
 	    println(al1);
 	    exit();
 	}
-	if (!ptl1.equals(new PureTreeList<MyInteger>(al1))) {
-	    println("PureTreeList Equality failed (ptl1, B) on iteration " + i);
+	if (!ptl1.equals(new FTreeList<MyInteger>(al1))) {
+	    println("FTreeList Equality failed (ptl1, B) on iteration " + i);
 	    println(ptl1.dump());
 	    exit();
 	}
-	PureTreeList<MyInteger> ptlc = ptl0.concat(ptl1);
+	FTreeList<MyInteger> ptlc = ptl0.concat(ptl1);
 	ArrayList<MyInteger> alc = (ArrayList<MyInteger>)al0.clone();
 	alc.addAll(alc.size(), al1);
 	if (!ptlc.equals(alc)) {
-	    println("PureTreeList concat failed on iteration " + i);
+	    println("FTreeList concat failed on iteration " + i);
 	    exit();
 	}
 	int lo = rand.nextInt(al0.size()), hi = rand.nextInt(al0.size() - lo) + lo;
-	PureTreeList<MyInteger> sptl0 = ptl0.subseq(lo, hi);
+	FTreeList<MyInteger> sptl0 = ptl0.subseq(lo, hi);
 	List<MyInteger> sal0 = al0.subList(lo, hi);
 	if (!sptl0.equals(sal0)) {
-	    println("PureTreeList subseq failed on iteration " + i);
+	    println("FTreeList subseq failed on iteration " + i);
 	    println(ptl0);
 	    println(ptl0.dump());
 	    println(lo + ", " + hi);
@@ -1798,11 +1798,11 @@ public class TestSuite {
 	    exit();
 	}
 	int delpos = rand.nextInt(ptl0.size());
-	PureTreeList<MyInteger> ptl0a = ptl0.less(delpos);
+	FTreeList<MyInteger> ptl0a = ptl0.less(delpos);
 	List<MyInteger> al0a = (List<MyInteger>)al0.clone();
 	al0a.remove(delpos);
 	if (!ptl0a.equals(al0a)) {
-	    println("PureTreeList less failed on iteration " + i);
+	    println("FTreeList less failed on iteration " + i);
 	    println(ptl0);
 	    println(ptl0.dump());
 	    println("Removing at " + delpos);
@@ -1810,91 +1810,91 @@ public class TestSuite {
 	    println(ptl0a.dump());
 	    exit();
 	}
-	PureTreeList<MyInteger> ptl0b = ptl0.less(rand.nextInt(ptl0.size()));
+	FTreeList<MyInteger> ptl0b = ptl0.less(rand.nextInt(ptl0.size()));
 	if (sgn(ptl0a.compareTo(ptl0b)) !=
 	    compare(ptl0a, ptl0b)) {
-	    println("PureTreeList compareTo failed on iteration " + i);
+	    println("FTreeList compareTo failed on iteration " + i);
 	    println(ptl0a);
 	    println(ptl0b);
 	    println(ptl0a.compareTo(ptl0b));
 	    println(compare(ptl0a, ptl0b));
 	    exit();
 	}
-	PureTreeList<MyInteger> ptl0s = ptl0.sort(TestComparator.Instance);
+	FTreeList<MyInteger> ptl0s = ptl0.sort(TestComparator.Instance);
 	ArrayList<MyInteger> al0s = (ArrayList<MyInteger>)al0.clone();
 	Collections.sort(al0s, TestComparator.Instance);
 	if (!ptl0s.equals(al0s)) {
-	    println("PureTreeList sort failed on iteration " + i);
+	    println("FTreeList sort failed on iteration " + i);
 	    println(ptl0s);
 	    println(al0s);
 	    exit();
 	}
 	ListIterator<MyInteger> ptli = ptl0.listIterator();
 	ListIterator<MyInteger> ali = al0.listIterator();
-	//PureTreeList.debug = true;
+	//FTreeList.debug = true;
 	for (int j = 0; j < 400; ++j) {
 	    int which = rand.nextInt(2);
 	    if (ptli.nextIndex() != ali.nextIndex()) {
-		println("PureTreeList nextIndex failed on iteration "+ i + "." + j);
+		println("FTreeList nextIndex failed on iteration "+ i + "." + j);
 		exit();
 	    }
 	    if (which == 0 && ali.hasPrevious()) {
 		//println("Rev");
 		if (!ptli.hasPrevious()) {
-		    println("PureTreeList hasPrevious failed false on iteration " +
+		    println("FTreeList hasPrevious failed false on iteration " +
 			    i + "." + j);
 		    exit();
 		}
 		MyInteger x = ptli.previous();
 		MyInteger y = ali.previous();
 		if (x == null ? y != null : !x.equals(y)) {
-		    println("PureTreeList previous failed on iteration " + i + "." + j);
+		    println("FTreeList previous failed on iteration " + i + "." + j);
 		    exit();
 		}
 	    } else if (ali.hasNext()) {
 		//println("Fwd");
 		if (!ali.hasPrevious() && ptli.hasPrevious()) {
-		    println("PureTreeList hasPrevious failed true on iteration " +
+		    println("FTreeList hasPrevious failed true on iteration " +
 			    i + "." + j);
 		    exit();
 		}
 		if (!ptli.hasNext()) {
-		    println("PureTreeList hasNext failed false on iteration " +
+		    println("FTreeList hasNext failed false on iteration " +
 			    i + "." + j);
 		    exit();
 		}
 		MyInteger x = ptli.next();
 		MyInteger y = ali.next();
 		if (x == null ? y != null : !x.equals(y)) {
-		    println("PureTreeList next failed on iteration " + i + "." + j);
+		    println("FTreeList next failed on iteration " + i + "." + j);
 		    exit();
 		}
 	    } else if (ptli.hasNext()) {
-		println("PureTreeList hasNext failed true on iteration " + i + "." + j);
+		println("FTreeList hasNext failed true on iteration " + i + "." + j);
 		exit();
 	    }
 	}
 	if (i % 50 == 0) {
 	    try {
 		// Check handling of null list
-		PureList<MyInteger> ptlser = (i == 0 ? new PureTreeList<MyInteger>() : ptl0);
+		FList<MyInteger> ptlser = (i == 0 ? new FTreeList<MyInteger>() : ptl0);
 		FileOutputStream fos = new FileOutputStream("ptl.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
 		oos.writeObject(ptlser);
 		oos.close();
 		FileInputStream fis = new FileInputStream("ptl.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		PureList<MyInteger> nptlser = (PureList<MyInteger>)ois.readObject();
+		FList<MyInteger> nptlser = (FList<MyInteger>)ois.readObject();
 		ois.close();
 		if (!ptlser.equals(nptlser)) {
-		    println("PureTreeList read/write failed on iteration " + i);
+		    println("FTreeList read/write failed on iteration " + i);
 		    exit();
 		}
 	    } catch (IOException e) {
-		println("PureTreeList read/write: exception " + e);
+		println("FTreeList read/write: exception " + e);
 		exit();
 	    } catch (ClassNotFoundException e) {
-		println("PureTreeList read/write: exception " + e);
+		println("FTreeList read/write: exception " + e);
 	    }
 	}
     }
@@ -1934,7 +1934,7 @@ public class TestSuite {
 	return res;
     }
 
-    static MyInteger pick(Random rand, PureSet<MyInteger> s) {
+    static MyInteger pick(Random rand, FSet<MyInteger> s) {
 	if (s.isEmpty()) throw new IllegalStateException();
 	while (true) {
 	    int r = rand.nextInt(200);
@@ -1943,7 +1943,7 @@ public class TestSuite {
 	}
     }
 
-    static int compare(PureSet<MyInteger> a, PureSet<MyInteger> b) {
+    static int compare(FSet<MyInteger> a, FSet<MyInteger> b) {
 	if (a.size() < b.size()) return -1;
 	else if (a.size() > b.size()) return 1;
 	else {
@@ -1955,9 +1955,9 @@ public class TestSuite {
 		}
 		MyInteger a_elt = ai.next();
 		MyInteger b_elt = bi.next();
-		// 0 is the right value to use for null in `PureHashSet', but for
-		// `PureTreeSet' the right value would be -1.  However, we don't
-		// leave null in `PureTreeSet's very long, because `TreeSet' doesn't
+		// 0 is the right value to use for null in `FHashSet', but for
+		// `FTreeSet' the right value would be -1.  However, we don't
+		// leave null in `FTreeSet's very long, because `TreeSet' doesn't
 		// accept it.
 		int a_val = a_elt == null ? 0 : a_elt.intValue();
 		int b_val = b_elt == null ? 0 : b_elt.intValue();
@@ -1974,7 +1974,7 @@ public class TestSuite {
 	}
     }
 
-    static boolean equals(PureSet<MyInteger> a, PureSet<MyInteger> b) {
+    static boolean equals(FSet<MyInteger> a, FSet<MyInteger> b) {
 	if (a.size() != b.size()) return false;
 	else {
 	    for (Iterator ai = a.iterator(); ai.hasNext(); )
@@ -1983,7 +1983,7 @@ public class TestSuite {
 	}
     }
 
-    static int compare(PureList<MyInteger> a, PureList<MyInteger> b) {
+    static int compare(FList<MyInteger> a, FList<MyInteger> b) {
 	if (a.size() < b.size()) return -1;
 	else if (a.size() > b.size()) return 1;
 	else {
@@ -2000,7 +2000,7 @@ public class TestSuite {
 	}
     }
 
-    static int compare(PureMap<MyInteger, MyInteger> a, PureMap<MyInteger, MyInteger> b) {
+    static int compare(FMap<MyInteger, MyInteger> a, FMap<MyInteger, MyInteger> b) {
 	if (a.size() < b.size()) return -1;
 	else if (a.size() > b.size()) return 1;
 	else {
@@ -2038,20 +2038,20 @@ public class TestSuite {
 			int bv = b_ent.getValue().intValue();
 			if (av < bv) return -1;
 			else if (av > bv) return 1;
-		    } else if (a instanceof PureTreeMap) {
+		    } else if (a instanceof FTreeMap) {
 			// We have to use the same kind of set as 'a' and 'b' (which are
 			// assumed to be the same as each other), because they use different
 			// value comparators.
-			PureTreeSet<MyInteger> avs = PureTreeSet.<MyInteger>emptySet();
+			FTreeSet<MyInteger> avs = FTreeSet.<MyInteger>emptySet();
 			avs = avs.with(a_ent.getValue()).with(a_next.getValue());
-			PureTreeSet<MyInteger> bvs = PureTreeSet.<MyInteger>emptySet();
+			FTreeSet<MyInteger> bvs = FTreeSet.<MyInteger>emptySet();
 			bvs = bvs.with(b_ent.getValue()).with(b_next.getValue());
 			int comp_res = avs.compareTo(bvs);
 			if (comp_res != 0) return comp_res;
 		    } else {
-			PureHashSet<MyInteger> avs = PureHashSet.<MyInteger>emptySet();
+			FHashSet<MyInteger> avs = FHashSet.<MyInteger>emptySet();
 			avs = avs.with(a_ent.getValue()).with(a_next.getValue());
-			PureHashSet<MyInteger> bvs = PureHashSet.<MyInteger>emptySet();
+			FHashSet<MyInteger> bvs = FHashSet.<MyInteger>emptySet();
 			bvs = bvs.with(b_ent.getValue()).with(b_next.getValue());
 			int comp_res = avs.compareTo(bvs);
 			if (comp_res != 0) return comp_res;
