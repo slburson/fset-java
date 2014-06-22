@@ -97,12 +97,29 @@ public final class PureTreeSet<Elt>
     }
 
     /**
+     * Return an empty PureTreeSet that uses the supplied comparator.
+     */
+    public static <Elt> PureTreeSet<Elt> emptySet(Comparator<? super Elt> comp) {
+	if (comp == null) return emptySet();		// mostly for our own use
+	else return new PureTreeSet<Elt>(comp);
+    }
+
+    /**
      * Constructs an empty <code>PureTreeSet</code> that uses the natural ordering
      * of the elements.
      */
     public PureTreeSet() {
 	tree = null;
 	comp = null;
+    }
+
+    /**
+     * Constructs a <code>PureTreeSet</code> containing only <code>elt</code>, and
+     * that uses the natural ordering of the elements.
+     */
+    public PureTreeSet(Elt elt) {
+	comp = null;
+	tree = with(null, elt);
     }
 
     /**
@@ -117,13 +134,22 @@ public final class PureTreeSet<Elt>
     }
 
     /**
+     * Constructs a <code>PureTreeSet</code> containing only <code>elt</code>, and
+     * that uses the supplied <code>Comparator</code> to compare elements.
+     */
+    public PureTreeSet(Elt elt, Comparator<? super Elt> c) {
+	comp = (Comparator<Elt>)c;
+	tree = with(null, elt);
+    }
+
+    /**
      * Constructs a <code>PureTreeSet</code> containing the same elements as
      * <code>coll</code>, and that uses the natural ordering of the elements.
      *
      * @param coll the collection to use the elements of
      */
     public PureTreeSet(Collection<? extends Elt> coll) {
-	initialize(coll, null);
+	fromCollection(coll, null);
     }
 
     /**
@@ -135,7 +161,7 @@ public final class PureTreeSet<Elt>
      * @param c the comparator
      */
     public PureTreeSet(Collection<? extends Elt> coll, Comparator<? super Elt> c) {
-	initialize(coll, c);
+	fromCollection(coll, c);
     }
 
     /**
@@ -146,30 +172,16 @@ public final class PureTreeSet<Elt>
      * @param set the set to use the elements and ordering of
      */
     public PureTreeSet(SortedSet<Elt> set) {
-	initialize(set, set.comparator());
+	fromCollection(set, set.comparator());
     }
 
-    private void initialize(Collection<? extends Elt> coll, Comparator<? super Elt> c) {
+    private void fromCollection(Collection<? extends Elt> coll, Comparator<? super Elt> c) {
 	comp = (Comparator<Elt>)c;
 	if (coll instanceof PureTreeSet && eql(comp, ((PureTreeSet)coll).comp))
 	    tree = ((PureTreeSet)coll).tree;
-	else if (coll instanceof RandomAccess)		// entails `List'
-	    tree = fromRandomAccessCollection((List<Object>)coll, 0, coll.size());
-	else tree = new PureTreeList<Elt>(coll).toPureTreeSet(comp).tree;
-    }
-
-    private Object fromRandomAccessCollection(List<Object> list, int lo, int hi) {
-	if (lo == hi) return null;
-	else if (lo + 1 == hi) {
-	    // It would be better to pick up several elements and sort them, but
-	    // it's nontrivial because of possible equivalences.
-	    Object[] a = new Object[1];
-	    a[0] = list.get(lo);
-	    return a;
-	} else {
-	    int mid = (lo + hi) >> 1;
-	    return union(fromRandomAccessCollection(list, lo, mid),
-			 fromRandomAccessCollection(list, mid, hi));
+	else {
+	    tree = null;
+	    for (Elt e : coll) tree = with(tree, e);
 	}
     }
 
@@ -186,20 +198,8 @@ public final class PureTreeSet<Elt>
      */
     public <T extends Elt> PureTreeSet(T[] ary) {
 	comp = null;
-	tree = fromArray(ary, 0, ary.length);
-    }
-
-    private <T extends Elt> Object fromArray(T[] ary, int lo, int hi) {
-	if (lo == hi) return null;
-	else if (lo + 1 == hi) {
-	    Object[] a = new Object[1];
-	    a[0] = ary[lo];
-	    return a;
-	} else {
-	    int mid = (lo + hi) >> 1;
-	    return union(fromArray(ary, lo, mid),
-			 fromArray(ary, mid, hi));
-	}
+	tree = null;
+	for (Elt e : ary) tree = with(tree, e);
     }
 
     /**
@@ -216,7 +216,8 @@ public final class PureTreeSet<Elt>
      */
     public <T extends Elt> PureTreeSet(T[] ary, Comparator<? super Elt> c) {
 	comp = (Comparator<Elt>)c;
-	tree = new PureTreeList<Elt>(ary).toPureTreeSet(c).tree;
+	tree = null;
+	for (Elt e : ary) tree = with(tree, e);
     }
 
     public boolean isEmpty() {
@@ -252,13 +253,13 @@ public final class PureTreeSet<Elt>
     public PureTreeSet<Elt> with(Elt elt) {
 	Object t = with(tree, elt);
 	if (t == tree) return this;
-	else return new PureTreeSet(t, comp);
+	else return make(t, comp);
     }
 
     public PureTreeSet<Elt> less(Elt elt) {
 	Object t = less(tree, elt);
 	if (t == tree) return this;
-	else return new PureTreeSet(t, comp);
+	else return make(t, comp);
     }
 
     /**
@@ -277,16 +278,17 @@ public final class PureTreeSet<Elt>
      * incompatible with this set or its <code>Comparator</code>
      */
     public PureTreeSet<Elt> union(Collection<? extends Elt> coll) {
-	if (coll == this) return this;
+	if (coll == this || coll.isEmpty()) return this;
 	else if (coll instanceof PureTreeSet && eql(comp, ((PureTreeSet)coll).comp)) {
 	    PureTreeSet<Elt> pts = (PureTreeSet<Elt>)coll;
+	    if (isEmpty()) return pts;
 	    Object t = union(tree, pts.tree);
-	    return new PureTreeSet<Elt>(t, comp);
+	    return make(t, comp);
 	} else {
 	    // Either not a `PureTreeSet', or has a different ordering.
 	    PureTreeSet<Elt> pts = new PureTreeSet<Elt>(coll, comp);
 	    Object t = union(tree, pts.tree);
-	    return new PureTreeSet<Elt>(t, comp);
+	    return make(t, comp);
 	}
     }
 
@@ -306,15 +308,16 @@ public final class PureTreeSet<Elt>
      */
     public PureTreeSet<Elt> intersection(Collection<? extends Elt> coll) {
 	if (coll == this) return this;
+	else if (isEmpty() || coll.isEmpty()) return emptySet(comp);
 	else if (coll instanceof PureTreeSet && eql(comp, ((PureTreeSet)coll).comp)) {
 	    PureTreeSet<Elt> pts = (PureTreeSet<Elt>)coll;
 	    Object t = intersection(tree, pts.tree);
-	    return new PureTreeSet<Elt>(t, comp);
+	    return make(t, comp);
 	} else {
 	    // Either not a `PureTreeSet', or has a different ordering.
 	    PureTreeSet<Elt> pts = new PureTreeSet<Elt>(coll, comp);
 	    Object t = intersection(tree, pts.tree);
-	    return new PureTreeSet<Elt>(t, comp);
+	    return make(t, comp);
 	}
     }
 
@@ -333,16 +336,17 @@ public final class PureTreeSet<Elt>
      * <code>coll</code> or its comparator, or conversely
      */
     public PureTreeSet<Elt> difference(Collection<? extends Elt> coll) {
-	if (coll == this) return new PureTreeSet<Elt>(comp);
+	if (coll == this) return emptySet(comp);
+	else if (coll.isEmpty()) return this;
 	else if (coll instanceof PureTreeSet && eql(comp, ((PureTreeSet)coll).comp)) {
 	    PureTreeSet<Elt> pts = (PureTreeSet<Elt>)coll;
 	    Object t = difference(tree, pts.tree);
-	    return new PureTreeSet<Elt>(t, comp);
+	    return make(t, comp);
 	} else {
 	    // Either not a `PureTreeSet', or has a different ordering.
 	    PureTreeSet<Elt> pts = new PureTreeSet<Elt>(coll, comp);
 	    Object t = difference(tree, pts.tree);
-	    return new PureTreeSet<Elt>(t, comp);
+	    return make(t, comp);
 	}
     }
 
@@ -498,7 +502,7 @@ public final class PureTreeSet<Elt>
 	       // `split' excludes both endpoints.
 	       Object eq = findEquiv(tree, fromElement);
 	       if (eq != NO_ELEMENT) t = with(t, eq);
-	       return new PureTreeSet<Elt>(t, comp);
+	       return make(t, comp);
 	    }
 	}
     }
@@ -516,8 +520,8 @@ public final class PureTreeSet<Elt>
      */
     public SortedSet<Elt> headSet(Elt toElement) {
 	if (tree == null || compare(last(), toElement) < 0) return this;
-	else if (compare(first(), toElement) >= 0) return new PureTreeSet<Elt>(comp);
-	else return new PureTreeSet<Elt>(split(tree, NEGATIVE_INFINITY, toElement), comp);
+	else if (compare(first(), toElement) >= 0) return make(null, comp);
+	else return make(split(tree, NEGATIVE_INFINITY, toElement), comp);
     }
 
     /**
@@ -534,12 +538,12 @@ public final class PureTreeSet<Elt>
      */
     public SortedSet<Elt> tailSet(Elt fromElement) {
 	if (tree == null || compare(first(), fromElement) >= 0) return this;
-	else if (compare(last(), fromElement) < 0) return new PureTreeSet<Elt>(comp);
+	else if (compare(last(), fromElement) < 0) return make(null, comp);
 	else {
 	    Object t = split(tree, fromElement, POSITIVE_INFINITY);
 	    Object eq = findEquiv(tree, fromElement);
 	    if (eq != NO_ELEMENT) t = with(t, eq);
-	    return new PureTreeSet<Elt>(t, comp);
+	    return make(t, comp);
 	}
     }
 
@@ -560,11 +564,16 @@ public final class PureTreeSet<Elt>
     private Comparator<Elt> comp;
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
-    // This has default (package-wide) access so `PureTreeMap.domain' can use it.
-    // ... Also `PureTreeList.toPureTreeSet'.
-    /*package*/ PureTreeSet(Object _tree, Comparator<? super Elt> _comp) {
-	tree = _tree;
+    // The 'int' parameter is just to distinguish it from the public singleton constructor.
+    private PureTreeSet(int x, Object _tree, Comparator<? super Elt> _comp) {
 	comp = (Comparator<Elt>)_comp;
+	tree = _tree;
+    }
+
+    // This has default (package-wide) access so `PureTreeMap.domain' can use it.
+    /*package*/ static <Elt> PureTreeSet<Elt> make(Object tree, Comparator<? super Elt> comp) {
+	if (tree == null && comp == null) return emptySet();
+	return new PureTreeSet<Elt>(42, tree, comp);
     }
 
     /* The threshold length above which tree nodes will be built. */
@@ -672,7 +681,7 @@ public final class PureTreeSet<Elt>
 
     // Used by `PureTreeList.toPureHashSet'.
     // `elt' may be an `EquivalentSet'.
-    Object with(Object subtree, Object elt) {
+    /*package*/ Object with(Object subtree, Object elt) {
 	if (subtree == null) {
 	    if (!(elt instanceof EquivalentSet)) {
 		Object[] a = new Object[1];
@@ -777,8 +786,7 @@ public final class PureTreeSet<Elt>
 	}
     }
 
-    // This has default access so `PureTreeList.toPureTreeSet' can use it.
-    Object union(Object subtree1, Object subtree2) {
+    private Object union(Object subtree1, Object subtree2) {
 	return union(subtree1, subtree2, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
@@ -1772,8 +1780,8 @@ public final class PureTreeSet<Elt>
         throws java.io.IOException {
 	strm.defaultWriteObject();	// writes `comp'
         strm.writeInt(size());
-	for (Iterator it=iterator(); it.hasNext(); )
-            strm.writeObject(it.next());
+	for (Object e : this)
+            strm.writeObject(e);
     }
 
     /**
@@ -1783,14 +1791,9 @@ public final class PureTreeSet<Elt>
         throws java.io.IOException, ClassNotFoundException {
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
-	Elt[] ary = (Elt[])new Object[size];
+	tree = null;
 	for (int i = 0; i < size; ++i)
-	    ary[i] = (Elt)strm.readObject();
-	// This is actually not a very good way to do this.  In fact, repeated 'with' may
-	// be a little faster, if memory serves.  What would be much better would be something
-	// like 'PureTreeList.fromCollection', which we should be able to do since the keys
-	// are already in order.
-	tree = fromArray(ary, 0, size);
+	    tree = with(tree, (Elt)strm.readObject());
     }
 
 }

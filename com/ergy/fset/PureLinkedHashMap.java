@@ -71,19 +71,27 @@ public class PureLinkedHashMap<Key, Val>
 	return (Key)PureHashMap.lastKey(map_tree);
     }
 
+    public boolean contains(Map.Entry<Key, Val> entry) {
+	Key key = entry.getKey();
+	Object val = PureHashMap.get(map_tree, key, hashCode(key));
+	return val != PureHashMap.NO_ELEMENT && eql(val, entry.getValue());
+    }
+
     public boolean containsKey(Object key) {
-	return PureHashMap.containsKey(map_tree, key, PureHashMap.hashCode(key));
+	return PureHashMap.get(map_tree, key, hashCode(key)) != PureHashMap.NO_ELEMENT;
     }
 
     public Val get(Object key) {
-	return (Val)PureHashMap.get(map_tree, key, PureHashMap.hashCode(key), dflt);
+	Object val = PureHashMap.get(map_tree, key, hashCode(key));
+	if (val == PureHashMap.NO_ELEMENT) return dflt;
+	else return (Val)val;
     }
 
     public PureLinkedHashMap<Key, Val> with(Key key, Val value) {
-	int khash = PureHashMap.hashCode(key);
+	int khash = hashCode(key);
 	Object new_map_tree = PureHashMap.with(map_tree, key, khash, value);
 	if (new_map_tree == map_tree) return this;
-	if (PureHashMap.containsKey(map_tree, key, khash))
+	if (PureHashMap.treeSize(new_map_tree) == PureHashMap.treeSize(map_tree))   // existing key?
 	    return new PureLinkedHashMap<Key, Val>(new_map_tree, list_tree, dflt);
 	else {
 	    Object new_list_tree = PureTreeList.insert(list_tree, PureTreeList.treeSize(list_tree),
@@ -93,11 +101,10 @@ public class PureLinkedHashMap<Key, Val>
     }
 
     public PureLinkedHashMap<Key, Val> less(Key key) {
-	int khash = PureHashMap.hashCode(key);
+	int khash = hashCode(key);
 	Object new_map_tree = PureHashMap.less(map_tree, key, khash);
 	if (new_map_tree == map_tree) return this;
-	// O(n) because we have to linearly search the list for the key.  (If we used 'get'
-	// instead of an iterator, it would be O(n log n).)
+	// O(n) because we have to linearly search the list for the key.
 	Iterator<Key> it = new PureTreeList.PTLIterator(list_tree);
 	int i = 0;
 	while (!eql(key, it.next())) i++;
@@ -114,7 +121,7 @@ public class PureLinkedHashMap<Key, Val>
 		return PureLinkedHashMap.this.size();
 	    }
 	    public boolean contains(Object key) {
-		return PureHashMap.containsKey(map_tree, key, PureHashMap.hashCode(key));
+		return PureLinkedHashMap.this.containsKey(key);
 	    }
 	};
     }
@@ -149,7 +156,7 @@ public class PureLinkedHashMap<Key, Val>
 
     // &&& Or PureLinkedHashSet, when that exists
     public PureHashSet<Key> domain() {
-	return new PureHashSet<Key>(PureHashMap.domain(map_tree));
+	return PureHashSet.<Key>make(PureHashMap.domain(map_tree));
     }
 
     public PureSet<Val> range() {
@@ -216,13 +223,8 @@ public class PureLinkedHashMap<Key, Val>
 	else {
 	    Map<Object, Object> map = (Map<Object, Object>)obj;
 	    if (size() != map.size()) return false;
-	    for (Map.Entry<Object, Object> ent : map.entrySet()) {
-		Object ekey = ent.getKey();
-		Object eval = ent.getValue();
-		int ekhash = PureHashMap.hashCode(ekey);
-		if (!PureHashMap.containsKey(map_tree, ekey, ekhash)) return false;
-		if (!eql(eval, PureHashMap.get(map_tree, ekey, ekhash, dflt))) return false;
-	    }
+	    for (Map.Entry<Object, Object> ent : map.entrySet())
+		if (!PureHashMap.contains(map_tree, ent)) return false;
 	    return true;
 	}
     }
@@ -252,6 +254,10 @@ public class PureLinkedHashMap<Key, Val>
 	return x == null ? y == null : x.equals(y);
     }
 
+    private static int hashCode(Object x) {
+	return PureHashMap.hashCode(x);
+    }
+
     /****************/
     // Iterator classes
 
@@ -272,7 +278,7 @@ public class PureLinkedHashMap<Key, Val>
 	    Key key = list_it.next();
 	    // &&& This could be improved with a 'getEntry' method -- it would cons an
 	    // Entry only about half the time.  Worth the trouble?
-	    Val val = (Val)PureHashMap.get(map_tree, key, PureHashMap.hashCode(key), null); 
+	    Val val = (Val)PureHashMap.get(map_tree, key, PureHashMap.hashCode(key));
 	    return (Map.Entry<Key, Val>)new PureHashMap.Entry(key, val);
 	}
 
@@ -296,7 +302,7 @@ public class PureLinkedHashMap<Key, Val>
 
 	public Val next() {
 	    Object key = list_it.next();
-	    return (Val)PureHashMap.get(map_tree, key, PureHashMap.hashCode(key), null);
+	    return (Val)PureHashMap.get(map_tree, key, PureHashMap.hashCode(key));
 	}
 
 	public void remove() {
@@ -327,13 +333,14 @@ public class PureLinkedHashMap<Key, Val>
     private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
 	strm.defaultReadObject();	// reads `dflt'
         int size = strm.readInt();
-	Object[][] pairs = new Object[size][2];
+	map_tree = null;
 	Object[] vals = new Object[size];
 	for (int i = 0; i < size; ++i) {
-	    pairs[i][0] = strm.readObject();
-	    pairs[i][1] = vals[i] = strm.readObject();
+	    Object key = strm.readObject();
+	    Object val = strm.readObject();
+	    map_tree = PureHashMap.with(map_tree, key, hashCode(key), val);
+	    vals[i] = val;
 	}
-	map_tree = PureHashMap.fromArrayNoCopy(pairs, 0, size);
 	list_tree = PureTreeList.fromCollection(vals);
     }
 

@@ -63,13 +63,14 @@ import java.util.*;
  * created like this:
  *
  * <pre>
- *     PureMap map = PureHashMap.withDefault(new PureHashMap());
+ *     PureMap<K1, PureMap<K2, V>> map =
+ *       PureHashMap.<K1, PureMap<K2, V>>withDefault(new PureHashMap<K2, V>());
  * </pre>
  *
  * the chained mapping <code>key1 -> key2 -> val</code> can then be added like this:
  *
  * <pre>
- *     map = map.with(key1, ((PureMap)map.get(key1)).with(key2, val));
+ *     map = map.with(key1, map.get(key1).with(key2, val));
  * </pre>
  *
  * which works even if <code>map</code> does not already contain an entry for
@@ -130,9 +131,6 @@ public class PureHashMap<Key, Val>
 	if (map instanceof PureHashMap)
 	    tree = ((PureHashMap)map).tree;
 	else {
-	    // &&& This could be improved along the same lines as the `PureTreeSet'
-	    // constructor... but it won't help as much if the map iterator has to cons
-	    // a new `Map.Entry' each time.
 	    Object t = null;
 	    for (Iterator it = map.entrySet().iterator(); it.hasNext(); ) {
 		Map.Entry ent = (Map.Entry)it.next();
@@ -153,20 +151,11 @@ public class PureHashMap<Key, Val>
      */
     public PureHashMap(Key[] keys, Val[] vals) {
 	if (keys.length != vals.length) throw new IllegalArgumentException();
-	tree = fromArrays(keys, vals, 0, keys.length);
-    }
-
-    private Object fromArrays(Key[] keys, Val[] vals, int lo, int hi) {
-	if (lo == hi) return null;
-	else if (lo + 1 == hi) {
-	    Object[] pr = new Object[2];
-	    pr[0] = keys[lo];
-	    pr[1] = vals[lo];
-	    return pr;
-	} else {
-	    int mid = lo + ((hi - lo) >> 1);		// avoid overflow
-	    return union(fromArrays(keys, vals, lo, mid), fromArrays(keys, vals, mid, hi));
-	}
+	tree = null;
+	if (keys.length != vals.length)
+	    throw new IllegalArgumentException("array lengths must be equal");
+	for (int i = 0; i < keys.length; ++i)
+	    tree = with(tree, keys[i], hashCode(keys[i]), vals[i]);
     }
 
     /**
@@ -219,18 +208,29 @@ public class PureHashMap<Key, Val>
 	return (Key)lastKey(tree);
     }
 
+    /**
+     * Returns true iff this map contains an entry with key <code>entry.getKey()</code>,
+     * with corresponding value <code>entry.getValue()</code>.  (Returns false when there
+     * is no entry for the key, even if the value is equal to the map's default.)
+     */
+    public boolean contains(Map.Entry<Key, Val> entry) {
+	return contains(tree, entry);
+    }
+
     public boolean containsKey(Object key) {
-	return containsKey(tree, key, hashCode(key));
+	return get(tree, key, hashCode(key)) != NO_ELEMENT;
     }
 
     /**
      * Returns the value to which this map maps <code>key</code>.  If this map
      * contains no entry for <code>key</code>, returns this map's default value,
      * which is normally <code>null</code>, but may be a different value if the map
-     * was originally created by the <code>withDefault</code> static factory
-     * method. */
+     * was given a default using <code>withDefault</code>.
+     * */
     public Val get(Object key) {
-	return (Val)get(tree, key, hashCode(key), dflt);
+	Object val = get(tree, key, hashCode(key));
+	if (val == NO_ELEMENT) return dflt;
+	else return (Val)val;
     }
 
     public PureHashMap<Key, Val> with(Key key, Val value) {
@@ -283,12 +283,8 @@ public class PureHashMap<Key, Val>
 	    public boolean contains(Object x) {
 		if (!(x instanceof Map.Entry)) return false;
 		else {
-		    Map.Entry<Object, Object> ent = (Map.Entry)x;
-		    Object ekey = ent.getKey();
-		    Object eval = ent.getValue();
-		    // This could be improved, but I don't think it's important...
-		    if (containsKey(ekey)) return eql(eval, get(ekey));
-		    else return false;
+		    Map.Entry<Key, Val> ent = (Map.Entry)x;
+		    return PureHashMap.this.contains(ent);
 		}
 	    }
 	    public boolean remove(Object x) {
@@ -302,7 +298,7 @@ public class PureHashMap<Key, Val>
 
     public PureHashSet<Key> domain() {
 	Object dom = domain(tree);
-	return new PureHashSet<Key>(dom);
+	return PureHashSet.<Key>make(dom);
     }
 
     /**
@@ -376,13 +372,8 @@ public class PureHashMap<Key, Val>
 	else {
 	    Map<Object, Object> map = (Map<Object, Object>)obj;
 	    if (size() != map.size()) return false;
-	    for (Map.Entry<Object, Object> ent : map.entrySet()) {
-		Object ekey = ent.getKey();
-		Object eval = ent.getValue();
-		int ekhash = hashCode(ekey);
-		if (!containsKey(tree, ekey, ekhash)) return false;
-		if (!eql(eval, get(tree, ekey, ekhash, dflt))) return false;
-	    }
+	    for (Map.Entry ent : map.entrySet())
+		if (!contains(ent)) return false;
 	    return true;
 	}
     }
@@ -559,41 +550,24 @@ public class PureHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static boolean containsKey(Object subtree, Object key, int khash) {
-	if (subtree == null) return false;
-	else if (!(subtree instanceof Node)) {
-	    Object[] ary = (Object[])subtree;
-	    int bin_srch_res = binarySearch(ary, khash);
-	    if ((bin_srch_res & BIN_SEARCH_FOUND_MASK) == BIN_SEARCH_FOUND)
-		return eql(key, ary[bin_srch_res >> BIN_SEARCH_INDEX_SHIFT]);
-	    else return false;
-	} else {
-	    Node node = (Node)subtree;
-	    Object nkey = node.key;
-	    int nhash = hashCode(nkey);
-	    if (khash == nhash) {
-		if (nkey instanceof EquivalentMap) {
-		    ArrayList<Entry> al = ((EquivalentMap)nkey).contents;
-		    for (int i = 0, len = al.size(); i < len; ++i) {
-			Object ekey = (al.get(i)).key;
-			if (eql(key, ekey)) return true;
-		    }
-		    return false;
-		} else return eql(key, nkey);
-	    } else if (khash < nhash) return containsKey(node.left, key, khash);
-	    else return containsKey(node.right, key, khash);
-	}
+    /*package*/ static <Key, Val> boolean contains(Object tree, Map.Entry<Key, Val> entry) {
+	Key key = entry.getKey();
+	Object val = get(tree, key, hashCode(key));
+	return val != NO_ELEMENT && eql(val, entry.getValue());
     }
 
-    /*package*/ static Object get(Object subtree, Object key, int khash, Object dflt) {
-	if (subtree == null) return dflt;
+    /*package*/ static final Object NO_ELEMENT = new Object();
+
+    // Returns NO_ELEMENT if there is no entry for the key.
+    /*package*/ static Object get(Object subtree, Object key, int khash) {
+	if (subtree == null) return NO_ELEMENT;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    int bin_srch_res = binarySearch(ary, khash);
 	    int idx = bin_srch_res >> BIN_SEARCH_INDEX_SHIFT;
 	    if ((bin_srch_res & BIN_SEARCH_FOUND_MASK) == BIN_SEARCH_FOUND && eql(key, ary[idx]))
 		return ary[idx + (ary.length >> 1)];
-	    else return dflt;
+	    else return NO_ELEMENT;
 	} else {
 	    Node node = (Node)subtree;
 	    Object nkey = node.key;
@@ -605,11 +579,11 @@ public class PureHashMap<Key, Val>
 			Entry ent = al.get(i);
 			if (eql(key, ent.key)) return ent.value;
 		    }
-		    return dflt;
+		    return NO_ELEMENT;
 		} else if (eql(key, nkey)) return node.value;
-		else return dflt;
-	    } else if (khash < nhash) return get(node.left, key, khash, dflt);
-	    else return get(node.right, key, khash, dflt);
+		else return NO_ELEMENT;
+	    } else if (khash < nhash) return get(node.left, key, khash);
+	    else return get(node.right, key, khash);
 	}
     }
 
@@ -629,7 +603,8 @@ public class PureHashMap<Key, Val>
 	    int found = bin_srch_res & BIN_SEARCH_FOUND_MASK;
 	    int idx = bin_srch_res >> BIN_SEARCH_INDEX_SHIFT;
 	    if (found == BIN_SEARCH_FOUND && !(key instanceof EquivalentMap) && eql(key, ary[idx]))
-		return update2(ary, idx, value);
+		if (eql(value, ary[idx + nkeys])) return subtree;
+		else return update2(ary, idx, value);
 	    else if (found == BIN_SEARCH_NOT_FOUND  &&
 		     len + 1 < MAX_LEAF_ARRAY_LENGTH  &&
 		     !(key instanceof EquivalentMap))
@@ -2058,25 +2033,11 @@ public class PureHashMap<Key, Val>
     private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
 	strm.defaultReadObject();	// reads `comp' and `dflt'
         int size = strm.readInt();
-	Object[][] ary = new Object[size][2];
+	tree = null;
 	for (int i = 0; i < size; ++i) {
-	    ary[i][0] = strm.readObject();
-	    ary[i][1] = strm.readObject();
-	}
-	tree = fromArrayNoCopy(ary, 0, size);
-    }
-
-    /*package*/ static Object fromArrayNoCopy(Object[][] ary, int lo, int hi) {
-	// This is actually not a very good way to do this.  In fact, repeated 'with' may
-	// be a little faster, if memory serves.  What would be much better would be something
-	// like 'PureTreeList.fromCollection', which we should be able to do since the keys
-	// are already in order.
-	if (lo == hi) return null;
-	else if (lo + 1 == hi) return ary[lo];
-	else {
-	    int mid = (lo + hi) >> 1;
-	    return union(fromArrayNoCopy(ary, lo, mid),
-			 fromArrayNoCopy(ary, mid, hi));
+	    Object key = strm.readObject();
+	    Object val = strm.readObject();
+	    tree = with(tree, key, hashCode(key), val);
 	}
     }
 

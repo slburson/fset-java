@@ -82,59 +82,37 @@ public final class PureHashSet<Elt>
     }
 
     /**
+     * Constructs a <code>PureHashSet</code> containing only <code>elt</code>.
+     */
+    public PureHashSet(Elt elt) {
+	tree = with(null, elt, 0);	// hashCode(elt) not needed -- just use 0
+    }
+
+    /**
      * Constructs a <code>PureHashSet</code> containing the same elements as
      * <code>coll</code>.
      *
      * @param coll the collection to use the elements of
      */
     public PureHashSet(Collection<? extends Elt> coll) {
-	initialize(coll);
-    }
-
-    private void initialize(Collection<? extends Elt> coll) {
-	if (coll instanceof PureHashSet) tree = ((PureHashSet)coll).tree;
-	else if (coll instanceof RandomAccess)		// entails `List'
-	    tree = fromRandomAccessCollection((List)coll, 0, coll.size());
-	else tree = new PureTreeList(coll).toPureHashSet().tree;
-    }
-
-    private Object fromRandomAccessCollection(List list, int lo, int hi) {
-	if (lo == hi) return null;
-	else if (lo + 1 == hi) {
-	    // It would be better to pick up several elements and sort them, but
-	    // it's nontrivial because of possible equivalences.
-	    Object[] a = new Object[1];
-	    a[0] = list.get(lo);
-	    return a;
-	} else {
-	    int mid = (lo + hi) >> 1;
-	    return union(fromRandomAccessCollection(list, lo, mid),
-			 fromRandomAccessCollection(list, mid, hi));
+	if (coll instanceof PureHashSet)
+	    tree = ((PureHashSet)coll).tree;
+	else {
+	    tree = null;
+	    for (Elt e : coll) tree = with(tree, e, hashCode(e));
 	}
     }
 
     /**
-     * Constructs a <code>PureHashSet</code> whose elements are the components of
+     * Constructs a <code>PureHashSet</code> containing the same elements as
      * <code>ary</code>.
      *
      * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array to use the components of
      */
     public <T extends Elt> PureHashSet(T[] ary) {
-	tree = fromArray(ary, 0, ary.length);
-    }
-
-    private <T extends Elt> Object fromArray(T[] ary, int lo, int hi) {
-	if (lo == hi) return null;
-	else if (lo + 1 == hi) {
-	    Object[] a = new Object[1];
-	    a[0] = ary[lo];
-	    return a;
-	} else {
-	    int mid = (lo + hi) >> 1;
-	    return union(fromArray(ary, lo, mid),
-			 fromArray(ary, mid, hi));
-	}
+	tree = null;
+	for (T e : ary) tree = with(tree, e, hashCode(e));
     }
 
     public boolean isEmpty() {
@@ -178,13 +156,13 @@ public final class PureHashSet<Elt>
     public PureHashSet<Elt> with(Elt elt) {
 	Object t = with(tree, elt, hashCode(elt));
 	if (t == tree) return this;
-	else return new PureHashSet<Elt>(t);
+	else return make(t);
     }
 
     public PureHashSet<Elt> less(Elt elt) {
 	Object t = less(tree, elt, hashCode(elt));
 	if (t == tree) return this;
-	else return new PureHashSet<Elt>(t);
+	else return make(t);
     }
 
     /**
@@ -200,15 +178,16 @@ public final class PureHashSet<Elt>
      * @return the union of the two sets
      */
     public PureHashSet<Elt> union(Collection<? extends Elt> coll) {
-	if (coll == this) return this;
+	if (coll == this || coll.isEmpty()) return this;
 	else if (coll instanceof PureHashSet) {
 	    PureHashSet<Elt> phs = (PureHashSet<Elt>)coll;
+	    if (isEmpty()) return phs;
 	    Object t = union(tree, phs.tree);
-	    return new PureHashSet<Elt>(t);
+	    return make(t);
 	} else {
 	    PureHashSet<Elt> phs = new PureHashSet<Elt>(coll);
 	    Object t = union(tree, phs.tree);
-	    return new PureHashSet<Elt>(t);
+	    return make(t);
 	}
     }
 
@@ -224,15 +203,17 @@ public final class PureHashSet<Elt>
      * @return the intersection of the two sets
      */
     public PureHashSet<Elt> intersection(Collection<? extends Elt> coll) {
-	if (coll instanceof PureHashSet) {
+	if (coll == this) return this;
+	else if (isEmpty() || coll.isEmpty()) return (PureHashSet<Elt>)EMPTY_INSTANCE;
+	else if (coll instanceof PureHashSet) {
 	    PureHashSet<Elt> phs = (PureHashSet<Elt>)coll;
 	    if (phs.tree == tree) return phs;
 	    Object t = intersection(tree, phs.tree);
-	    return new PureHashSet<Elt>(t);
+	    return make(t);
 	} else {
 	    PureHashSet<Elt> phs = new PureHashSet<Elt>(coll);
 	    Object t = intersection(tree, phs.tree);
-	    return new PureHashSet<Elt>(t);
+	    return make(t);
 	}
     }
 
@@ -248,15 +229,17 @@ public final class PureHashSet<Elt>
      * @return the difference of the two sets (this set less <code>coll</code>)
      */
     public PureHashSet<Elt> difference(Collection<? extends Elt> coll) {
-	if (coll instanceof PureHashSet) {
+	if (isEmpty() || coll == this) return (PureHashSet<Elt>)EMPTY_INSTANCE;
+	else if (coll.isEmpty()) return this;
+	else if (coll instanceof PureHashSet) {
 	    PureHashSet<Elt> phs = (PureHashSet<Elt>)coll;
 	    if (phs.tree == tree) return new PureHashSet<Elt>();
 	    Object t = difference(tree, phs.tree);
-	    return new PureHashSet<Elt>(t);
+	    return make(t);
 	} else {
 	    PureHashSet<Elt> phs = new PureHashSet<Elt>(coll);
 	    Object t = difference(tree, phs.tree);
-	    return new PureHashSet<Elt>(t);
+	    return make(t);
 	}
     }
 
@@ -367,10 +350,15 @@ public final class PureHashSet<Elt>
     /*package*/ transient Object tree;	// a subtree (see below)
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
-    // This has default (package-wide) access so `PureHashMap.domain' can use it.
-    // ... Also `PureTreeList.toPureHashSet'.
-    /*package*/ PureHashSet(Object _tree) {
+    // The 'int' parameter is just to distinguish it from the public singleton constructor.
+    private PureHashSet(int x, Object _tree) {
 	tree = _tree;
+    }
+
+    // This has default (package-wide) access so `PureHashMap.domain' can use it.
+    /*package*/ static <Elt> PureHashSet<Elt> make(Object _tree) {
+	if (_tree == null) return (PureHashSet<Elt>)EMPTY_INSTANCE;
+	return new PureHashSet<Elt>(42, _tree);
     }
 
     /* The threshold length above which tree nodes will be built. */
@@ -387,8 +375,7 @@ public final class PureHashSet<Elt>
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
 
-    // Used by `PureTreeList.toPureHashSet'.
-    static int hashCode(Object x) {
+    /*package*/ static int hashCode(Object x) {
 	if (x instanceof EquivalentSet) x = ((EquivalentSet)x).contents.get(0);
 	if (x == null) return 0;
 	int h = x.hashCode();
@@ -486,9 +473,8 @@ public final class PureHashSet<Elt>
 	}
     }
 
-    // Used by `PureTreeList.toPureHashSet'.
     // `elt' may be an `EquivalentSet'.
-    static Object with(Object subtree, Object elt, int ehash) {
+    /*package*/ static Object with(Object subtree, Object elt, int ehash) {
 	if (subtree == null) {
 	    if (!(elt instanceof EquivalentSet)) {
 		Object[] a = new Object[1];
@@ -566,8 +552,7 @@ public final class PureHashSet<Elt>
 	}
     }
 
-    // This has default access so `PureTreeList.toPureHashSet' can use it.
-    /*package*/ static Object union(Object subtree1, Object subtree2) {
+    private static Object union(Object subtree1, Object subtree2) {
 	return union(subtree1, subtree2, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
@@ -1674,8 +1659,8 @@ public final class PureHashSet<Elt>
     private void writeObject(java.io.ObjectOutputStream strm) throws java.io.IOException {
 	strm.defaultWriteObject();	// writes `comp'
         strm.writeInt(size());
-	for (Iterator it=iterator(); it.hasNext(); )
-            strm.writeObject(it.next());
+	for (Object e : this)
+            strm.writeObject(e);
     }
 
     /**
@@ -1685,14 +1670,11 @@ public final class PureHashSet<Elt>
 		 throws java.io.IOException, ClassNotFoundException {
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
-	Object[] ary = new Object[size];
-	for (int i = 0; i < size; ++i)
-	    ary[i] = strm.readObject();
-	// This is actually not a very good way to do this.  In fact, repeated 'with' may
-	// be a little faster, if memory serves.  What would be much better would be something
-	// like 'PureTreeList.fromCollection', which we should be able to do since the keys
-	// are already in order.
-	tree = fromArray((Elt[])ary, 0, size);
+	tree = null;
+	for (int i = 0; i < size; ++i) {
+	    Object e = strm.readObject();
+	    tree = with(tree, e, hashCode(e));
+	}
     }
 
 }

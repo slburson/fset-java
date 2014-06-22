@@ -62,8 +62,14 @@ public interface PureMap<Key, Val>
      *
      * @return some pair of the map
      * @throws NoSuchElementException if the map is empty
-	 */
+     */
     Map.Entry<Key, Val> arb();
+
+    /**
+     * Returns true iff the map contains an entry whose key and value are equal to
+     * those of the supplied entry.
+     */
+    boolean contains(Map.Entry<Key, Val> entry);
 
     /**
      * Returns a new map which maps <code>key</code> to <code>value</code>, and
@@ -118,7 +124,7 @@ public interface PureMap<Key, Val>
     /**
      * Returns the range of the map (the set of values it contains).  Similar to
      * <code>values</code>, but that method returns a <code>Collection</code> that
-	 * may contain duplicates, while this one constructs a <code>Set</code>.
+     * may contain duplicates, while this one constructs a <code>Set</code>.
      *
      * The class and comparator of the returned set depend on those of this map; but
      * see the second form of <code>range</code> below.
@@ -141,8 +147,7 @@ public interface PureMap<Key, Val>
 
     /**
      * Returns the map as a set of pairs, each pair being a <code>Map.Entry</code>.
-     * The class and comparator of the returned set depend on those of this map; but
-     * see the second form of <code>entrySet</code> below.
+     * The class and comparator of the returned set depend on those of this map.
      *
      * @return the set of entries this map contains
      */
