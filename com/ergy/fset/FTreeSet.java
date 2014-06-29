@@ -1102,6 +1102,7 @@ public final class FTreeSet<Elt>
     // than `hi'.  (Contrast `trim'.)
     private Object split(Object subtree, Object lo, Object hi) {
 	if (subtree == null) return null;
+	else if (lo == NEGATIVE_INFINITY && hi == POSITIVE_INFINITY) return subtree;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    int len = ary.length;

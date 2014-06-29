@@ -860,6 +860,7 @@ public final class FHashSet<Elt>
     // than `hi'.  (Contrast `trim'.)
     private static Object split(Object subtree, int lo, int hi) {
 	if (subtree == null) return null;
+	else if (lo == NEGATIVE_INFINITY && hi == POSITIVE_INFINITY) return subtree;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    int len = ary.length;
