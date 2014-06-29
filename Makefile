@@ -1,5 +1,5 @@
 all:
-	javac com/ergy/fset/*.java
+	javac -source 1.6 -target 1.6 com/ergy/fset/*.java
 
 test:
 	java com/ergy/fset/TestSuite 10000 >& test.out
