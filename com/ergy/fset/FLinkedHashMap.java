@@ -32,13 +32,16 @@ public class FLinkedHashMap<Key, Val>
     implements Comparable<FLinkedHashMap<Key, Val>>, Serializable
 {
     /**
-     * Returns an empty FLinkedHashMap.  Slightly more efficient than calling the constructor,
-     * because it returns a canonical instance.
+     * Returns an empty <code>FLinkedHashMap</code>.  Slightly more efficient than calling
+     * the constructor, because it returns a canonical instance.
      */
     public static <Key, Val> FLinkedHashMap<Key, Val> emptyMap() {
 	return (FLinkedHashMap<Key, Val>)EMPTY_INSTANCE;
     }
 
+    /*
+     * Constructs an empty <code>FLinkedHashMap</code>.
+     */
     public FLinkedHashMap() {
 	map_tree = null;
 	list_tree = null;
@@ -100,11 +103,10 @@ public class FLinkedHashMap<Key, Val>
     }
 
     public FLinkedHashMap<Key, Val> less(Key key) {
-	int khash = hashCode(key);
-	Object new_map_tree = FHashMap.less(map_tree, key, khash);
+	Object new_map_tree = FHashMap.less(map_tree, key, hashCode(key));
 	if (new_map_tree == map_tree) return this;
 	// O(n) because we have to linearly search the list for the key.
-	Iterator<Key> it = new FTreeList.PTLIterator(list_tree);
+	Iterator<Key> it = new FTreeList.FTLIterator(list_tree);
 	int i = 0;
 	while (!eql(key, it.next())) i++;
 	Object new_list_tree = FTreeList.less(list_tree, i);
@@ -114,7 +116,7 @@ public class FLinkedHashMap<Key, Val>
     public Set<Key> keySet() {
 	return new AbstractSet<Key>() {
 	    public Iterator<Key> iterator() {
-		return new FTreeList.PTLIterator<Key>(list_tree);
+		return new FTreeList.FTLIterator<Key>(list_tree);
 	    }
 	    public int size() {
 		return FLinkedHashMap.this.size();
@@ -128,7 +130,7 @@ public class FLinkedHashMap<Key, Val>
     public Collection<Val> values() {
 	return new AbstractCollection<Val>() {
 	    public Iterator<Val> iterator() {
-		return new PLHMValueIterator<Val>(map_tree, list_tree);
+		return new FLHMValueIterator<Val>(map_tree, list_tree);
 	    }
 	    public int size() {
 		return FLinkedHashMap.this.size();
@@ -139,7 +141,7 @@ public class FLinkedHashMap<Key, Val>
     public Set<Map.Entry<Key, Val>> entrySet() {
 	return new AbstractSet<Map.Entry<Key, Val>>() {
 	    public Iterator<Map.Entry<Key, Val>> iterator() {
-		return new PLHMIterator<Key, Val>(map_tree, list_tree);
+		return new FLHMIterator<Key, Val>(map_tree, list_tree);
 	    }
 	    public int size() {
 		return FLinkedHashMap.this.size();
@@ -174,7 +176,7 @@ public class FLinkedHashMap<Key, Val>
 
     public FSet<Map.Entry<Key, Val>> toSet(FSet<Map.Entry<Key, Val>> initial_set) {
 	FSet<Map.Entry<Key, Val>> s = initial_set.difference(initial_set);
-	for (Iterator<Map.Entry<Key, Val>> it = new FHashMap.PHMIterator<Key, Val>(map_tree);
+	for (Iterator<Map.Entry<Key, Val>> it = new FHashMap.FHMIterator<Key, Val>(map_tree);
 	     it.hasNext();)
 	    s = s.with(it.next());
 	return s;
@@ -188,12 +190,12 @@ public class FLinkedHashMap<Key, Val>
 	return m;
     }
 
-    public FHashMap<Key, Val> restrictedTo(FSet<Key> set) {
+    public FLinkedHashMap<Key, Val> restrictedTo(FSet<Key> set) {
 	// Maybe later -- I'm lazy
 	throw new UnsupportedOperationException();
     }
 
-    public FHashMap<Key, Val> restrictedFrom(FSet<Key> set) {
+    public FLinkedHashMap<Key, Val> restrictedFrom(FSet<Key> set) {
 	// Maybe later -- I'm lazy
 	throw new UnsupportedOperationException();
     }
@@ -203,7 +205,7 @@ public class FLinkedHashMap<Key, Val>
     }
 
     public Iterator<Map.Entry<Key, Val>> iterator() {
-	return new PLHMIterator<Key, Val>(map_tree, list_tree);
+	return new FLHMIterator<Key, Val>(map_tree, list_tree);
     }
 
     public int compareTo(FLinkedHashMap<Key, Val> other) {
@@ -213,11 +215,11 @@ public class FLinkedHashMap<Key, Val>
     public boolean equals(Object obj) {
 	if (obj == this) return true;
 	else if (obj instanceof FLinkedHashMap) {
-	    FLinkedHashMap plhm = (FLinkedHashMap)obj;
-	    return FHashMap.equals(map_tree, plhm.map_tree);
+	    FLinkedHashMap flhm = (FLinkedHashMap)obj;
+	    return FHashMap.equals(map_tree, flhm.map_tree);
 	} else if (obj instanceof FHashMap) {
-	    FHashMap phm = (FHashMap)obj;
-	    return FHashMap.equals(map_tree, phm.tree);
+	    FHashMap fhm = (FHashMap)obj;
+	    return FHashMap.equals(map_tree, fhm.tree);
 	} else if (!(obj instanceof Map)) return false;
 	else {
 	    Map<Object, Object> map = (Map<Object, Object>)obj;
@@ -237,10 +239,10 @@ public class FLinkedHashMap<Key, Val>
     /* Internals */
 
     // The empty map can be a singleton.
-    private static final FLinkedHashMap EMPTY_INSTANCE = new FLinkedHashMap();
+    private static final FLinkedHashMap<?, ?> EMPTY_INSTANCE = new FLinkedHashMap<Object, Object>();
 
     // The map tree is managed by FHashMap and contains the same pairs.
-    /*package*/ transient Object map_tree;
+    /*pkg*/ transient Object map_tree;
     // The list tree contains the keys in the order in which they were first added.
     // It is managed by FTreeList.
     private transient Object list_tree;
@@ -260,13 +262,13 @@ public class FLinkedHashMap<Key, Val>
     /****************/
     // Iterator classes
 
-    private static final class PLHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
+    private static final class FLHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
 	Object map_tree;
-	FTreeList.PTLIterator<Key> list_it;
+	FTreeList.FTLIterator<Key> list_it;
 
-	private PLHMIterator(Object _map_tree, Object _list_tree) {
+	private FLHMIterator(Object _map_tree, Object _list_tree) {
 	    map_tree = _map_tree;
-	    list_it = new FTreeList.PTLIterator<Key>(_list_tree);
+	    list_it = new FTreeList.FTLIterator<Key>(_list_tree);
 	}
 
 	public boolean hasNext() {
@@ -286,13 +288,13 @@ public class FLinkedHashMap<Key, Val>
 	}
     }
 
-    private static final class PLHMValueIterator<Val> implements Iterator<Val> {
+    private static final class FLHMValueIterator<Val> implements Iterator<Val> {
 	Object map_tree;
-	FTreeList.PTLIterator<Object> list_it;
+	FTreeList.FTLIterator<Object> list_it;
 
-	private PLHMValueIterator(Object _map_tree, Object _list_tree) {
+	private FLHMValueIterator(Object _map_tree, Object _list_tree) {
 	    map_tree = _map_tree;
-	    list_it = new FTreeList.PTLIterator<Object>(_list_tree);
+	    list_it = new FTreeList.FTLIterator<Object>(_list_tree);
 	}
 
 	public boolean hasNext() {
@@ -333,14 +335,14 @@ public class FLinkedHashMap<Key, Val>
 	strm.defaultReadObject();	// reads `dflt'
         int size = strm.readInt();
 	map_tree = null;
-	Object[] vals = new Object[size];
+	Object[] keys = new Object[size];
 	for (int i = 0; i < size; ++i) {
 	    Object key = strm.readObject();
 	    Object val = strm.readObject();
 	    map_tree = FHashMap.with(map_tree, key, hashCode(key), val);
-	    vals[i] = val;
+	    keys[i] = key;
 	}
-	list_tree = FTreeList.fromCollection(vals);
+	list_tree = FTreeList.fromCollection(keys);
     }
 
 }

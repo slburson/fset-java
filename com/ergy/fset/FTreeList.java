@@ -140,7 +140,7 @@ public class FTreeList<Elt>
 	tree = fromCollection(ary);
     }
 
-    /*package*/ static Object fromCollection(Object coll_or_array) {
+    /*pkg*/ static Object fromCollection(Object coll_or_array) {
 	// Wicked clever linear-time, garbage-free algorithm for tree construction.
 	int siz;
 	Iterator coll_it = null;
@@ -202,21 +202,21 @@ public class FTreeList<Elt>
     }
 
     public Iterator<Elt> iterator() {
-	return new PTLIterator(tree);
+	return new FTLIterator(tree);
     }
 
     public ListIterator<Elt> listIterator() {
-	return new PTLIterator(tree);
+	return new FTLIterator(tree);
     }
 
     public ListIterator<Elt> iterator(int index) {
 	if (index < 0 || index > size()) throw new IndexOutOfBoundsException();
-	return new PTLIterator(tree, index);
+	return new FTLIterator(tree, index);
     }
 
     public ListIterator<Elt> listIterator(int index) {
 	if (index < 0 || index > size()) throw new IndexOutOfBoundsException();
-	return new PTLIterator(tree, index);
+	return new FTLIterator(tree, index);
     }
 
     public FTreeList<Elt> with(int index, Elt elt) {
@@ -308,8 +308,8 @@ public class FTreeList<Elt>
     public boolean equals(Object obj) {
 	if (obj == this) return true;
 	else if (obj instanceof FTreeList) {
-	    FTreeList ptl = (FTreeList)obj;
-	    return equals(tree, ptl.tree);
+	    FTreeList ftl = (FTreeList)obj;
+	    return equals(tree, ftl.tree);
 	} else if (!(obj instanceof List)) return false;
 	else {
 	    List<Object> list = (List<Object>)obj;
@@ -347,14 +347,14 @@ public class FTreeList<Elt>
     // This cuts space requirements roughly in half without costing much (if any) time.
 
     // The empty, naturally ordered list can be a singleton.
-    private static final FTreeList EMPTY_INSTANCE = new FTreeList();
+    private static final FTreeList<?> EMPTY_INSTANCE = new FTreeList<Object>();
 
     /* Instance variables */
     private transient Object tree;
     private Comparator<Elt> elt_comp;
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
-    /*package*/ FTreeList(Object _tree, Comparator<? super Elt> _elt_comp) {
+    /*pkg*/ FTreeList(Object _tree, Comparator<? super Elt> _elt_comp) {
 	tree = _tree;
 	elt_comp = (Comparator<Elt>)_elt_comp;
     }
@@ -383,13 +383,13 @@ public class FTreeList<Elt>
 	else return new Node(treeSize(left) + treeSize(right), left, right);
     }
 
-    /*package*/ static int treeSize(Object subtree) {
+    /*pkg*/ static int treeSize(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) return ((Object[])subtree).length;
 	else return ((Node)subtree).size;
     }
 
-    private static Object get(Object subtree, int index) {
+    /*pkg*/ static Object get(Object subtree, int index) {
 	if (!(subtree instanceof Node)) return ((Object[])subtree)[index];
 	else {
 	    Node node = (Node)subtree;
@@ -410,7 +410,7 @@ public class FTreeList<Elt>
 	}
     }
 
-    /*package*/ static Object insert(Object subtree, int index, Object elt) {
+    /*pkg*/ static Object insert(Object subtree, int index, Object elt) {
 	if (subtree == null) {
 	    Object[] ary = new Object[1];
 	    ary[0] = elt;
@@ -433,7 +433,7 @@ public class FTreeList<Elt>
 	}
     }
 
-    /*package*/ static Object less(Object subtree, int index) {
+    /*pkg*/ static Object less(Object subtree, int index) {
 	if (!(subtree instanceof Node)) return less((Object[])subtree, index);
 	else {
 	    Node node = (Node)subtree;
@@ -821,7 +821,7 @@ public class FTreeList<Elt>
     /****************/
     // Iterator class
 
-    /*package*/ static final class PTLIterator<Elt> implements ListIterator<Elt> {
+    /*pkg*/ static final class FTLIterator<Elt> implements ListIterator<Elt> {
 
 	private static final class IteratorNode {
 	    public IteratorNode (Object _subtree, int _index, IteratorNode _parent) {
@@ -837,14 +837,14 @@ public class FTreeList<Elt>
 	private IteratorNode inode;
 	private boolean at_start = false, at_end = false;
 
-	/*package*/ PTLIterator(Object subtree) {
+	/*pkg*/ FTLIterator(Object subtree) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    at_start = true;
 	    if (subtree == null) at_end = true;
 	    canonicalizeFwd();
 	}
 
-	private PTLIterator(Object subtree, int index) {
+	private FTLIterator(Object subtree, int index) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    at_start = (index == 0);
 	    at_end = (index == treeSize(subtree));
@@ -960,7 +960,7 @@ public class FTreeList<Elt>
 			inode = new IteratorNode(node.right, RIGHT_END, inode);
 		    } else if (inode.index == 0)
 			inode = new IteratorNode(node.left, RIGHT_END, inode);
-		    else throw new RuntimeException("Bug in `FTreeList.PTLIterator." +
+		    else throw new RuntimeException("Bug in `FTreeList.FTLIterator." +
 						    "canonicalizeRev'");
 		}
 	    }

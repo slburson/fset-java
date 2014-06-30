@@ -248,7 +248,7 @@ public class FHashMap<Key, Val>
     public Set<Key> keySet() {
 	return new AbstractSet<Key>() {
 	    public Iterator<Key> iterator() {
-		return new PHMKeyIterator<Key>(tree);
+		return new FHMKeyIterator<Key>(tree);
 	    }
 	    public int size() {
 		return FHashMap.this.size();
@@ -262,7 +262,7 @@ public class FHashMap<Key, Val>
     public Collection<Val> values() {
 	return new AbstractCollection<Val>() {
 	    public Iterator<Val> iterator() {
-		return new PHMValueIterator<Val>(tree);
+		return new FHMValueIterator<Val>(tree);
 	    }
 	    public int size() {
 		return FHashMap.this.size();
@@ -330,20 +330,20 @@ public class FHashMap<Key, Val>
     }
 
     public FHashMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map) {
-	FHashMap<Key, Val> with_phm = new FHashMap<Key, Val>(with_map);
-	Object t = union(tree, with_phm.tree);
+	FHashMap<Key, Val> with_fhm = new FHashMap<Key, Val>(with_map);
+	Object t = union(tree, with_fhm.tree);
 	return new FHashMap<Key, Val>(t, dflt);
     }
 
     public FHashMap<Key, Val> restrictedTo(FSet<Key> set) {
-	FHashSet<Key> pts = new FHashSet<Key>(set);
-	Object t = restrictedTo(tree, pts.tree);
+	FHashSet<Key> fhs = new FHashSet<Key>(set);
+	Object t = restrictedTo(tree, fhs.tree);
 	return new FHashMap(t, dflt);
     }
 
     public FHashMap<Key, Val> restrictedFrom(FSet<Key> set) {
-	FHashSet<Key> pts = new FHashSet<Key>(set);
-	Object t = restrictedFrom(tree, pts.tree);
+	FHashSet<Key> fhs = new FHashSet<Key>(set);
+	Object t = restrictedFrom(tree, fhs.tree);
 	return new FHashMap(t, dflt);
     }
 
@@ -352,7 +352,7 @@ public class FHashMap<Key, Val>
     }
 
     public Iterator<Map.Entry<Key, Val>> iterator() {
-	return new PHMIterator<Key, Val>(tree);
+	return new FHMIterator<Key, Val>(tree);
     }
 
     // &&& Better to implement 'Comparable<Map<Key, Val>>' ?
@@ -363,8 +363,8 @@ public class FHashMap<Key, Val>
     public boolean equals(Object obj) {
 	if (obj == this) return true;
 	else if (obj instanceof FHashMap) {
-	    FHashMap phm = (FHashMap)obj;
-	    return equals(tree, phm.tree);
+	    FHashMap fhm = (FHashMap)obj;
+	    return equals(tree, fhm.tree);
 	} else if (obj instanceof FLinkedHashMap) {
 	    FLinkedHashMap plhm = (FLinkedHashMap)obj;
 	    return equals(tree, plhm.map_tree);
@@ -384,11 +384,11 @@ public class FHashMap<Key, Val>
     }
 
     // For debugging.
-    /*package*/ String dump() {
+    /*pkg*/ String dump() {
 	return dump(tree);
     }
 
-    /*package*/ boolean verify() {
+    /*pkg*/ boolean verify() {
 	return verify(tree, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
@@ -401,11 +401,11 @@ public class FHashMap<Key, Val>
     // This cuts space requirements roughly in half without costing much (if any) time.
 
     // The empty map can be a singleton.
-    private static final FHashMap EMPTY_INSTANCE = new FHashMap();
+    private static final FHashMap<?, ?> EMPTY_INSTANCE = new FHashMap<Object, Object>();
 
     /* Instance variables */
 
-    /*package*/ transient Object tree;	// a subtree (see below)
+    /*pkg*/ transient Object tree;	// a subtree (see below)
 
     private Val dflt = null;
 
@@ -428,7 +428,7 @@ public class FHashMap<Key, Val>
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
 
-    /*package*/ static int hashCode(Object x) {
+    /*pkg*/ static int hashCode(Object x) {
 	if (x instanceof EquivalentMap)
 	    x = ((Entry)((EquivalentMap)x).contents.get(0)).key;
 	if (x == null) return 0;
@@ -438,7 +438,7 @@ public class FHashMap<Key, Val>
 	else return h;
     }
 
-    /*package*/ static class Entry implements Map.Entry<Object, Object> {
+    /*pkg*/ static class Entry implements Map.Entry<Object, Object> {
 	Entry(Object _key, Object _value) {
 	    key = _key;
 	    value = _value;
@@ -468,7 +468,7 @@ public class FHashMap<Key, Val>
      * containing first the keys, then the values (i.e. its length is twice the
      * number of pairs).  The `Entry' key type is `Object' because it might hold an
      * `EquivalentMap'. */
-    /*package*/ static final class Node extends Entry {
+    /*pkg*/ static final class Node extends Entry {
 	Node(int _size, Object _key, Object _value, Object _left, Object _right) {
 	    super(_key, _value);
 	    size = _size;
@@ -490,7 +490,7 @@ public class FHashMap<Key, Val>
 			key, value, left, right);
     }
 
-    /*package*/ static int treeSize(Object subtree) {
+    /*pkg*/ static int treeSize(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) return ((Object[])subtree).length >> 1;
 	else return ((Node)subtree).size;
@@ -507,7 +507,7 @@ public class FHashMap<Key, Val>
 	dflt = _dflt;
     }
 
-    /*package*/ static Object arb(Object tree) {
+    /*pkg*/ static Object arb(Object tree) {
 	if (tree == null) throw new NoSuchElementException();
 	else if (!(tree instanceof Node)) {
 	    Object[] ary = (Object[])tree;
@@ -521,7 +521,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static Object firstKey(Object subtree) {
+    /*pkg*/ static Object firstKey(Object subtree) {
 	if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    return ary[0];
@@ -535,7 +535,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static Object lastKey(Object subtree) {
+    /*pkg*/ static Object lastKey(Object subtree) {
 	if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    return ary[(ary.length >> 1) - 1];
@@ -550,16 +550,16 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static <Key, Val> boolean contains(Object tree, Map.Entry<Key, Val> entry) {
+    /*pkg*/ static <Key, Val> boolean contains(Object tree, Map.Entry<Key, Val> entry) {
 	Key key = entry.getKey();
 	Object val = get(tree, key, hashCode(key));
 	return val != NO_ELEMENT && eql(val, entry.getValue());
     }
 
-    /*package*/ static final Object NO_ELEMENT = new Object();
+    /*pkg*/ static final Object NO_ELEMENT = new Object();
 
     // Returns NO_ELEMENT if there is no entry for the key.
-    /*package*/ static Object get(Object subtree, Object key, int khash) {
+    /*pkg*/ static Object get(Object subtree, Object key, int khash) {
 	if (subtree == null) return NO_ELEMENT;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -588,7 +588,7 @@ public class FHashMap<Key, Val>
     }
 
     /* `key' may be an `EquivalentMap', or an `Entry'. */
-    /*package*/ static Object with(Object subtree, Object key, int khash, Object value) {
+    /*pkg*/ static Object with(Object subtree, Object key, int khash, Object value) {
 	if (subtree == null) {
 	    if (!(key instanceof EquivalentMap)) {
 		Object[] a = new Object[2];
@@ -637,7 +637,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static Object less(Object subtree, Object key, int khash) {
+    /*pkg*/ static Object less(Object subtree, Object key, int khash) {
 	if (subtree == null) return null;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -670,7 +670,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static Object domain(Object subtree) {
+    /*pkg*/ static Object domain(Object subtree) {
 	if (subtree == null) return null;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -690,7 +690,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static <Val> FSet<Object> range(Object subtree, FSet<Val> initial) {
+    /*pkg*/ static <Val> FSet<Object> range(Object subtree, FSet<Val> initial) {
 	if (subtree == null) return (FSet<Object>)initial;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -900,7 +900,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static int compareTo(Object tree1, Object tree2) {
+    /*pkg*/ static int compareTo(Object tree1, Object tree2) {
 	if (tree1 == tree2) return 0;
 	int size1 = treeSize(tree1), size2 = treeSize(tree2);
 	// Start by comparing the sizes; smaller sets are considered less than
@@ -966,7 +966,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static boolean equals(Object tree1, Object tree2) {
+    /*pkg*/ static boolean equals(Object tree1, Object tree2) {
 	if (tree1 == tree2) return true;
 	int size1 = treeSize(tree1), size2 = treeSize(tree2);
 	if (size1 != size2) return false;
@@ -1250,7 +1250,7 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    /*package*/ static int myHashCode(Object subtree) {
+    /*pkg*/ static int myHashCode(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -1880,7 +1880,7 @@ public class FHashMap<Key, Val>
     /****************/
     // Iterator class
 
-    /*package*/ static final class PHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
+    /*pkg*/ static final class FHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
 
 	private static final class IteratorNode {
 	    IteratorNode(Object _subtree, int _index, IteratorNode _parent) {
@@ -1895,7 +1895,7 @@ public class FHashMap<Key, Val>
 
 	private IteratorNode inode;
 
-	/*package*/ PHMIterator(Object subtree) {
+	/*pkg*/ FHMIterator(Object subtree) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    canonicalize();
 	}
@@ -1953,33 +1953,33 @@ public class FHashMap<Key, Val>
     }
 
     // Used by 'keySet'.
-    private static class PHMKeyIterator<Key> implements Iterator<Key> {
-	private PHMIterator<Key, Object> phmIter;
+    private static class FHMKeyIterator<Key> implements Iterator<Key> {
+	private FHMIterator<Key, Object> fhmIter;
 
-	PHMKeyIterator(Object subtree) {
-	    phmIter = new PHMIterator(subtree);
+	FHMKeyIterator(Object subtree) {
+	    fhmIter = new FHMIterator(subtree);
 	}
 
 	public boolean hasNext() {
-	    return phmIter.hasNext();
+	    return fhmIter.hasNext();
 	}
 
 	// Duplicate code, but saves consing.
 	public Key next() {
 	    Key key;
-	    if (phmIter.inode == null) throw new NoSuchElementException();
-	    else if (!(phmIter.inode.subtree instanceof Node)) {
-		Object[] ary = (Object[])phmIter.inode.subtree;
-		key = (Key)ary[phmIter.inode.index];
+	    if (fhmIter.inode == null) throw new NoSuchElementException();
+	    else if (!(fhmIter.inode.subtree instanceof Node)) {
+		Object[] ary = (Object[])fhmIter.inode.subtree;
+		key = (Key)ary[fhmIter.inode.index];
 	    } else {
-		Node node = (Node)phmIter.inode.subtree;
+		Node node = (Node)fhmIter.inode.subtree;
 		if (node.key instanceof EquivalentMap) {
 		    ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
-		    key = (Key)al.get(phmIter.inode.index - 1).key;
+		    key = (Key)al.get(fhmIter.inode.index - 1).key;
 		} else key = (Key)node.key;
 	    }
-	    phmIter.inode.index++;
-	    phmIter.canonicalize();
+	    fhmIter.inode.index++;
+	    fhmIter.canonicalize();
 	    return key;
 	}
 
@@ -1989,21 +1989,21 @@ public class FHashMap<Key, Val>
     }
 
     // Used by 'values'.
-    private static class PHMValueIterator<Val> implements Iterator<Val> {
-	private PHMIterator<Object, Val> phmIter;
+    private static class FHMValueIterator<Val> implements Iterator<Val> {
+	private FHMIterator<Object, Val> fhmIter;
 
-	PHMValueIterator(Object subtree) {
-	    phmIter = new PHMIterator(subtree);
+	FHMValueIterator(Object subtree) {
+	    fhmIter = new FHMIterator(subtree);
 	}
 
 	public boolean hasNext() {
-	    return phmIter.hasNext();
+	    return fhmIter.hasNext();
 	}
 
 	// I don't think 'values' is commonly used, so I haven't bothered to optimize
-	// this like 'PHMKeyIterator.next'.
+	// this like 'FHMKeyIterator.next'.
 	public Val next() {
-	    return phmIter.next().getValue();
+	    return fhmIter.next().getValue();
 	}
 
 	public void remove() {

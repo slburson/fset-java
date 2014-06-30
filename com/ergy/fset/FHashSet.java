@@ -67,8 +67,8 @@ public final class FHashSet<Elt>
 {
 
     /**
-     * Returns an empty FHashSet.  Slightly more efficient than calling the constructor,
-     * because it returns a canonical instance.
+     * Returns an empty <code>FHashSet</code>.  Slightly more efficient than calling the
+     * constructor, because it returns a canonical instance.
      */
     public static <Elt> FHashSet<Elt> emptySet() {
 	return (FHashSet<Elt>)EMPTY_INSTANCE;
@@ -137,20 +137,12 @@ public final class FHashSet<Elt>
 	}
     }
 
-    public Elt first() {
-	return (Elt)first(tree);
-    }
-
-    public Elt last() {
-	return (Elt)last(tree);
-    }
-
     public boolean contains(Object elt) {
 	return contains(tree, elt, hashCode(elt));
     }
 
     public Iterator<Elt> iterator() {
-	return new PHSIterator<Elt>(tree);
+	return new FHSIterator<Elt>(tree);
     }
 
     public FHashSet<Elt> with(Elt elt) {
@@ -180,13 +172,13 @@ public final class FHashSet<Elt>
     public FHashSet<Elt> union(Collection<? extends Elt> coll) {
 	if (coll == this || coll.isEmpty()) return this;
 	else if (coll instanceof FHashSet) {
-	    FHashSet<Elt> phs = (FHashSet<Elt>)coll;
-	    if (isEmpty()) return phs;
-	    Object t = union(tree, phs.tree);
+	    FHashSet<Elt> fhs = (FHashSet<Elt>)coll;
+	    if (isEmpty()) return fhs;
+	    Object t = union(tree, fhs.tree);
 	    return make(t);
 	} else {
-	    FHashSet<Elt> phs = new FHashSet<Elt>(coll);
-	    Object t = union(tree, phs.tree);
+	    FHashSet<Elt> fhs = new FHashSet<Elt>(coll);
+	    Object t = union(tree, fhs.tree);
 	    return make(t);
 	}
     }
@@ -206,13 +198,13 @@ public final class FHashSet<Elt>
 	if (coll == this) return this;
 	else if (isEmpty() || coll.isEmpty()) return (FHashSet<Elt>)EMPTY_INSTANCE;
 	else if (coll instanceof FHashSet) {
-	    FHashSet<Elt> phs = (FHashSet<Elt>)coll;
-	    if (phs.tree == tree) return phs;
-	    Object t = intersection(tree, phs.tree);
+	    FHashSet<Elt> fhs = (FHashSet<Elt>)coll;
+	    if (fhs.tree == tree) return fhs;
+	    Object t = intersection(tree, fhs.tree);
 	    return make(t);
 	} else {
-	    FHashSet<Elt> phs = new FHashSet<Elt>(coll);
-	    Object t = intersection(tree, phs.tree);
+	    FHashSet<Elt> fhs = new FHashSet<Elt>(coll);
+	    Object t = intersection(tree, fhs.tree);
 	    return make(t);
 	}
     }
@@ -232,13 +224,13 @@ public final class FHashSet<Elt>
 	if (isEmpty() || coll == this) return (FHashSet<Elt>)EMPTY_INSTANCE;
 	else if (coll.isEmpty()) return this;
 	else if (coll instanceof FHashSet) {
-	    FHashSet<Elt> phs = (FHashSet<Elt>)coll;
-	    if (phs.tree == tree) return new FHashSet<Elt>();
-	    Object t = difference(tree, phs.tree);
+	    FHashSet<Elt> fhs = (FHashSet<Elt>)coll;
+	    if (fhs.tree == tree) return new FHashSet<Elt>();
+	    Object t = difference(tree, fhs.tree);
 	    return make(t);
 	} else {
-	    FHashSet<Elt> phs = new FHashSet<Elt>(coll);
-	    Object t = difference(tree, phs.tree);
+	    FHashSet<Elt> fhs = new FHashSet<Elt>(coll);
+	    Object t = difference(tree, fhs.tree);
 	    return make(t);
 	}
     }
@@ -251,8 +243,11 @@ public final class FHashSet<Elt>
     public boolean equals(Object obj) {
 	if (obj == this) return true;
 	else if (obj instanceof FHashSet) {
-	    FHashSet<Object> phs = (FHashSet<Object>)obj;
-	    return equals(tree, phs.tree);
+	    FHashSet<Object> fhs = (FHashSet<Object>)obj;
+	    return equals(tree, fhs.tree);
+	} else if (obj instanceof FLinkedHashSet) {
+	    FLinkedHashSet<Object> flhs = (FLinkedHashSet<Object>)obj;
+	    return equals(tree, flhs.set_tree);
 	} else if (!(obj instanceof Collection)) return false;
 	else {
 	    Collection<Object> coll = (Collection<Object>)obj;
@@ -280,11 +275,14 @@ public final class FHashSet<Elt>
 	if (coll == this) return true;
 	else if (size() > coll.size()) return false;
 	else if (coll instanceof FHashSet) {
-	    FHashSet<Object> phs = (FHashSet<Object>)coll;
-	    return isSubset(tree, phs.tree);
+	    FHashSet<Object> fhs = (FHashSet<Object>)coll;
+	    return isSubset(tree, fhs.tree);
+	} else if (coll instanceof FLinkedHashSet) {
+	    FLinkedHashSet<Object> flhs = (FLinkedHashSet<Object>)coll;
+	    return isSubset(tree, flhs.set_tree);
 	} else {
-	    for (Iterator it = iterator(); it.hasNext(); )
-		if (!coll.contains(it.next())) return false;
+	    for (Elt elt : this)
+		if (!coll.contains(elt)) return false;
 	    return true;
 	}
     }
@@ -296,8 +294,7 @@ public final class FHashSet<Elt>
      * (Synonym for <code>containsAll</code>.)
      *
      * <p>This operation runs in O(n) (linear) time if <code>coll</code> is also a
-     * <code>FHashSet</code> and uses the same ordering as this set; otherwise it
-     * runs in O(n log n) time.
+     * <code>FHashSet</code>; otherwise it runs in O(n log n) time.
      *
      * @param coll the collection to compare against
      * @return whether this set is a superset of <code>coll</code>
@@ -306,13 +303,14 @@ public final class FHashSet<Elt>
 	if (coll == this) return true;
 	else if (size() < coll.size()) return false;
 	else if (coll instanceof FHashSet) {
-	    FHashSet<Object> phs = (FHashSet<Object>)coll;
-	    return isSubset(phs.tree, tree);
+	    FHashSet<Object> fhs = (FHashSet<Object>)coll;
+	    return isSubset(fhs.tree, tree);
+	} else if (coll instanceof FLinkedHashSet) {
+	    FLinkedHashSet<Object> flhs = (FLinkedHashSet<Object>)coll;
+	    return isSubset(flhs.set_tree, tree);
 	} else {
-	    for (Iterator it = coll.iterator(); it.hasNext(); ) {
-		Object elt = it.next();
+	    for (Object elt : coll)
 		if (!contains(tree, elt, hashCode(elt))) return false;
-	    }
 	    return true;
 	}
     }
@@ -326,11 +324,11 @@ public final class FHashSet<Elt>
     }
 
     // For debugging.
-    /*package*/ String dump() {
+    /*pkg*/ String dump() {
 	return dump(tree);
     }
 
-    /*package*/ boolean verify() {
+    /*pkg*/ boolean verify() {
 	return verify(tree, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
@@ -343,11 +341,11 @@ public final class FHashSet<Elt>
     // This cuts space requirements roughly in half without costing much (if any) time.
 
     // The empty set can be a singleton.
-    private static final FHashSet EMPTY_INSTANCE = new FHashSet();
+    private static final FHashSet<?> EMPTY_INSTANCE = new FHashSet<Object>();
 
     /* Instance variables */
     // This has package access for benefit of `FHashMap.restrict[Not]'.
-    /*package*/ transient Object tree;	// a subtree (see below)
+    /*pkg*/ transient Object tree;	// a subtree (see below)
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
     // The 'int' parameter is just to distinguish it from the public singleton constructor.
@@ -356,7 +354,7 @@ public final class FHashSet<Elt>
     }
 
     // This has default (package-wide) access so `FHashMap.domain' can use it.
-    /*package*/ static <Elt> FHashSet<Elt> make(Object _tree) {
+    /*pkg*/ static <Elt> FHashSet<Elt> make(Object _tree) {
 	if (_tree == null) return (FHashSet<Elt>)EMPTY_INSTANCE;
 	return new FHashSet<Elt>(42, _tree);
     }
@@ -375,7 +373,7 @@ public final class FHashSet<Elt>
     private static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
 
-    /*package*/ static int hashCode(Object x) {
+    /*pkg*/ static int hashCode(Object x) {
 	if (x instanceof EquivalentSet) x = ((EquivalentSet)x).contents.get(0);
 	if (x == null) return 0;
 	int h = x.hashCode();
@@ -393,7 +391,7 @@ public final class FHashSet<Elt>
      * So we use `Object' as our subtree type so we don't need `Leaf' objects, and
      * use `instanceof' to tell what kind of subtree we're looking at. */
     // This has package access for benefit of `FHashMap.restrict[Not]'.
-    /*package*/ static final class Node {
+    /*pkg*/ static final class Node {
 	Node (int _size, Object _element, Object _left, Object _right) {
 	    size = _size;
 	    element = _element;
@@ -407,12 +405,12 @@ public final class FHashSet<Elt>
     }
 
     // This has default (package-wide) access so `FHashMap.domain' can use it.
-    /*package*/ static Node makeNode(Object elt, Object left, Object right) {
+    /*pkg*/ static Node makeNode(Object elt, Object left, Object right) {
 	return new Node(treeSize(left) + treeSize(right) + elementSize(elt),
 			elt, left, right);
     }
 
-    private static int treeSize(Object subtree) {
+    /*pkg*/ static int treeSize(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) return ((Object[])subtree).length;
 	else return ((Node)subtree).size;
@@ -424,34 +422,7 @@ public final class FHashSet<Elt>
 	else return 1;
     }
 
-    private static Object first(Object subtree) {
-	if (!(subtree instanceof Node)) return ((Object[])subtree)[0];
-	else {
-	    Node node = (Node)subtree;
-	    if (node.left == null) {
-		if (node.element instanceof EquivalentSet)
-		    return ((EquivalentSet)node.element).contents.get(0);
-		else return node.element;
-	    } else return first(node.left);
-	}
-    }
-
-    private static Object last(Object subtree) {
-	if (!(subtree instanceof Node)) {
-	    Object[] ary = (Object[])subtree;
-	    return ary[ary.length - 1];
-	} else {
-	    Node node = (Node)subtree;
-	    if (node.right == null) {
-		if (node.element instanceof EquivalentSet) {
-		    ArrayList<Object> al = ((EquivalentSet)node.element).contents;
-		    return al.get(al.size() - 1);
-		} else return node.element;
-	    } else return last(node.right);
-	}
-    }
-
-    private static boolean contains(Object subtree, Object elt, int ehash) {
+    /*pkg*/ static boolean contains(Object subtree, Object elt, int ehash) {
 	if (subtree == null) return false;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -474,7 +445,7 @@ public final class FHashSet<Elt>
     }
 
     // `elt' may be an `EquivalentSet'.
-    /*package*/ static Object with(Object subtree, Object elt, int ehash) {
+    /*pkg*/ static Object with(Object subtree, Object elt, int ehash) {
 	if (subtree == null) {
 	    if (!(elt instanceof EquivalentSet)) {
 		Object[] a = new Object[1];
@@ -516,7 +487,7 @@ public final class FHashSet<Elt>
 	}
     }
 
-    private static Object less(Object subtree, Object elt, int ehash) {
+    /*pkg*/ static Object less(Object subtree, Object elt, int ehash) {
 	if (subtree == null) return null;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -636,7 +607,7 @@ public final class FHashSet<Elt>
 	}
     }
 
-    private static int compareTo(Object tree1, Object tree2) {
+    /*pkg*/ static int compareTo(Object tree1, Object tree2) {
 	if (tree1 == tree2) return 0;
 	else {
 	    int size1 = treeSize(tree1), size2 = treeSize(tree2);
@@ -697,7 +668,7 @@ public final class FHashSet<Elt>
 	}
     }
 
-    private static boolean equals(Object tree1, Object tree2) {
+    /*pkg*/ static boolean equals(Object tree1, Object tree2) {
 	if (tree1 == tree2) return true;
 	int size1 = treeSize(tree1), size2 = treeSize(tree2);
 	if (size1 != size2) return false;
@@ -794,7 +765,7 @@ public final class FHashSet<Elt>
 
     static boolean debug = false;
 
-    private static boolean isSubset(Object subtree1, Object subtree2) {
+    /*pkg*/ static boolean isSubset(Object subtree1, Object subtree2) {
 	return isSubset(subtree1, subtree2, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
@@ -992,7 +963,7 @@ public final class FHashSet<Elt>
     }
 
     /* Assumes `subtree' is nonempty. */
-    private static Object lessMin(Object subtree) {
+    /*pkg*/ static Object lessMin(Object subtree) {
 	if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    return subseq(ary, 1, ary.length);
@@ -1004,7 +975,7 @@ public final class FHashSet<Elt>
 	}
     }
 
-    private int myHashCode(Object subtree) {
+    /*pkg*/ static int myHashCode(Object subtree) {
 	if (subtree == null) return 0;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -1111,10 +1082,10 @@ public final class FHashSet<Elt>
      * the extra level(s) of structure because this is supposed to be a rare case.
      */
     static final class EquivalentSet {
-	/*package*/ EquivalentSet(ArrayList<Object> _contents) {
+	/*pkg*/ EquivalentSet(ArrayList<Object> _contents) {
 	    contents = _contents;
 	}
-	/*package*/ ArrayList<Object> contents;
+	/*pkg*/ ArrayList<Object> contents;
     }
 
     private static Object equivUnion(Object elt1, Object elt2) {
@@ -1580,7 +1551,7 @@ public final class FHashSet<Elt>
     /****************/
     // Iterator class
 
-    private static final class PHSIterator<Elt> implements Iterator<Elt> {
+    private static final class FHSIterator<Elt> implements Iterator<Elt> {
 
 	private static final class IteratorNode {
 	    IteratorNode(Object _subtree, int _index, IteratorNode _parent) {
@@ -1595,7 +1566,7 @@ public final class FHashSet<Elt>
 
 	private IteratorNode inode;
 
-	PHSIterator(Object subtree) {
+	FHSIterator(Object subtree) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    canonicalize();
 	}
@@ -1653,9 +1624,8 @@ public final class FHashSet<Elt>
     /**
      * Saves the state of this <code>FHashSet</code> to a stream.
      *
-     * @serialData Emits the internal data of the set, including the
-     * comparator it uses; the size of the set [<code>int</code>]; and the
-     * elements in order [<code>Object</code>s].
+     * @serialData Emits the internal data of the set, including the size of the set
+     * [<code>int</code>]; and the elements in order [<code>Object</code>s].
      */
     private void writeObject(java.io.ObjectOutputStream strm) throws java.io.IOException {
 	strm.defaultWriteObject();	// writes `comp'

@@ -122,7 +122,7 @@ public class FTreeMap<Key, Val>
 {
 
     /**
-     * Returns an empty FTreeMap that uses the natural ordering of the keys.
+     * Returns an empty <code>FTreeMap</code> that uses the natural ordering of the keys.
      * Slightly more efficient than calling the constructor, because it returns a
      * canonical instance.
      */
@@ -359,7 +359,7 @@ public class FTreeMap<Key, Val>
     public Set<Key> keySet() {
 	return new AbstractSet<Key>() {
 	    public Iterator<Key> iterator() {
-		return new PTMKeyIterator<Key>(tree);
+		return new FTMKeyIterator<Key>(tree);
 	    }
 	    public int size() {
 		return FTreeMap.this.size();
@@ -374,7 +374,7 @@ public class FTreeMap<Key, Val>
     public Collection<Val> values() {
 	return new AbstractCollection<Val>() {
 	    public Iterator<Val> iterator() {
-		return new PTMValueIterator<Val>(tree);
+		return new FTMValueIterator<Val>(tree);
 	    }
 	    public int size() {
 		return FTreeMap.this.size();
@@ -456,20 +456,20 @@ public class FTreeMap<Key, Val>
     }
 
     public FTreeMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map) {
-	FTreeMap<Key, Val> with_ptm = new FTreeMap<Key, Val>(with_map, comp);
-	Object t = union(tree, with_ptm.tree);
+	FTreeMap<Key, Val> with_ftm = new FTreeMap<Key, Val>(with_map, comp);
+	Object t = union(tree, with_ftm.tree);
 	return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
     public FTreeMap<Key, Val> restrictedTo(FSet<Key> set) {
-	FTreeSet<Key> pts = new FTreeSet<Key>(set, comp);
-	Object t = restrictedTo(tree, pts.tree, pts);
+	FTreeSet<Key> fts = new FTreeSet<Key>(set, comp);
+	Object t = restrictedTo(tree, fts.tree, fts);
 	return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
     public FTreeMap<Key, Val> restrictedFrom(FSet<Key> set) {
-	FTreeSet<Key> pts = new FTreeSet<Key>(set, comp);
-	Object t = restrictedFrom(tree, pts.tree, pts);
+	FTreeSet<Key> fts = new FTreeSet<Key>(set, comp);
+	Object t = restrictedFrom(tree, fts.tree, fts);
 	return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
@@ -478,7 +478,7 @@ public class FTreeMap<Key, Val>
     }
 
     public Iterator<Map.Entry<Key, Val>> iterator() {
-	return new PTMIterator<Key, Val>(tree);
+	return new FTMIterator<Key, Val>(tree);
     }
 
     /**
@@ -496,8 +496,8 @@ public class FTreeMap<Key, Val>
     public boolean equals(Object obj) {
 	if (obj == this) return true;
 	else if (obj instanceof FTreeMap && eql(comp, ((FTreeMap)obj).comp)) {
-	    FTreeMap ptm = (FTreeMap)obj;
-	    return equals(tree, ptm.tree);
+	    FTreeMap ftm = (FTreeMap)obj;
+	    return equals(tree, ftm.tree);
 	} else if (!(obj instanceof Map)) return false;
 	else {
 	    // Either not an FTreeMap, or has a different ordering.
@@ -2076,7 +2076,7 @@ public class FTreeMap<Key, Val>
     /****************/
     // Iterator class
 
-    private static final class PTMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
+    private static final class FTMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
 
 	private static final class IteratorNode {
 	    IteratorNode (Object _subtree, int _index, IteratorNode _parent) {
@@ -2091,7 +2091,7 @@ public class FTreeMap<Key, Val>
 
 	private IteratorNode inode;
 
-	private PTMIterator(Object subtree) {
+	private FTMIterator(Object subtree) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    canonicalize();
 	}
@@ -2149,33 +2149,33 @@ public class FTreeMap<Key, Val>
     }
 
     // Used by 'keySet'.
-    private static class PTMKeyIterator<Key> implements Iterator<Key> {
-	private PTMIterator<Key, Object> ptmIter;
+    private static class FTMKeyIterator<Key> implements Iterator<Key> {
+	private FTMIterator<Key, Object> ftmIter;
 
-	PTMKeyIterator(Object subtree) {
-	    ptmIter = new PTMIterator(subtree);
+	FTMKeyIterator(Object subtree) {
+	    ftmIter = new FTMIterator(subtree);
 	}
 
 	public boolean hasNext() {
-	    return ptmIter.hasNext();
+	    return ftmIter.hasNext();
 	}
 
 	// Duplicate code, but saves consing.
 	public Key next() {
 	    Key key;
-	    if (ptmIter.inode == null) throw new NoSuchElementException();
-	    else if (!(ptmIter.inode.subtree instanceof Node)) {
-		Object[] ary = (Object[])ptmIter.inode.subtree;
-		key = (Key)ary[ptmIter.inode.index];
+	    if (ftmIter.inode == null) throw new NoSuchElementException();
+	    else if (!(ftmIter.inode.subtree instanceof Node)) {
+		Object[] ary = (Object[])ftmIter.inode.subtree;
+		key = (Key)ary[ftmIter.inode.index];
 	    } else {
-		Node node = (Node)ptmIter.inode.subtree;
+		Node node = (Node)ftmIter.inode.subtree;
 		if (node.key instanceof EquivalentMap) {
 		    ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
-		    key = (Key)al.get(ptmIter.inode.index - 1).key;
+		    key = (Key)al.get(ftmIter.inode.index - 1).key;
 		} else key = (Key)node.key;
 	    }
-	    ptmIter.inode.index++;
-	    ptmIter.canonicalize();
+	    ftmIter.inode.index++;
+	    ftmIter.canonicalize();
 	    return key;
 	}
 
@@ -2185,21 +2185,21 @@ public class FTreeMap<Key, Val>
     }
 
     // Used by 'values'.
-    private static class PTMValueIterator<Val> implements Iterator<Val> {
-	private PTMIterator<Object, Val> ptmIter;
+    private static class FTMValueIterator<Val> implements Iterator<Val> {
+	private FTMIterator<Object, Val> ftmIter;
 
-	PTMValueIterator(Object subtree) {
-	    ptmIter = new PTMIterator(subtree);
+	FTMValueIterator(Object subtree) {
+	    ftmIter = new FTMIterator(subtree);
 	}
 
 	public boolean hasNext() {
-	    return ptmIter.hasNext();
+	    return ftmIter.hasNext();
 	}
 
 	// I don't think 'values' is commonly used, so I haven't bothered to optimize
-	// this like 'PTMKeyIterator.next'.
+	// this like 'FTMKeyIterator.next'.
 	public Val next() {
-	    return ptmIter.next().getValue();
+	    return ftmIter.next().getValue();
 	}
 
 	public void remove() {

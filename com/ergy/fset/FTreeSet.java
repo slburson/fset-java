@@ -88,9 +88,9 @@ public final class FTreeSet<Elt>
 {
 
     /**
-     * Returns an empty FTreeSet that uses the natural ordering of the elements.
-     * Slightly more efficient than calling the constructor, because it returns a
-     * canonical instance.
+     * Returns an empty <code>FTreeSet</code> that uses the natural ordering of the
+     * elements.  Slightly more efficient than calling the constructor, because it returns
+     * a canonical instance.
      */
     public static <Elt> FTreeSet<Elt> emptySet() {
 	return (FTreeSet<Elt>)EMPTY_INSTANCE;
@@ -247,7 +247,7 @@ public final class FTreeSet<Elt>
     }
 
     public Iterator<Elt> iterator() {
-	return new PTSIterator<Elt>(tree);
+	return new FTSIterator<Elt>(tree);
     }
 
     public FTreeSet<Elt> with(Elt elt) {
@@ -280,14 +280,14 @@ public final class FTreeSet<Elt>
     public FTreeSet<Elt> union(Collection<? extends Elt> coll) {
 	if (coll == this || coll.isEmpty()) return this;
 	else if (coll instanceof FTreeSet && eql(comp, ((FTreeSet)coll).comp)) {
-	    FTreeSet<Elt> pts = (FTreeSet<Elt>)coll;
-	    if (isEmpty()) return pts;
-	    Object t = union(tree, pts.tree);
+	    FTreeSet<Elt> fts = (FTreeSet<Elt>)coll;
+	    if (isEmpty()) return fts;
+	    Object t = union(tree, fts.tree);
 	    return make(t, comp);
 	} else {
 	    // Either not a `FTreeSet', or has a different ordering.
-	    FTreeSet<Elt> pts = new FTreeSet<Elt>(coll, comp);
-	    Object t = union(tree, pts.tree);
+	    FTreeSet<Elt> fts = new FTreeSet<Elt>(coll, comp);
+	    Object t = union(tree, fts.tree);
 	    return make(t, comp);
 	}
     }
@@ -310,13 +310,13 @@ public final class FTreeSet<Elt>
 	if (coll == this) return this;
 	else if (isEmpty() || coll.isEmpty()) return emptySet(comp);
 	else if (coll instanceof FTreeSet && eql(comp, ((FTreeSet)coll).comp)) {
-	    FTreeSet<Elt> pts = (FTreeSet<Elt>)coll;
-	    Object t = intersection(tree, pts.tree);
+	    FTreeSet<Elt> fts = (FTreeSet<Elt>)coll;
+	    Object t = intersection(tree, fts.tree);
 	    return make(t, comp);
 	} else {
 	    // Either not a `FTreeSet', or has a different ordering.
-	    FTreeSet<Elt> pts = new FTreeSet<Elt>(coll, comp);
-	    Object t = intersection(tree, pts.tree);
+	    FTreeSet<Elt> fts = new FTreeSet<Elt>(coll, comp);
+	    Object t = intersection(tree, fts.tree);
 	    return make(t, comp);
 	}
     }
@@ -339,13 +339,13 @@ public final class FTreeSet<Elt>
 	if (coll == this) return emptySet(comp);
 	else if (coll.isEmpty()) return this;
 	else if (coll instanceof FTreeSet && eql(comp, ((FTreeSet)coll).comp)) {
-	    FTreeSet<Elt> pts = (FTreeSet<Elt>)coll;
-	    Object t = difference(tree, pts.tree);
+	    FTreeSet<Elt> fts = (FTreeSet<Elt>)coll;
+	    Object t = difference(tree, fts.tree);
 	    return make(t, comp);
 	} else {
 	    // Either not a `FTreeSet', or has a different ordering.
-	    FTreeSet<Elt> pts = new FTreeSet<Elt>(coll, comp);
-	    Object t = difference(tree, pts.tree);
+	    FTreeSet<Elt> fts = new FTreeSet<Elt>(coll, comp);
+	    Object t = difference(tree, fts.tree);
 	    return make(t, comp);
 	}
     }
@@ -372,8 +372,8 @@ public final class FTreeSet<Elt>
     public boolean equals(Object obj) {
 	if (obj == this) return true;
 	else if (obj instanceof FTreeSet && eql(comp, ((FTreeSet)obj).comp)) {
-	    FTreeSet<Object> pts = (FTreeSet<Object>)obj;
-	    return equals(tree, pts.tree);
+	    FTreeSet<Object> fts = (FTreeSet<Object>)obj;
+	    return equals(tree, fts.tree);
 	} else if (!(obj instanceof Collection)) return false;
 	else {
 	    // Either not an FTreeSet, or has a different ordering.
@@ -403,8 +403,8 @@ public final class FTreeSet<Elt>
 	if (coll == this) return true;
 	else if (size() > coll.size()) return false;
 	else if (coll instanceof FTreeSet && eql(comp, ((FTreeSet)coll).comp)) {
-	    FTreeSet<Object> pts = (FTreeSet)coll;
-	    return isSubset(tree, pts.tree);
+	    FTreeSet<Object> fts = (FTreeSet)coll;
+	    return isSubset(tree, fts.tree);
 	} else {
 	    // Either not an FTreeSet, or has a different ordering.
 	    for (Elt e : this)
@@ -432,8 +432,8 @@ public final class FTreeSet<Elt>
 	if (coll == this) return true;
 	else if (size() < coll.size()) return false;
 	else if (coll instanceof FTreeSet && eql(comp, ((FTreeSet)coll).comp)) {
-	    FTreeSet<Object> pts = (FTreeSet)coll;
-	    return isSubset(pts.tree, tree);
+	    FTreeSet<Object> fts = (FTreeSet)coll;
+	    return isSubset(fts.tree, tree);
 	} else {
 	    // Either not an FTreeSet, or has a different ordering.
 	    for (Object e : coll)
@@ -451,11 +451,11 @@ public final class FTreeSet<Elt>
     }
 
     // For debugging.
-    /*package*/ String dump() {
+    /*pkg*/ String dump() {
 	return dump(tree);
     }
 
-    /*package*/ boolean verify() {
+    /*pkg*/ boolean verify() {
 	return verify(tree, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
@@ -556,7 +556,7 @@ public final class FTreeSet<Elt>
     // This cuts space requirements roughly in half without costing much (if any) time.
 
     // The empty, naturally ordered set can be a singleton.
-    private static final FTreeSet EMPTY_INSTANCE = new FTreeSet();
+    private static final FTreeSet<?> EMPTY_INSTANCE = new FTreeSet<Object>();
 
     /* Instance variables */
     // This has package access for benefit of `FTreeMap.restrict[Not]'.
@@ -571,7 +571,7 @@ public final class FTreeSet<Elt>
     }
 
     // This has default (package-wide) access so `FTreeMap.domain' can use it.
-    /*package*/ static <Elt> FTreeSet<Elt> make(Object tree, Comparator<? super Elt> comp) {
+    /*pkg*/ static <Elt> FTreeSet<Elt> make(Object tree, Comparator<? super Elt> comp) {
 	if (tree == null && comp == null) return emptySet();
 	return new FTreeSet<Elt>(42, tree, comp);
     }
@@ -681,7 +681,7 @@ public final class FTreeSet<Elt>
 
     // Used by `FTreeList.toFHashSet'.
     // `elt' may be an `EquivalentSet'.
-    /*package*/ Object with(Object subtree, Object elt) {
+    /*pkg*/ Object with(Object subtree, Object elt) {
 	if (subtree == null) {
 	    if (!(elt instanceof EquivalentSet)) {
 		Object[] a = new Object[1];
@@ -1329,10 +1329,10 @@ public final class FTreeSet<Elt>
      * the extra level(s) of structure because this is supposed to be a rare case.
      */
     static final class EquivalentSet {
-	/*package*/ EquivalentSet(ArrayList<Object> _contents) {
+	/*pkg*/ EquivalentSet(ArrayList<Object> _contents) {
 	    contents = _contents;
 	}
-	/*package*/ ArrayList<Object> contents;
+	/*pkg*/ ArrayList<Object> contents;
     }
 
     private static Object equivUnion(Object elt1, Object elt2) {
@@ -1700,7 +1700,7 @@ public final class FTreeSet<Elt>
     /****************/
     // Iterator class
 
-    private static final class PTSIterator<Elt> implements Iterator<Elt> {
+    private static final class FTSIterator<Elt> implements Iterator<Elt> {
 
 	private static final class IteratorNode {
 	    IteratorNode (Object _subtree, int _index, IteratorNode _parent) {
@@ -1715,7 +1715,7 @@ public final class FTreeSet<Elt>
 
 	private IteratorNode inode;
 
-	private PTSIterator(Object subtree) {
+	private FTSIterator(Object subtree) {
 	    inode = new IteratorNode(subtree, 0, null);
 	    canonicalize();
 	}
