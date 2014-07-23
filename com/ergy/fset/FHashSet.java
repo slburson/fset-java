@@ -50,7 +50,7 @@ import java.util.*;
  *
  * <p><code>FHashSet</code> accepts the null element.
  *
- * <p><code>FHashSet</code> implements {@link java.io.Serializable}; an instance
+ * <p><code>FHashSet</code> implements {@link Serializable}; an instance
  * of it is serializable provided that all elements it contains are serializable.
  *
  * @author Scott L. Burson
@@ -1627,7 +1627,7 @@ public final class FHashSet<Elt>
      * @serialData Emits the internal data of the set, including the size of the set
      * [<code>int</code>]; and the elements in order [<code>Object</code>s].
      */
-    private void writeObject(java.io.ObjectOutputStream strm) throws java.io.IOException {
+    private void writeObject(ObjectOutputStream strm) throws IOException {
 	strm.defaultWriteObject();	// writes `comp'
         strm.writeInt(size());
 	for (Object e : this)
@@ -1637,8 +1637,8 @@ public final class FHashSet<Elt>
     /**
      * Reconstitutes the <code>FHashSet</code> instance from a stream.
      */
-    private void readObject(java.io.ObjectInputStream strm)
-		 throws java.io.IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
+	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
 	tree = null;

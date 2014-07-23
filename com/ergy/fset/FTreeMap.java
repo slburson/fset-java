@@ -8,6 +8,11 @@
 
 
 package com.ergy.fset;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -106,7 +111,7 @@ import java.util.*;
  * used for the values).  Thus, under these circumstances, the user must be sure that
  * the value objects implement <code>Comparable</code>.
  *
- * <p><code>FTreeMap</code> implements {@link java.io.Serializable}; an instance
+ * <p><code>FTreeMap</code> implements {@link Serializable}; an instance
  * of it is serializable provided that all keys and values it contains, the
  * <code>Comparator</code> it uses if any, and the default value if nonnull, are
  * serializable.
@@ -118,7 +123,7 @@ import java.util.*;
 
 public class FTreeMap<Key, Val>
     extends AbstractFMap<Key, Val>
-    implements Comparable<FTreeMap<Key, Val>>, SortedMap<Key, Val>, java.io.Serializable
+    implements Comparable<FTreeMap<Key, Val>>, SortedMap<Key, Val>, Serializable
 {
 
     /**
@@ -2214,8 +2219,7 @@ public class FTreeMap<Key, Val>
      * comparator it uses; the size of the map [<code>int</code>]; and the key/value
      * pairs in key order [<code>Object</code>s].
      */
-    private void writeObject(java.io.ObjectOutputStream strm)
-        throws java.io.IOException {
+    private void writeObject(ObjectOutputStream strm) throws IOException {
 	strm.defaultWriteObject();	// writes `comp' and `dflt'
         strm.writeInt(size());
 	for (Map.Entry ment : this) {
@@ -2228,8 +2232,8 @@ public class FTreeMap<Key, Val>
     /**
      * Reconstitutes the <code>FTreeMap</code> instance from a stream.
      */
-    private void readObject(java.io.ObjectInputStream strm)
-        throws java.io.IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
+	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp' and `dflt'
         int size = strm.readInt();
 	tree = null;

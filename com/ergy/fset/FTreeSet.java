@@ -8,6 +8,11 @@
 
 
 package com.ergy.fset;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -71,7 +76,7 @@ import java.util.*;
  * equivalent but unequal elements, it does so with some loss of efficiency.  As
  * long as these are rare, however, the cost will not be significant.
  *
- * <p><code>FTreeSet</code> implements {@link java.io.Serializable}; an instance
+ * <p><code>FTreeSet</code> implements {@link Serializable}; an instance
  * of it is serializable provided that all elements it contains, and the
  * <code>Comparator</code> it uses if any, are serializable.
  *
@@ -84,7 +89,7 @@ import java.util.*;
 
 public final class FTreeSet<Elt>
     extends AbstractFSet<Elt>
-    implements SortedSet<Elt>, Comparable<FTreeSet<Elt>>, java.io.Serializable
+    implements SortedSet<Elt>, Comparable<FTreeSet<Elt>>, Serializable
 {
 
     /**
@@ -1777,8 +1782,7 @@ public final class FTreeSet<Elt>
      * comparator it uses; the size of the set [<code>int</code>]; and the
      * elements in order [<code>Object</code>s].
      */
-    private void writeObject(java.io.ObjectOutputStream strm)
-        throws java.io.IOException {
+    private void writeObject(ObjectOutputStream strm) throws IOException {
 	strm.defaultWriteObject();	// writes `comp'
         strm.writeInt(size());
 	for (Object e : this)
@@ -1788,8 +1792,8 @@ public final class FTreeSet<Elt>
     /**
      * Reconstitutes the <code>FTreeSet</code> instance from a stream.
      */
-    private void readObject(java.io.ObjectInputStream strm)
-        throws java.io.IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
+	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
 	tree = null;

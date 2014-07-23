@@ -66,14 +66,6 @@ public class FLinkedHashMap<Key, Val>
 	return (Map.Entry<Key, Val>)FHashMap.arb(map_tree);
     }
 
-    public Key firstKey() {
-	return (Key)FHashMap.firstKey(map_tree);
-    }
-
-    public Key lastKey() {
-	return (Key)FHashMap.lastKey(map_tree);
-    }
-
     public boolean contains(Map.Entry<Key, Val> entry) {
 	Key key = entry.getKey();
 	Object val = FHashMap.get(map_tree, key, hashCode(key));
@@ -332,6 +324,7 @@ public class FLinkedHashMap<Key, Val>
      * Reconstitutes the <code>FLinkedHashMap</code> instance from a stream.
      */
     private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
+	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `dflt'
         int size = strm.readInt();
 	map_tree = null;

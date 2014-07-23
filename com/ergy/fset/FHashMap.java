@@ -87,7 +87,7 @@ import java.util.*;
  * these circumstances, the user must be sure that the value objects are acceptable
  * to the <code>Comparator</code>, or that they implement <code>Comparable</code>.
  *
- * <p><code>FHashMap</code> implements {@link java.io.Serializable}; an instance
+ * <p><code>FHashMap</code> implements {@link Serializable}; an instance
  * of it is serializable provided that all keys and values it contains, the
  * <code>Comparator</code> it uses if any, and the default value if nonnull, are
  * serializable.
@@ -198,14 +198,6 @@ public class FHashMap<Key, Val>
 
     public Map.Entry<Key, Val> arb() {
 	return (Map.Entry<Key, Val>)arb(tree);
-    }
-
-    public Key firstKey() {
-	return (Key)firstKey(tree);
-    }
-
-    public Key lastKey() {
-	return (Key)lastKey(tree);
     }
 
     /**
@@ -518,35 +510,6 @@ public class FHashMap<Key, Val>
 	    if (node.key instanceof EquivalentMap)
 		return ((EquivalentMap)node.key).contents.get(0);
 	    else return node;
-	}
-    }
-
-    /*pkg*/ static Object firstKey(Object subtree) {
-	if (!(subtree instanceof Node)) {
-	    Object[] ary = (Object[])subtree;
-	    return ary[0];
-	} else {
-	    Node node = (Node)subtree;
-	    if (node.left == null) {
-		if (node.key instanceof EquivalentMap)
-		    return ((EquivalentMap)node.key).contents.get(0).key;
-		else return node.key;
-	    } else return firstKey(node.left);
-	}
-    }
-
-    /*pkg*/ static Object lastKey(Object subtree) {
-	if (!(subtree instanceof Node)) {
-	    Object[] ary = (Object[])subtree;
-	    return ary[(ary.length >> 1) - 1];
-	} else {
-	    Node node = (Node)subtree;
-	    if (node.right == null) {
-		if (node.key instanceof EquivalentMap) {
-		    ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
-		    return al.get(al.size() - 1).key;
-		} else return node.key;
-	    } else return lastKey(node.right);
 	}
     }
 
@@ -2032,6 +1995,7 @@ public class FHashMap<Key, Val>
      * Reconstitutes the <code>FHashMap</code> instance from a stream.
      */
     private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
+	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp' and `dflt'
         int size = strm.readInt();
 	tree = null;

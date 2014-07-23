@@ -9,12 +9,11 @@
 
 package com.ergy.fset;
 
-import java.util.*;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.*;
 
 
 /**
@@ -222,7 +221,7 @@ public class FLinkedHashSet<Elt>
      * @serialData Emits the internal data of the set, including the size of the set
      * [<code>int</code>]; and the elements in order [<code>Object</code>s].
      */
-    private void writeObject(java.io.ObjectOutputStream strm) throws java.io.IOException {
+    private void writeObject(ObjectOutputStream strm) throws IOException {
 	strm.defaultWriteObject();	// writes `comp'
         strm.writeInt(size());
 	for (Object e : this)
@@ -232,8 +231,8 @@ public class FLinkedHashSet<Elt>
     /**
      * Reconstitutes the <code>FLinkedHashSet</code> instance from a stream.
      */
-    private void readObject(java.io.ObjectInputStream strm)
-		 throws java.io.IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
+	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
 	set_tree = null;

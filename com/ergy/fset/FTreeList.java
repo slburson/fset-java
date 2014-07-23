@@ -8,6 +8,11 @@
 
 
 package com.ergy.fset;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -47,7 +52,7 @@ import java.util.*;
 
 public class FTreeList<Elt>
     extends AbstractFList<Elt>
-    implements Comparable<FTreeList<Elt>>, java.io.Serializable
+    implements Comparable<FTreeList<Elt>>, Serializable
 {
 
     /**
@@ -1008,8 +1013,7 @@ public class FTreeList<Elt>
      * uses; the size of the list [<code>int</code>]; and the elements in order
      * [<code>Object</code>s].
      */
-    private void writeObject(java.io.ObjectOutputStream strm)
-        throws java.io.IOException {
+    private void writeObject(ObjectOutputStream strm) throws IOException {
 	strm.defaultWriteObject();	// writes `elt_comp'
         strm.writeInt(size());
 	for (Iterator it=iterator(); it.hasNext(); )
@@ -1019,8 +1023,8 @@ public class FTreeList<Elt>
     /**
      * Reconstitutes the <code>FTreeSet</code> instance from a stream.
      */
-    private void readObject(java.io.ObjectInputStream strm)
-        throws java.io.IOException, ClassNotFoundException {
+    private void readObject(ObjectInputStream strm) throws IOException, ClassNotFoundException {
+	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `elt_comp'
         int size = strm.readInt();
 	Object[] ary = new Object[size];

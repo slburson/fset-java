@@ -48,6 +48,7 @@ public class TestSuite {
 	    FHashSet<MyInteger> fhs = testFHashSet(rand, i);
 	    //FSet pchs = testFCachedHashSet(rand, i);
 	    testFLinkedHashSet(rand, i);
+	    testFLinkedHashMap(rand, i);
 	    testFTreeMap(rand, i, fts);
 	    testFHashMap(rand, i, fhs);
 	    //testFCachedHashMap(rand, i, pchs);
@@ -379,7 +380,7 @@ public class TestSuite {
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		FSet<MyInteger> nftsser = (FSet<MyInteger>)ois.readObject();
 		ois.close();
-		if (!ftsser.equals(nftsser)) {
+		if (!ftsser.equals(nftsser) || ftsser.hashCode() != nftsser.hashCode()) {
 		    println("FTreeSet read/write failed on iteration " + i);
 		    exit();
 		}
@@ -660,7 +661,7 @@ public class TestSuite {
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		FSet<MyInteger> nfhsser = (FSet<MyInteger>)ois.readObject();
 		ois.close();
-		if (!fhsser.equals(nfhsser)) {
+		if (!fhsser.equals(nfhsser) || fhsser.hashCode() != nfhsser.hashCode()) {
 		    println("FHashSet read/write failed on iteration " + i);
 		    exit();
 		}
@@ -739,8 +740,8 @@ public class TestSuite {
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		FSet<Integer> nfhsser = (FSet<Integer>)ois.readObject();
 		ois.close();
-		if (!fhsser.equals(nfhsser)) {
-		    println("FHashSet read/write failed on iteration " + i);
+		if (!fhsser.equals(nfhsser) || fhsser.hashCode() != nfhsser.hashCode()) {
+		    println("FLinkedHashSet read/write failed on iteration " + i);
 		    exit();
 		}
 		flhs0_it = flhs0.iterator();
@@ -1039,7 +1040,7 @@ public class TestSuite {
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		FSet nfhsser = (FSet)ois.readObject();
 		ois.close();
-		if (!fhsser.equals(nfhsser)) {
+		if (!fhsser.equals(nfhsser) || fhsser.hashCode() != nfhsser.hashCode()) {
 		    println("FCachedHashSet read/write failed on iteration " + i);
 		    exit();
 		}
@@ -1352,7 +1353,7 @@ public class TestSuite {
 		FMap<MyInteger, MyInteger> nftmser =
 		    (FMap<MyInteger, MyInteger>)ois.readObject();
 		ois.close();
-		if (!ftmser.equals(nftmser)) {
+		if (!ftmser.equals(nftmser) || ftmser.hashCode() != nftmser.hashCode()) {
 		    println("FTreeMap read/write failed on iteration " + i);
 		    exit();
 		}
@@ -1543,7 +1544,7 @@ public class TestSuite {
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		FMap<MyInteger, MyInteger> nfhmser = (FMap<MyInteger, MyInteger>)ois.readObject();
 		ois.close();
-		if (!fhmser.equals(nfhmser)) {
+		if (!fhmser.equals(nfhmser) || fhmser.hashCode() != nfhmser.hashCode()) {
 		    println("FHashMap read/write failed on iteration " + i);
 		    exit();
 		}
@@ -1731,7 +1732,7 @@ public class TestSuite {
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		FMap nfhmser = (FMap)ois.readObject();
 		ois.close();
-		if (!fhmser.equals(nfhmser)) {
+		if (!fhmser.equals(nfhmser) || fhmser.hashCode() != nfhmser.hashCode()) {
 		    println("FCachedHashMap read/write failed on iteration " + i);
 		    exit();
 		}
@@ -1792,8 +1793,8 @@ public class TestSuite {
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		FMap<Integer, Integer> nfhmser = (FMap<Integer, Integer>)ois.readObject();
 		ois.close();
-		if (!fhmser.equals(nfhmser)) {
-		    println("FHashMap read/write failed on iteration " + i);
+		if (!fhmser.equals(nfhmser) || fhmser.hashCode() != nfhmser.hashCode()) {
+		    println("FLinkedHashMap read/write failed on iteration " + i);
 		    exit();
 		}
 		flhm0_it = flhm0.iterator();
@@ -2044,12 +2045,15 @@ public class TestSuite {
 		FileOutputStream fos = new FileOutputStream("ftl.tmp");
 		ObjectOutputStream oos = new ObjectOutputStream(fos);
 		oos.writeObject(ftlser);
+		oos.writeObject(ftlser);
 		oos.close();
 		FileInputStream fis = new FileInputStream("ftl.tmp");
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		FList<MyInteger> nftlser = (FList<MyInteger>)ois.readObject();
+		FList<MyInteger> nftlser0 = (FList<MyInteger>)ois.readObject();
+		FList<MyInteger> nftlser1 = (FList<MyInteger>)ois.readObject();
 		ois.close();
-		if (!ftlser.equals(nftlser)) {
+		if (!ftlser.equals(nftlser0) || !ftlser.equals(nftlser1) ||
+		    ftlser.hashCode() != nftlser0.hashCode()) {
 		    println("FTreeList read/write failed on iteration " + i);
 		    exit();
 		}
