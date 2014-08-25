@@ -222,8 +222,8 @@ public class TestSuite {
 	    exit();
 	}
 	// Next line also tests constructor from `MyInteger[]'
-	if (!fts1.equals(new FTreeSet<MyInteger>(ts1.toArray(new MyInteger[0]),
-						    TestComparator.Instance))) {
+	if (!fts1.equals(new FTreeSet<MyInteger>(TestComparator.Instance,
+						 ts1.toArray(new MyInteger[0])))) {
 	    println("FTreeSet Equality failed (fts1, C) on iteration " + i);
 	    exit();
 	}

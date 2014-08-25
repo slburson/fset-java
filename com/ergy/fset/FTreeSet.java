@@ -199,12 +199,12 @@ public final class FTreeSet<Elt>
      * levels of indexing.)
      *
      * @param T type of the array elements; extends <code>Elt</code>
-     * @param ary the array to use the components of
+     * @param elts the elements (as an argument list or array)
      */
-    public <T extends Elt> FTreeSet(T[] ary) {
+    public <T extends Elt> FTreeSet(T... elts) {
 	comp = null;
 	tree = null;
-	for (Elt e : ary) tree = with(tree, e);
+	for (Elt e : elts) tree = with(tree, e);
     }
 
     /**
@@ -215,14 +215,17 @@ public final class FTreeSet<Elt>
      * elements of the set will be the inner arrays, not the objects which are
      * ultimately found after multiple levels of indexing.)
      *
+     * Note that the comparator argument must come first; this is inconsistent with
+     * the argument ordering of the other constructors.
+     *
      * @param T type of the array elements; extends <code>Elt</code>
-     * @param ary the array to use the components of
      * @param c the comparator
+     * @param elts the elements (as an argument list or array)
      */
-    public <T extends Elt> FTreeSet(T[] ary, Comparator<? super Elt> c) {
+    public <T extends Elt> FTreeSet(Comparator<? super Elt> c, T... elts) {
 	comp = (Comparator<Elt>)c;
 	tree = null;
-	for (Elt e : ary) tree = with(tree, e);
+	for (Elt e : elts) tree = with(tree, e);
     }
 
     public boolean isEmpty() {

@@ -108,11 +108,11 @@ public final class FHashSet<Elt>
      * <code>ary</code>.
      *
      * @param T type of the array elements; extends <code>Elt</code>
-     * @param ary the array to use the components of
+     * @param elts the elements (as an argument list or array)
      */
-    public <T extends Elt> FHashSet(T[] ary) {
+    public <T extends Elt> FHashSet(T... elts) {
 	tree = null;
-	for (T e : ary) tree = with(tree, e, hashCode(e));
+	for (T e : elts) tree = with(tree, e, hashCode(e));
     }
 
     public boolean isEmpty() {
