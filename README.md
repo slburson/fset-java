@@ -62,3 +62,4 @@ FSet maps return a user-specified default value when `get` is called on a key th
 in the map.  The default default is `null`, but it can be changed using the `withDefault'
 method.
 
+[Online API documentation](http://www.ergy.com/fset-java-doc/index.html)
