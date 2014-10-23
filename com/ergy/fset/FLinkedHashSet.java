@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.*;
 
 
@@ -195,10 +196,10 @@ public class FLinkedHashSet<Elt>
     private static final FLinkedHashSet<?> EMPTY_INSTANCE = new FLinkedHashSet<Object>();
 
     // The set tree is managed by FHashSet and contains the same pairs.
-    /*pkg*/ transient Object set_tree;
+    /*pkg*/ transient final Object set_tree;
     // The list tree contains the keys in the order in which they were first added.
     // It is managed by FTreeList.
-    private transient Object list_tree;
+    private transient final Object list_tree;
 
     private FLinkedHashSet(Object _set_tree, Object _list_tree) {
 	set_tree = _set_tree;
@@ -228,6 +229,19 @@ public class FLinkedHashSet<Elt>
             strm.writeObject(e);
     }
 
+    // http://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.5.3
+    private static Field SetTreeField, ListTreeField;
+    static {
+	try {
+	    SetTreeField = FLinkedHashSet.class.getDeclaredField("set_tree");
+	    ListTreeField = FLinkedHashSet.class.getDeclaredField("list_tree");
+	    SetTreeField.setAccessible(true);
+	    ListTreeField.setAccessible(true);
+	} catch (NoSuchFieldException nsf) {
+	    throw new RuntimeException("Static initialization failed", nsf);
+	}
+    }
+
     /**
      * Reconstitutes the <code>FLinkedHashSet</code> instance from a stream.
      */
@@ -235,14 +249,19 @@ public class FLinkedHashSet<Elt>
 	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
-	set_tree = null;
+	Object st = null;
 	Object[] elts = new Object[size];
 	for (int i = 0; i < size; ++i) {
 	    Object e = strm.readObject();
-	    set_tree = FHashSet.with(set_tree, e, hashCode(e));
+	    st = FHashSet.with(st, e, hashCode(e));
 	    elts[i] = e;
 	}
-	list_tree = FTreeList.fromCollection(elts);
+	try {
+	    SetTreeField.set(this, st);
+	    ListTreeField.set(this, FTreeList.fromCollection(elts));
+	} catch (IllegalAccessException ia) {
+	    throw new RuntimeException("FLinkedHashSet deserialization failed", ia);
+	}
     }
 
 }

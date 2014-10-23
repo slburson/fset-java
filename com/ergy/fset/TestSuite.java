@@ -1266,7 +1266,7 @@ public class TestSuite {
 	    if (!set.contains(k)) it.remove();
 	}
 	if (!ftmr.verify() || !ftmr.equals(tmr)) {
-	    println("FTreeMap restrict failed on iteration " + i);
+	    println("FTreeMap restrictedTo failed on iteration " + i);
 	    exit();
 	}
 	ftmr = ftm0.restrictedFrom(set);
@@ -1276,7 +1276,7 @@ public class TestSuite {
 	    if (set.contains(k)) it.remove();
 	}
 	if (!ftmr.verify() || !ftmr.equals(tmr)) {
-	    println("FTreeMap restrictNot failed on iteration " + i);
+	    println("FTreeMap restrictedFrom failed on iteration " + i);
 	    exit();
 	}
 	ftm0 = ftm0.less(null);		// for benefit of `compare' below
@@ -1662,26 +1662,26 @@ public class TestSuite {
 	if (!fhmm.equals(new FCachedHashMap(hmm))) {
 	    println("FCachedHashMap Equality failed (fhmm) on iteration " + i);
 	}
-	FMap fhmr = fhm0.restrict(set);
+	FMap fhmr = fhm0.restrictedTo(set);
 	HashMap hmr = (HashMap)hm0.clone();
 	for (Iterator it = hmr.keySet().iterator(); it.hasNext(); ) {
 	    Object k = it.next();
 	    if (!set.contains(k)) it.remove();
 	}
 	if (!((FCachedHashMap)fhmr).verify() || !fhmr.equals(hmr)) {
-	    println("FCachedHashMap restrict failed on iteration " + i);
+	    println("FCachedHashMap restrictedTo failed on iteration " + i);
 	    println(fhmr);
 	    println(hmr);
 	    exit();
 	}
-	fhmr = fhm0.restrictNot(set);
+	fhmr = fhm0.restrictedFrom(set);
 	hmr = (HashMap)hm0.clone();
 	for (Iterator it = hmr.keySet().iterator(); it.hasNext(); ) {
 	    Object k = it.next();
 	    if (set.contains(k)) it.remove();
 	}
 	if (!((FCachedHashMap)fhmr).verify() || !fhmr.equals(hmr)) {
-	    println("FCachedHashMap restrictNot failed on iteration " + i);
+	    println("FCachedHashMap restrictedFrom failed on iteration " + i);
 	    println(fhmr);
 	    println(hmr);
 	    exit();

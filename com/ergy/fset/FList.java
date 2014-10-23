@@ -161,6 +161,9 @@ public interface FList<Elt> extends List<Elt> {
     boolean addAll(int index, Collection<? extends Elt> c);
 
     @Deprecated
+    boolean addAll(Collection<? extends Elt> c);
+
+    @Deprecated
     void clear();
 
     @Deprecated

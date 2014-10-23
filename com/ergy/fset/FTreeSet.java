@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -154,7 +155,8 @@ public final class FTreeSet<Elt>
      * @param coll the collection to use the elements of
      */
     public FTreeSet(Collection<? extends Elt> coll) {
-	fromCollection(coll, null);
+	comp = null;
+	tree = fromCollection(coll);
     }
 
     /**
@@ -166,7 +168,8 @@ public final class FTreeSet<Elt>
      * @param c the comparator
      */
     public FTreeSet(Collection<? extends Elt> coll, Comparator<? super Elt> c) {
-	fromCollection(coll, c);
+	comp = (Comparator<Elt>)c;
+	tree = fromCollection(coll);
     }
 
     /**
@@ -177,16 +180,17 @@ public final class FTreeSet<Elt>
      * @param set the set to use the elements and ordering of
      */
     public FTreeSet(SortedSet<Elt> set) {
-	fromCollection(set, set.comparator());
+	comp = (Comparator<Elt>)set.comparator();
+	tree = fromCollection(set);
     }
 
-    private void fromCollection(Collection<? extends Elt> coll, Comparator<? super Elt> c) {
-	comp = (Comparator<Elt>)c;
+    private Object fromCollection(Collection<? extends Elt> coll) {
 	if (coll instanceof FTreeSet && eql(comp, ((FTreeSet)coll).comp))
-	    tree = ((FTreeSet)coll).tree;
+	    return ((FTreeSet)coll).tree;
 	else {
-	    tree = null;
-	    for (Elt e : coll) tree = with(tree, e);
+	    Object t = null;
+	    for (Elt e : coll) t = with(t, e);
+	    return t;
 	}
     }
 
@@ -203,8 +207,9 @@ public final class FTreeSet<Elt>
      */
     public <T extends Elt> FTreeSet(T... elts) {
 	comp = null;
-	tree = null;
-	for (Elt e : elts) tree = with(tree, e);
+	Object t = null;
+	for (Elt e : elts) t = with(t, e);
+	tree = t;
     }
 
     /**
@@ -224,8 +229,9 @@ public final class FTreeSet<Elt>
      */
     public <T extends Elt> FTreeSet(Comparator<? super Elt> c, T... elts) {
 	comp = (Comparator<Elt>)c;
-	tree = null;
-	for (Elt e : elts) tree = with(tree, e);
+	Object t = null;
+	for (Elt e : elts) t = with(t, e);
+	tree = t;
     }
 
     public boolean isEmpty() {
@@ -267,6 +273,7 @@ public final class FTreeSet<Elt>
     public FTreeSet<Elt> less(Elt elt) {
 	Object t = less(tree, elt);
 	if (t == tree) return this;
+	else if (t == null) return emptySet();
 	else return make(t, comp);
     }
 
@@ -567,9 +574,9 @@ public final class FTreeSet<Elt>
     private static final FTreeSet<?> EMPTY_INSTANCE = new FTreeSet<Object>();
 
     /* Instance variables */
-    // This has package access for benefit of `FTreeMap.restrict[Not]'.
-    transient Object tree;	// a subtree (see below)
-    private Comparator<Elt> comp;
+    // This has package access for benefit of `FTreeMap.restricted{To,From}'.
+    /*pkg*/ transient final Object tree;	// a subtree (see below)
+    private final Comparator<Elt> comp;
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
     // The 'int' parameter is just to distinguish it from the public singleton constructor.
@@ -595,8 +602,8 @@ public final class FTreeSet<Elt>
      * matters is that they are guaranteed to be distinct from any object that could
      * be in a set.
      */
-    static final Object NEGATIVE_INFINITY = new Object();
-    static final Object POSITIVE_INFINITY = new Object();
+    /*pkg*/ static final Object NEGATIVE_INFINITY = new Object();
+    /*pkg*/ static final Object POSITIVE_INFINITY = new Object();
 
     /* A subtree can be either null, a `Node', or a leaf (an `Object[]').  The
      * elegant, OO-pure implementation would have an abstract class `Subtree' with
@@ -606,18 +613,18 @@ public final class FTreeSet<Elt>
      * of the space benefit we get by using arrays at the leaves in the first place.
      * So we use `Object' as our subtree type so we don't need `Leaf' objects, and
      * use `instanceof' to tell what kind of subtree we're looking at. */
-    // This has package access for benefit of `FTreeMap.restrict[Not]'.
-    static final class Node {
+    // This has package access for benefit of `FTreeMap.restricted{To,From}'.
+    /*pkg*/ static final class Node {
 	Node(int _size, Object _element, Object _left, Object _right) {
 	    size = _size;
 	    element = _element;
 	    left = _left;
 	    right = _right;
 	}
-	int size;	// the number of elements in the subtree
-	Object element;
-	Object left;	// a subtree
-	Object right;	// a subtree
+	/*pkg*/ final int size;		// the number of elements in the subtree
+	/*pkg*/ final Object element;
+	/*pkg*/ final Object left;	// a subtree
+	/*pkg*/ final Object right;	// a subtree
     }
 
     // This has default (package-wide) access so `FTreeMap.domain' can use it.
@@ -1062,11 +1069,11 @@ public final class FTreeSet<Elt>
      * return multiple values.  In this case `findEquiv' needs to return something
      * indicating "no element found", but it can't be `null' because we allow `null'
      * as an element.  So we make a special object. */
-    // This has package access for benefit of `FTreeMap.restrict[Not]'.
-    static final Object NO_ELEMENT = new Object();
+    // This has package access for benefit of `FTreeMap.restricted{To,From}'.
+    /*pkg*/ static final Object NO_ELEMENT = new Object();
 
-    // This has package access for benefit of `FTreeMap.restrict[Not]'.
-    Object findEquiv(Object subtree, Object elt) {
+    // This has package access for benefit of `FTreeMap.restricted{To,From}'.
+    /*pkg*/ Object findEquiv(Object subtree, Object elt) {
 	if (subtree == null) return NO_ELEMENT;
 	else if (!(subtree instanceof Node)) {
 	    int bin_srch_res = binarySearch((Object[])subtree, elt);
@@ -1141,8 +1148,8 @@ public final class FTreeSet<Elt>
 
     // Returns the largest subtree of `subtree' whose root node is greater than `lo'
     // and less than `hi'.  (Contrast `split'.)
-    // This has package access for benefit of `FTreeMap.restrict[Not]'.
-    Object trim(Object subtree, Object lo, Object hi) {
+    // This has package access for benefit of `FTreeMap.restricted{To,From}'.
+    /*pkg*/ Object trim(Object subtree, Object lo, Object hi) {
 	if (subtree == null) return null;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -1716,9 +1723,9 @@ public final class FTreeSet<Elt>
 		index = _index;
 		parent = _parent;
 	    }
-	    Object subtree;
-	    int index;
-	    IteratorNode parent;
+	    private final Object subtree;
+	    private int index;
+	    private final IteratorNode parent;
 	}
 
 	private IteratorNode inode;
@@ -1792,6 +1799,17 @@ public final class FTreeSet<Elt>
             strm.writeObject(e);
     }
 
+    // http://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.5.3
+    private static Field TreeField;
+    static {
+	try {
+	    TreeField = FTreeSet.class.getDeclaredField("tree");
+	    TreeField.setAccessible(true);
+	} catch (NoSuchFieldException nsf) {
+	    throw new RuntimeException("Static initialization failed", nsf);
+	}
+    }
+
     /**
      * Reconstitutes the <code>FTreeSet</code> instance from a stream.
      */
@@ -1799,9 +1817,14 @@ public final class FTreeSet<Elt>
 	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
-	tree = null;
+	Object t = null;
 	for (int i = 0; i < size; ++i)
-	    tree = with(tree, (Elt)strm.readObject());
+	    t = with(t, (Elt)strm.readObject());
+	try {
+	    TreeField.set(this, t);
+	} catch (IllegalAccessException ia) {
+	    throw new RuntimeException("FTreeSet deserialization failed", ia);
+	}
     }
 
 }

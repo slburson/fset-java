@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -115,6 +116,7 @@ public class FHashMap<Key, Val>
      */
     public FHashMap() {
 	tree = null;
+	dflt = null;
     }
 
     /**
@@ -124,12 +126,13 @@ public class FHashMap<Key, Val>
      * @param map the map to use the entries of
      */
     public FHashMap(Map<? extends Key, ? extends Val> map) {
-	fromMap(map);
+	tree = fromMap(map);
+	dflt = null;
     }
 
-    private void fromMap(Map<? extends Key, ? extends Val> map) {
+    private static <Key, Val> Object fromMap(Map<? extends Key, ? extends Val> map) {
 	if (map instanceof FHashMap)
-	    tree = ((FHashMap)map).tree;
+	    return ((FHashMap)map).tree;
 	else {
 	    Object t = null;
 	    for (Iterator it = map.entrySet().iterator(); it.hasNext(); ) {
@@ -137,7 +140,7 @@ public class FHashMap<Key, Val>
 		Object k = ent.getKey();
 		t = with(t, k, hashCode(k), ent.getValue());
 	    }
-	    tree = t;
+	    return t;
 	}
     }
 
@@ -151,11 +154,13 @@ public class FHashMap<Key, Val>
      */
     public FHashMap(Key[] keys, Val[] vals) {
 	if (keys.length != vals.length) throw new IllegalArgumentException();
-	tree = null;
+	Object t = null;
+	dflt = null;
 	if (keys.length != vals.length)
 	    throw new IllegalArgumentException("array lengths must be equal");
 	for (int i = 0; i < keys.length; ++i)
-	    tree = with(tree, keys[i], hashCode(keys[i]), vals[i]);
+	    t = with(t, keys[i], hashCode(keys[i]), vals[i]);
+	tree = t;
     }
 
     /**
@@ -167,9 +172,7 @@ public class FHashMap<Key, Val>
      * @return the new <code>FHashMap</code>
      */
     public static <Key, Val> FHashMap<Key, Val> withDefault(Val dflt) {
-	FHashMap<Key, Val> m = new FHashMap<Key, Val>();
-	m.dflt = dflt;
-	return m;
+	return new FHashMap<Key, Val>(null, dflt);
     }
 
     /**
@@ -182,10 +185,9 @@ public class FHashMap<Key, Val>
      * @param dflt the default value
      * @return the new <code>FHashMap</code>
      */
-    public static <Key, Val> FHashMap<Key, Val> withDefault(Map<Key, Val> map, Val dflt) {
-	FHashMap<Key, Val> m = new FHashMap<Key, Val>(map);
-	m.dflt = dflt;
-	return m;
+    public static <Key, Val> FHashMap<Key, Val> withDefault(Map<? extends Key, ? extends Val> map,
+							    Val dflt) {
+	return new FHashMap<Key, Val>(fromMap(map), dflt);
     }
 
     public boolean isEmpty() {
@@ -234,6 +236,7 @@ public class FHashMap<Key, Val>
     public FHashMap<Key, Val> less(Key key) {
 	Object t = less(tree, key, hashCode(key));
 	if (t == tree) return this;
+	else if (t == null) return emptyMap();
 	else return new FHashMap<Key, Val>(t, dflt);
     }
 
@@ -397,9 +400,9 @@ public class FHashMap<Key, Val>
 
     /* Instance variables */
 
-    /*pkg*/ transient Object tree;	// a subtree (see below)
+    /*pkg*/ transient final Object tree;	// a subtree (see below)
 
-    private Val dflt = null;
+    private final Val dflt;
 
     // We use Integer.MIN_VALUE to indicate that the hash code has not been computed yet.
     private transient int hash_code = Integer.MIN_VALUE;
@@ -435,8 +438,8 @@ public class FHashMap<Key, Val>
 	    key = _key;
 	    value = _value;
 	}
-	Object key;
-	Object value;
+	final Object key;
+	final Object value;
 	public Object getKey() { return key; }
 	public Object getValue() { return value; }
 	public Object setValue(Object newval) {
@@ -467,9 +470,9 @@ public class FHashMap<Key, Val>
 	    left = _left;
 	    right = _right;
 	}
-	int size;	// the number of pairs in the subtree
-	Object left;	// a subtree
-	Object right;	// a subtree
+	/*pkg*/ final int size;		// the number of pairs in the subtree
+	/*pkg*/ final Object left;	// a subtree
+	/*pkg*/ final Object right;	// a subtree
     }
 
     private static Node makeNode(Object key, Object value, Object left, Object right) {
@@ -1851,9 +1854,9 @@ public class FHashMap<Key, Val>
 		index = _index;
 		parent = _parent;
 	    }
-	    Object subtree;
-	    int index;
-	    IteratorNode parent;
+	    private final Object subtree;
+	    private int index;
+	    private final IteratorNode parent;
 	}
 
 	private IteratorNode inode;
@@ -1991,6 +1994,17 @@ public class FHashMap<Key, Val>
 	}
     }
 
+    // http://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.5.3
+    private static Field TreeField;
+    static {
+	try {
+	    TreeField = FHashMap.class.getDeclaredField("tree");
+	    TreeField.setAccessible(true);
+	} catch (NoSuchFieldException nsf) {
+	    throw new RuntimeException("Static initialization failed", nsf);
+	}
+    }
+
     /**
      * Reconstitutes the <code>FHashMap</code> instance from a stream.
      */
@@ -1998,11 +2012,16 @@ public class FHashMap<Key, Val>
 	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp' and `dflt'
         int size = strm.readInt();
-	tree = null;
+	Object t = null;
 	for (int i = 0; i < size; ++i) {
 	    Object key = strm.readObject();
 	    Object val = strm.readObject();
-	    tree = with(tree, key, hashCode(key), val);
+	    t = with(t, key, hashCode(key), val);
+	}
+	try {
+	    TreeField.set(this, t);
+	} catch (IllegalAccessException ia) {
+	    throw new RuntimeException("FHashMap deserialization failed", ia);
 	}
     }
 

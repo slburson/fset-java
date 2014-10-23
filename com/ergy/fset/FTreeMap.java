@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -28,8 +29,8 @@ import java.util.*;
  * <i>n</i>) time.  <code>domain</code>, <code>keySet</code>, and
  * <code>containsValue</code> take O(n) (linear) time.  <code>toSet</code>,
  * <code>range</code>, and <code>values</code> take O(<i>n</i> log <i>n</i>) time.
- * <code>union</code>, <code>restrict</code>, and <code>restrictNot</code> take O(n)
- * (linear) time if the other map or set involved is also a <code>FTreeMap</code>
+ * <code>union</code>, <code>restrictedTo</code>, and <code>restrictedFrom</code> take
+ * O(n) (linear) time if the other map or set involved is also a <code>FTreeMap</code>
  * or <code>FTreeSet</code> and uses the same ordering; otherwise, it takes
  * O(<i>n</i> log <i>n</i>) time.  <code>compareTo</code> (called, for instance, if
  * this map is an element in a containing <code>FTreeSet</code>) takes O(n)
@@ -142,6 +143,7 @@ public class FTreeMap<Key, Val>
     public FTreeMap() {
 	tree = null;
 	comp = null;
+	dflt = null;
     }
 
     /**
@@ -153,6 +155,7 @@ public class FTreeMap<Key, Val>
     public FTreeMap(Comparator<? super Key> c) {
 	tree = null;
 	comp = (Comparator<Key>)c;
+	dflt = null;
     }
 
     /**
@@ -162,7 +165,9 @@ public class FTreeMap<Key, Val>
      * @param map the map to use the entries of
      */
     public FTreeMap(Map<? extends Key, ? extends Val> map) {
-	fromMap((Map<Key, Val>)map, null);
+	comp = null;
+	tree = fromMap((Map<Key, Val>)map);
+	dflt = null;
     }
 
     /**
@@ -174,7 +179,9 @@ public class FTreeMap<Key, Val>
      * @param c the comparator
      */
     public FTreeMap(Map<? extends Key, ? extends Val> map, Comparator<? super Key> c) {
-	fromMap((Map<Key, Val>)map, c);
+	comp = (Comparator<Key>)c;
+	tree = fromMap((Map<Key, Val>)map);
+	dflt = null;
     }
 
     /**
@@ -184,7 +191,9 @@ public class FTreeMap<Key, Val>
      * @param map the map to use the entries of
      */
     public FTreeMap(SortedMap<Key, Val> map) {
-	fromMap(map, map.comparator());
+	comp = (Comparator<Key>)map.comparator();
+	tree = fromMap(map);
+	dflt = null;
     }
 
     /**
@@ -198,7 +207,8 @@ public class FTreeMap<Key, Val>
     public FTreeMap(Key[] keys, Val[] vals) {
 	if (keys.length != vals.length) throw new IllegalArgumentException();
 	comp = null;
-	fromArrays(keys, vals);
+	tree = fromArrays(keys, vals);
+	dflt = null;
     }
 
     /**
@@ -213,7 +223,8 @@ public class FTreeMap<Key, Val>
     public FTreeMap(Key[] keys, Val[] vals, Comparator<? super Key> c) {
 	if (keys.length != vals.length) throw new IllegalArgumentException();
 	comp = (Comparator<Key>)c;
-	fromArrays(keys, vals);
+	tree = fromArrays(keys, vals);
+	dflt = null;
     }
 
     /**
@@ -225,9 +236,7 @@ public class FTreeMap<Key, Val>
      * @return the new <code>FTreeMap</code>
      */
     public static <Key, Val> FTreeMap<Key, Val> withDefault(Val dflt) {
-	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>();
-	m.dflt = dflt;
-	return m;
+	return new FTreeMap<Key, Val>(null, dflt, null);
     }
 
     /**
@@ -241,10 +250,8 @@ public class FTreeMap<Key, Val>
      * @return the new <code>FTreeMap</code>
      */
     public static <Key, Val> FTreeMap<Key, Val> withDefault(Val dflt,
-							       Comparator<? super Key> comp) {
-	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>(comp);
-	m.dflt = dflt;
-	return m;
+							    Comparator<? super Key> comp) {
+	return new FTreeMap<Key, Val>(null, dflt, (Comparator<Key>)comp);
     }
 
     /**
@@ -257,11 +264,8 @@ public class FTreeMap<Key, Val>
      * @param dflt the default value
      * @return the new <code>FTreeMap</code>
      */
-    public static <Key, Val> FTreeMap<Key, Val>
-	   withDefault(FTreeMap<Key, Val> map, Val dflt) {
-	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>(map);
-	m.dflt = dflt;
-	return m;
+    public static <Key, Val> FTreeMap<Key, Val> withDefault(FTreeMap<Key, Val> map, Val dflt) {
+	return new FTreeMap<Key, Val>(map.tree, dflt, null);
     }
 
     /**
@@ -277,28 +281,27 @@ public class FTreeMap<Key, Val>
      */
     public static <Key, Val> FTreeMap<Key, Val>
 	   withDefault(FTreeMap<Key, Val> map, Val dflt, Comparator<? super Key> comp) {
-	FTreeMap<Key, Val> m = new FTreeMap<Key, Val>(map, comp);
-	m.dflt = dflt;
-	return m;
+	return new FTreeMap<Key, Val>(map.tree, dflt, (Comparator<Key>)comp);
     }
 
-    private void fromMap(Map<Key, Val> map, Comparator<? super Key> _comp) {
-	comp = (Comparator<Key>)_comp;
+    private Object fromMap(Map<Key, Val> map) {
 	if (map instanceof FTreeMap && eql(comp, ((FTreeMap)map).comp))
-	    tree = ((FTreeMap)map).tree;
+	    return ((FTreeMap)map).tree;
 	else {
-	    tree = null;
+	    Object t = null;
 	    for (Map.Entry<Key, Val> ent : map.entrySet())
-		tree = with(tree, ent.getKey(), ent.getValue());
+		t = with(t, ent.getKey(), ent.getValue());
+	    return t;
 	}
     }
 
-    private void fromArrays(Key[] keys, Val[] vals) {
-	tree = null;
+    private Object fromArrays(Key[] keys, Val[] vals) {
+	Object t = null;
 	if (keys.length != vals.length)
 	    throw new IllegalArgumentException("array lengths must be equal");
 	for (int i = 0; i < keys.length; ++i)
-	    tree = with(tree, keys[i], vals[i]);
+	    t = with(t, keys[i], vals[i]);
+	return t;
     }
 
     public boolean isEmpty() {
@@ -358,6 +361,7 @@ public class FTreeMap<Key, Val>
     public FTreeMap<Key, Val> less(Key key) {
 	Object t = less(tree, key);
 	if (t == tree) return this;
+	else if (t == null) return emptyMap();
 	else return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
@@ -634,9 +638,9 @@ public class FTreeMap<Key, Val>
     private static final FTreeMap EMPTY_INSTANCE = new FTreeMap();
 
     /* Instance variables */
-    private transient Object tree;	// a subtree (see below)
-    private Val dflt = null;
-    private Comparator<Key> comp;
+    private transient final Object tree;	// a subtree (see below)
+    private final Val dflt;
+    private final Comparator<Key> comp;
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
     /* The threshold length above which tree nodes will be built.  This includes
@@ -660,8 +664,8 @@ public class FTreeMap<Key, Val>
 	    key = _key;
 	    value = _value;
 	}
-	Object key;
-	Object value;
+	final Object key;
+	final Object value;
 	public Object getKey() { return key; }
 	public Object getValue() { return value; }
 	public Object setValue(Object newval) {
@@ -711,9 +715,9 @@ public class FTreeMap<Key, Val>
 	    left = _left;
 	    right = _right;
 	}
-	int size;	// the number of pairs in the subtree
-	Object left;	// a subtree
-	Object right;	// a subtree
+	private final int size;		// the number of pairs in the subtree
+	private final Object left;	// a subtree
+	private final Object right;	// a subtree
     }
 
     private static Node makeNode(Object key, Object value, Object left, Object right) {
@@ -2089,9 +2093,9 @@ public class FTreeMap<Key, Val>
 		index = _index;
 		parent = _parent;
 	    }
-	    Object subtree;
-	    int index;
-	    IteratorNode parent;
+	    private final Object subtree;
+	    private int index;
+	    private final IteratorNode parent;
 	}
 
 	private IteratorNode inode;
@@ -2229,6 +2233,17 @@ public class FTreeMap<Key, Val>
 	}
     }
 
+    // http://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.5.3
+    private static Field TreeField;
+    static {
+	try {
+	    TreeField = FTreeMap.class.getDeclaredField("tree");
+	    TreeField.setAccessible(true);
+	} catch (NoSuchFieldException nsf) {
+	    throw new RuntimeException("Static initialization failed", nsf);
+	}
+    }
+
     /**
      * Reconstitutes the <code>FTreeMap</code> instance from a stream.
      */
@@ -2236,11 +2251,16 @@ public class FTreeMap<Key, Val>
 	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp' and `dflt'
         int size = strm.readInt();
-	tree = null;
+	Object t = null;
 	for (int i = 0; i < size; ++i) {
 	    Object key = strm.readObject();
 	    Object val = strm.readObject();
-	    tree = with(tree, key, val);
+	    t = with(t, key, val);
+	}
+	try {
+	    TreeField.set(this, t);
+	} catch (IllegalAccessException ia) {
+	    throw new RuntimeException("FTreeMap deserialization failed", ia);
 	}
     }
 

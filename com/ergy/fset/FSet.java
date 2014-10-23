@@ -143,6 +143,8 @@ public interface FSet<Elt> extends Set<Elt>
     /* ======== Deprecated Set Methods ========
      *
      * We mark these deprecated to remind people not to use them on an FSet.
+     * (The JCF should have separate interfaces for immutable and mutable collections,
+     * with the latter extending the former.)
      */
 
     @Deprecated

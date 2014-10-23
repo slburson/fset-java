@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -123,7 +124,7 @@ public class FTreeList<Elt>
      * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array
      */
-    public <T extends Elt> FTreeList(T[] ary) {
+    public <T extends Elt> FTreeList(T... ary) {
 	elt_comp = null;
 	tree = fromCollection(ary);
     }
@@ -136,11 +137,14 @@ public class FTreeList<Elt>
      * multidimensional, the elements of the list will be the inner arrays, not the
      * objects which are ultimately found after multiple levels of indexing.)
      *
+     * Note that the comparator argument must come first; this is inconsistent with
+     * the argument ordering of the other constructors.
+     *
      * @param T type of the array elements; extends <code>Elt</code>
      * @param ary the array
      * @param c the comparator
      */
-    public <T extends Elt> FTreeList(T[] ary, Comparator<? super Elt> c) {
+    public <T extends Elt> FTreeList(Comparator<? super Elt> c, T... ary) {
 	elt_comp = (Comparator<Elt>)c;
 	tree = fromCollection(ary);
     }
@@ -355,8 +359,8 @@ public class FTreeList<Elt>
     private static final FTreeList<?> EMPTY_INSTANCE = new FTreeList<Object>();
 
     /* Instance variables */
-    private transient Object tree;
-    private Comparator<Elt> elt_comp;
+    private transient final Object tree;
+    private final Comparator<Elt> elt_comp;
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
     /*pkg*/ FTreeList(Object _tree, Comparator<? super Elt> _elt_comp) {
@@ -377,9 +381,9 @@ public class FTreeList<Elt>
 	    left = _left;
 	    right = _right;
 	}
-	public int size;	// the number of elements in the subtree
-	public Object left;	// a subtree
-	public Object right;	// a subtree
+	private final int size;		// the number of elements in the subtree
+	private final Object left;	// a subtree
+	private final Object right;	// a subtree
     }
 
     private static Object makeNode(Object left, Object right) {
@@ -834,9 +838,9 @@ public class FTreeList<Elt>
 		index = _index;
 		parent = _parent;
 	    }
-	    public Object subtree;
-	    public int index;
-	    public IteratorNode parent;
+	    private final Object subtree;
+	    private int index;
+	    private final IteratorNode parent;
 	}
 
 	private IteratorNode inode;
@@ -1020,6 +1024,17 @@ public class FTreeList<Elt>
             strm.writeObject(it.next());
     }
 
+    // http://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.5.3
+    private static Field TreeField;
+    static {
+	try {
+	    TreeField = FTreeList.class.getDeclaredField("tree");
+	    TreeField.setAccessible(true);
+	} catch (NoSuchFieldException nsf) {
+	    throw new RuntimeException("Static initialization failed", nsf);
+	}
+    }
+
     /**
      * Reconstitutes the <code>FTreeSet</code> instance from a stream.
      */
@@ -1030,7 +1045,11 @@ public class FTreeList<Elt>
 	Object[] ary = new Object[size];
 	for (int i = 0; i < size; ++i)
 	    ary[i] = strm.readObject();
-	tree = fromCollection(ary);
+	try {
+	    TreeField.set(this, fromCollection(ary));
+	} catch (IllegalAccessException ia) {
+	    throw new RuntimeException("FTreeList deserialization failed", ia);
+	}
     }
 
 }

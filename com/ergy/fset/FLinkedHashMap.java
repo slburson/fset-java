@@ -9,12 +9,12 @@
 
 package com.ergy.fset;
 
-import java.util.*;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.*;
 
 /**
  * Just like <code>FHashMap</code> except that the iterator returns entries
@@ -234,12 +234,12 @@ public class FLinkedHashMap<Key, Val>
     private static final FLinkedHashMap<?, ?> EMPTY_INSTANCE = new FLinkedHashMap<Object, Object>();
 
     // The map tree is managed by FHashMap and contains the same pairs.
-    /*pkg*/ transient Object map_tree;
+    /*pkg*/ transient final Object map_tree;
     // The list tree contains the keys in the order in which they were first added.
     // It is managed by FTreeList.
-    private transient Object list_tree;
+    private transient final Object list_tree;
 
-    private Val dflt;
+    private final Val dflt;
 
     private transient int hash_code = Integer.MIN_VALUE;
 
@@ -255,8 +255,8 @@ public class FLinkedHashMap<Key, Val>
     // Iterator classes
 
     private static final class FLHMIterator<Key, Val> implements Iterator<Map.Entry<Key, Val>> {
-	Object map_tree;
-	FTreeList.FTLIterator<Key> list_it;
+	private final Object map_tree;
+	private final FTreeList.FTLIterator<Key> list_it;
 
 	private FLHMIterator(Object _map_tree, Object _list_tree) {
 	    map_tree = _map_tree;
@@ -281,8 +281,8 @@ public class FLinkedHashMap<Key, Val>
     }
 
     private static final class FLHMValueIterator<Val> implements Iterator<Val> {
-	Object map_tree;
-	FTreeList.FTLIterator<Object> list_it;
+	private final Object map_tree;
+	private final FTreeList.FTLIterator<Object> list_it;
 
 	private FLHMValueIterator(Object _map_tree, Object _list_tree) {
 	    map_tree = _map_tree;
@@ -320,6 +320,19 @@ public class FLinkedHashMap<Key, Val>
 	}
     }
 
+    // http://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.5.3
+    private static Field MapTreeField, ListTreeField;
+    static {
+	try {
+	    MapTreeField = FLinkedHashMap.class.getDeclaredField("map_tree");
+	    ListTreeField = FLinkedHashMap.class.getDeclaredField("list_tree");
+	    MapTreeField.setAccessible(true);
+	    ListTreeField.setAccessible(true);
+	} catch (NoSuchFieldException nsf) {
+	    throw new RuntimeException("Static initialization failed", nsf);
+	}
+    }
+
     /**
      * Reconstitutes the <code>FLinkedHashMap</code> instance from a stream.
      */
@@ -327,15 +340,20 @@ public class FLinkedHashMap<Key, Val>
 	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `dflt'
         int size = strm.readInt();
-	map_tree = null;
+	Object mt = null;
 	Object[] keys = new Object[size];
 	for (int i = 0; i < size; ++i) {
 	    Object key = strm.readObject();
 	    Object val = strm.readObject();
-	    map_tree = FHashMap.with(map_tree, key, hashCode(key), val);
+	    mt = FHashMap.with(mt, key, hashCode(key), val);
 	    keys[i] = key;
 	}
-	list_tree = FTreeList.fromCollection(keys);
+	try {
+	    MapTreeField.set(this, mt);
+	    ListTreeField.set(this, FTreeList.fromCollection(keys));
+	} catch (IllegalAccessException ia) {
+	    throw new RuntimeException("FLinkedHashMap deserialization failed", ia);
+	}
     }
 
 }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.*;
 
 /**
@@ -98,8 +99,9 @@ public final class FHashSet<Elt>
 	if (coll instanceof FHashSet)
 	    tree = ((FHashSet)coll).tree;
 	else {
-	    tree = null;
-	    for (Elt e : coll) tree = with(tree, e, hashCode(e));
+	    Object t = null;
+	    for (Elt e : coll) t = with(t, e, hashCode(e));
+	    tree = t;
 	}
     }
 
@@ -111,8 +113,9 @@ public final class FHashSet<Elt>
      * @param elts the elements (as an argument list or array)
      */
     public <T extends Elt> FHashSet(T... elts) {
-	tree = null;
-	for (T e : elts) tree = with(tree, e, hashCode(e));
+	Object t = null;
+	for (T e : elts) t = with(t, e, hashCode(e));
+	tree = t;
     }
 
     public boolean isEmpty() {
@@ -154,6 +157,7 @@ public final class FHashSet<Elt>
     public FHashSet<Elt> less(Elt elt) {
 	Object t = less(tree, elt, hashCode(elt));
 	if (t == tree) return this;
+	else if (t == null) return emptySet();
 	else return make(t);
     }
 
@@ -344,8 +348,8 @@ public final class FHashSet<Elt>
     private static final FHashSet<?> EMPTY_INSTANCE = new FHashSet<Object>();
 
     /* Instance variables */
-    // This has package access for benefit of `FHashMap.restrict[Not]'.
-    /*pkg*/ transient Object tree;	// a subtree (see below)
+    // This has package access for benefit of `FHashMap.restricted{To,From}'.
+    /*pkg*/ transient final Object tree;	// a subtree (see below)
     private transient int hash_code = Integer.MIN_VALUE;	// cache
 
     // The 'int' parameter is just to distinguish it from the public singleton constructor.
@@ -390,7 +394,7 @@ public final class FHashSet<Elt>
      * of the space benefit we get by using arrays at the leaves in the first place.
      * So we use `Object' as our subtree type so we don't need `Leaf' objects, and
      * use `instanceof' to tell what kind of subtree we're looking at. */
-    // This has package access for benefit of `FHashMap.restrict[Not]'.
+    // This has package access for benefit of `FHashMap.restricted{To,From}'.
     /*pkg*/ static final class Node {
 	Node (int _size, Object _element, Object _left, Object _right) {
 	    size = _size;
@@ -398,10 +402,10 @@ public final class FHashSet<Elt>
 	    left = _left;
 	    right = _right;
 	}
-	int size;	// the number of elements in the subtree
-	Object element;
-	Object left;	// a subtree
-	Object right;	// a subtree
+	/*pkg*/ final int size;		// the number of elements in the subtree
+	/*pkg*/ final Object element;
+	/*pkg*/ final Object left;	// a subtree
+	/*pkg*/ final Object right;	// a subtree
     }
 
     // This has default (package-wide) access so `FHashMap.domain' can use it.
@@ -804,11 +808,11 @@ public final class FHashSet<Elt>
      * return multiple values.  In this case `findEquiv' needs to return something
      * indicating "no element found", but it can't be `null' because we allow `null'
      * as an element.  So we make a special object. */
-    // This has package access for benefit of `FHashMap.restrict[Not]'.
-    static final Object NO_ELEMENT = new Object();
+    // This has package access for benefit of `FHashMap.restricted{To,From}'.
+    /*pkg*/ static final Object NO_ELEMENT = new Object();
 
-    // This has package access for benefit of `FHashMap.restrict[Not]'.
-    static Object findEquiv(Object subtree, int ehash) {
+    // This has package access for benefit of `FHashMap.restricted{To,From}'.
+    /*pkg*/ static Object findEquiv(Object subtree, int ehash) {
 	if (subtree == null) return NO_ELEMENT;
 	else if (!(subtree instanceof Node)) {
 	    int bin_srch_res = binarySearch((Object[])subtree, ehash);
@@ -860,8 +864,8 @@ public final class FHashSet<Elt>
 
     // Returns the largest subtree of `subtree' whose root node is greater than `lo'
     // and less than `hi'.  Never conses.  (Contrast `split'.)
-    // This has package access for benefit of `FHashMap.restrict[Not]'.
-    static Object trim(Object subtree, int lo, int hi) {
+    // This has package access for benefit of `FHashMap.restricted{To,From}'.
+    /*pkg*/ static Object trim(Object subtree, int lo, int hi) {
 	if (subtree == null) return null;
 	else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
@@ -1559,9 +1563,9 @@ public final class FHashSet<Elt>
 		index = _index;
 		parent = _parent;
 	    }
-	    Object subtree;
-	    int index;
-	    IteratorNode parent;
+	    private final Object subtree;
+	    private int index;
+	    private final IteratorNode parent;
 	}
 
 	private IteratorNode inode;
@@ -1634,6 +1638,17 @@ public final class FHashSet<Elt>
             strm.writeObject(e);
     }
 
+    // http://docs.oracle.com/javase/specs/jls/se7/html/jls-17.html#jls-17.5.3
+    private static Field TreeField;
+    static {
+	try {
+	    TreeField = FHashSet.class.getDeclaredField("tree");
+	    TreeField.setAccessible(true);
+	} catch (NoSuchFieldException nsf) {
+	    throw new RuntimeException("Static initialization failed", nsf);
+	}
+    }
+
     /**
      * Reconstitutes the <code>FHashSet</code> instance from a stream.
      */
@@ -1641,10 +1656,15 @@ public final class FHashSet<Elt>
 	hash_code = Integer.MIN_VALUE;
 	strm.defaultReadObject();	// reads `comp'
         int size = strm.readInt();
-	tree = null;
+	Object t = null;
 	for (int i = 0; i < size; ++i) {
 	    Object e = strm.readObject();
-	    tree = with(tree, e, hashCode(e));
+	    t = with(t, e, hashCode(e));
+	}
+	try {
+	    TreeField.set(this, t);
+	} catch (IllegalAccessException ia) {
+	    throw new RuntimeException("FHashSet deserialization failed", ia);
 	}
     }
 
