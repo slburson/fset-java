@@ -1,6 +1,8 @@
 fset-java
 =========
 
+[Online API documentation](http://www.ergy.com/fset-java-doc/index.html)
+
 This is the Java implementation of the FSet functional collections library.
 
 _Functional_ collections are more than just immutable: they include "update" operations
@@ -61,5 +63,3 @@ code 0.
 FSet maps return a user-specified default value when `get` is called on a key that is not
 in the map.  The default default is `null`, but it can be changed using the `withDefault'
 method.
-
-[Online API documentation](http://www.ergy.com/fset-java-doc/index.html)
