@@ -236,7 +236,7 @@ public class FHashMap<Key, Val>
     public FHashMap<Key, Val> less(Key key) {
 	Object t = less(tree, key, hashCode(key));
 	if (t == tree) return this;
-	else if (t == null) return emptyMap();
+	else if (t == null && dflt == null) return emptyMap();
 	else return new FHashMap<Key, Val>(t, dflt);
     }
 

@@ -361,7 +361,7 @@ public class FTreeMap<Key, Val>
     public FTreeMap<Key, Val> less(Key key) {
 	Object t = less(tree, key);
 	if (t == tree) return this;
-	else if (t == null) return emptyMap();
+	else if (t == null && dflt == null && comp == null) return emptyMap();
 	else return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
