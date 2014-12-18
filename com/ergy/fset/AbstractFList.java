@@ -27,6 +27,21 @@ public abstract class AbstractFList<Elt>
     implements FList<Elt> {
 
     /**
+     * Returns this map.
+     */
+    public final AbstractFList<Elt> clone() {
+	return this;
+    }
+
+    public FList<Elt> prefix(int len) {
+	return subseq(0, len);
+    }
+
+    public FList<Elt> suffix(int len) {
+	return subseq(size() - len, size());
+    }
+
+    /**
      * Unsupported.
      */
     public final boolean add(Elt e) {
@@ -52,13 +67,6 @@ public abstract class AbstractFList<Elt>
      */
     public final void clear() {
 	throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Returns this map.
-     */
-    public final AbstractFList<Elt> clone() {
-	return this;
     }
 
     /**

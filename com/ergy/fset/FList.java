@@ -110,7 +110,7 @@ public interface FList<Elt> extends List<Elt> {
      * Returns the portion of this list between position <code>fromIndex</code>,
      * inclusive, to position <code>toIndex</code>, exclusive.
      *
-     * @throws IndexOutOfBoundsException
+     * @throws IndexOutOfBoundsException, IllegalArgumentException
      */
     FList<Elt> subList(int fromIndex, int toIndex);
 
@@ -125,6 +125,20 @@ public interface FList<Elt> extends List<Elt> {
      * @throws IndexOutOfBoundsException
      */
     FList<Elt> subseq(int fromIndex, int toIndex);
+
+    /**
+     * Returns the initial subsequence of this list, of length <code>len</code>.
+     *
+     * @throws IndexOutOfBoundsException
+     */
+    FList<Elt> prefix(int len);
+
+    /**
+     * Returns the final subsequence of this list, of length <code>len</code>.
+     *
+     * @throws IndexOutOfBoundsException
+     */
+    FList<Elt> suffix(int fromIndex);
 
     /**
      * Returns a new list in which the elements of this list are sorted by their
