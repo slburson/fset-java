@@ -176,10 +176,27 @@ public interface FMap<Key, Val>
      * <p>The default value of the result (the value returned by <code>get</code> of
      * a key not in the map) is that of this map.
      *
-     * @param withMap the map to merge with
-     * @return the result of the merge
+     * @param withMap the map to union with
+     * @return the result of the union
      */
     FMap<Key, Val> union(FMap<? extends Key, ? extends Val> withMap);
+
+    /**
+     * Adds the pairs of <code>withMap</code> to this map, combining corresponding
+     * values with <code>valCombiner</code>, and returning the result.  The domain of
+     * the result is the union of the domains of the two maps; for each key, if it
+     * appears in only one map, its value in the result is that in whichever map it
+     * appeared in; if it appears in both, its value is the result of calling
+     * <code>valCombiner.apply</code> with the value from this map and the value from
+     * <code>withMap</code>, in that order.
+     *
+     * <p>The default value of the result (the value returned by <code>get</code> of
+     * a key not in the map) is that of this map.
+     *
+     * @param withMap the map to union with
+     * @return the result of the union
+     */
+    FMap<Key, Val> union(FMap<? extends Key, ? extends Val> withMap, BinaryOp<Val> valCombiner);
 
     /**
      * Returns a new map whose domain is the intersection of the domain of this

@@ -464,9 +464,18 @@ public class FTreeMap<Key, Val>
 	return s;
     }
 
+    private static BinaryOp second = new BinaryOp() {
+	    public Object apply(Object x, Object y) { return y; }
+	};
+
     public FTreeMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map) {
+	return union(with_map, (BinaryOp<Val>)second);
+    }
+
+    public FTreeMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map,
+				    BinaryOp<Val> valCombiner) {
 	FTreeMap<Key, Val> with_ftm = new FTreeMap<Key, Val>(with_map, comp);
-	Object t = union(tree, with_ftm.tree);
+	Object t = union(tree, with_ftm.tree, valCombiner);
 	return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
@@ -831,7 +840,7 @@ public class FTreeMap<Key, Val>
 		     !(key instanceof EquivalentMap))
 		return insert2(ary, idx, key, value);
 	    else return makeNode((found == BIN_SEARCH_FOUND
-				  ? equivUnion(ary[idx], ary[idx + nkeys], key, value)
+				  ? equivUnion(ary[idx], ary[idx + nkeys], key, value, second)
 				  : key),
 				 value, subseq2(ary, 0, idx),
 				 subseq2(ary, (found == BIN_SEARCH_FOUND ? idx + 1 : idx),
@@ -844,7 +853,7 @@ public class FTreeMap<Key, Val>
 		if (!(key instanceof EquivalentMap) && !(nkey instanceof EquivalentMap) &&
 		    eql(key, nkey) && eql(value, node.value))
 		    return subtree;
-		else return makeNode(equivUnion(nkey, node.value, key, value), value,
+		else return makeNode(equivUnion(nkey, node.value, key, value, second), value,
 				     node.left, node.right);
 	    } else if (comp_res < 0) {
 		Object new_left = with(node.left, key, value);
@@ -935,30 +944,30 @@ public class FTreeMap<Key, Val>
 	}
     }
 
-    private Object union(Object subtree1, Object subtree2) {
-	return union(subtree1, subtree2, NEGATIVE_INFINITY, POSITIVE_INFINITY);
+    private Object union(Object subtree1, Object subtree2, BinaryOp valCombiner) {
+	return union(subtree1, subtree2, valCombiner, NEGATIVE_INFINITY, POSITIVE_INFINITY);
     }
 
-    private Object union(Object subtree1, Object subtree2, Object lo, Object hi) {
-	if (subtree1 == subtree2 || subtree1 == null) return split(subtree2, lo, hi);
+    private Object union(Object subtree1, Object subtree2, BinaryOp valCombiner,
+			 Object lo, Object hi) {
+	if (subtree1 == subtree2) return subtree1;
+	else if (subtree1 == null) return split(subtree2, lo, hi);
 	else if (subtree2 == null) return split(subtree1, lo, hi);
 	else if (!(subtree1 instanceof Node)) {
 	    Object[] ary1 = (Object[])subtree1;
 	    if (!(subtree2 instanceof Node))
-		return union2(ary1, (Object[])subtree2, lo, hi);
+		return union2(ary1, (Object[])subtree2, valCombiner, lo, hi);
 	    else {
 		Node node2 = (Node)subtree2;
 		Object key2 = node2.key;
-		Object new_left = union(trim(subtree1, lo, key2),
-					trim(node2.left, lo, key2),
-					lo, key2);
-		Object new_right = union(trim(subtree1, key2, hi),
-					 trim(node2.right, key2, hi),
-					 key2, hi);
+		Object new_left = union(trim(subtree1, lo, key2), trim(node2.left, lo, key2),
+					valCombiner, lo, key2);
+		Object new_right = union(trim(subtree1, key2, hi), trim(node2.right, key2, hi),
+					 valCombiner, key2, hi);
 		Entry entry1 = findEquiv(subtree1, key2);
 		if (entry1 == null) return concat(key2, node2.value, new_left, new_right);
 		else {
-		    Object k = equivUnion(entry1.key, entry1.value, key2, node2.value);
+		    Object k = equivUnion(entry1.key, entry1.value, key2, node2.value, valCombiner);
 		    if (k instanceof EquivalentMap)
 			return concat(k, null, new_left, new_right);
 		    else {
@@ -970,16 +979,14 @@ public class FTreeMap<Key, Val>
 	} else {
 	    Node node1 = (Node)subtree1;
 	    Object key1 = node1.key;
-	    Object new_left = union(trim(node1.left, lo, key1),
-				    trim(subtree2, lo, key1),
-				    lo, key1);
-	    Object new_right = union(trim(node1.right, key1, hi),
-				     trim(subtree2, key1, hi),
-				     key1, hi);
+	    Object new_left = union(trim(node1.left, lo, key1), trim(subtree2, lo, key1),
+				    valCombiner, lo, key1);
+	    Object new_right = union(trim(node1.right, key1, hi), trim(subtree2, key1, hi),
+				     valCombiner, key1, hi);
 	    Entry entry2 = findEquiv(subtree2, key1);
 	    if (entry2 == null) return concat(key1, node1.value, new_left, new_right);
 	    else {
-		Object e = equivUnion(key1, node1.value, entry2.key, entry2.value);
+		Object e = equivUnion(key1, node1.value, entry2.key, entry2.value, valCombiner);
 		if (e instanceof EquivalentMap)
 		    return concat(e, null, new_left, new_right);
 		else {
@@ -1607,19 +1614,23 @@ public class FTreeMap<Key, Val>
 	ArrayList<Entry> contents;
     }
 
-    // The "2" pair takes precedence.  Returns either an `EquivalentMap' or an `Entry'.
-    private static Object equivUnion(Object key1, Object value1, Object key2, Object value2) {
+    // Returns either an `EquivalentMap' or an `Entry'.
+    private static Object equivUnion(Object key1, Object value1, Object key2, Object value2,
+				     BinaryOp valCombiner) {
 	if (key1 instanceof EquivalentMap) {
 	    ArrayList<Entry> al1 = ((EquivalentMap)key1).contents;
 	    if (key2 instanceof EquivalentMap) {
 		ArrayList<Entry> al2 = ((EquivalentMap)key2).contents;
 		ArrayList<Entry> al = (ArrayList<Entry>)al2.clone();
 		for (int i1 = 0, siz1 = al1.size(); i1 < siz1; ++i1) {
-		    Entry ent1 = (Entry)al1.get(i1);
+		    Entry ent1 = al1.get(i1);
 		    boolean found = false;
 		    for (int i = 0, siz = al.size(); i < siz && !found; ++i) {
-			Entry e = (Entry)al.get(i);
-			if (eql(e.key, ent1.key)) found = true;
+			Entry e = al.get(i);
+			if (eql(e.key, ent1.key)) {
+			    al.set(i, new Entry(ent1.key, valCombiner.apply(ent1.value, e.value)));
+			    found = true;
+			}
 		    }
 		    if (!found) al.add(ent1);
 		}
@@ -1627,30 +1638,32 @@ public class FTreeMap<Key, Val>
 		return new EquivalentMap(al);
 	    } else {
 		ArrayList<Entry> al = (ArrayList<Entry>)al1.clone();
-		int found_at = -1;
-		for (int i = 0, siz = al.size(); i < siz && found_at < 0; ++i) {
-		    Entry e = (Entry)al.get(i);
-		    if (eql(key2, e.key)) found_at = i;
+		boolean found = false;
+		for (int i = 0, siz = al.size(); i < siz && !found; ++i) {
+		    Entry e = al.get(i);
+		    if (eql(key2, e.key)) {
+			al.set(i, new Entry(e.key, valCombiner.apply(e.value, value2)));
+			found = true;
+		    }
 		}
-		if (found_at >= 0) al.set(found_at, new Entry(key2, value2));
-		else al.add(new Entry(key2, value2));
+		if (!found) al.add(new Entry(key2, value2));
 		al.trimToSize();
 		return new EquivalentMap(al);
 	    }
 	} else if (key2 instanceof EquivalentMap) {
-	    ArrayList<Entry> al2 = ((EquivalentMap)key2).contents;
+	    ArrayList<Entry> al = (ArrayList<Entry>)((EquivalentMap)key2).contents.clone();
 	    boolean found = false;
-	    for (int i = 0, siz = al2.size(); i < siz && !found; ++i) {
-		Entry e = (Entry)al2.get(i);
-		if (eql(key1, e.key)) found = true;
+	    for (int i = 0, siz = al.size(); i < siz && !found; ++i) {
+		Entry e = al.get(i);
+		if (eql(key1, e.key)) {
+		    al.set(i, new Entry(key1, valCombiner.apply(value1, e.value)));
+		    found = true;
+		}
 	    }
-	    if (!found) {
-		ArrayList<Entry> al = (ArrayList<Entry>)al2.clone();
-		al.add(new Entry(key1, value1));
-		al.trimToSize();
-		return new EquivalentMap(al);
-	    } else return new EquivalentMap(al2);
-	} else if (eql(key1, key2)) return new Entry(key2, value2);
+	    if (!found) al.add(new Entry(key1, value1));
+	    al.trimToSize();
+	    return new EquivalentMap(al);
+	} else if (eql(key1, key2)) return new Entry(key1, valCombiner.apply(value1, value2));
 	else {
 	    ArrayList<Entry> al = new ArrayList<Entry>(2);
 	    al.add(new Entry(key1, value1));
@@ -1879,7 +1892,8 @@ public class FTreeMap<Key, Val>
     // greater than `lo' and less than `hi'.  If the result is too long to be a
     // leaf, splits it and makes a node.  Also, if any equivalent keys are found,
     // makes a node.
-    private Object union2(Object[] ary1, Object[] ary2, Object lo, Object hi) {
+    private Object union2(Object[] ary1, Object[] ary2, BinaryOp valCombiner,
+			  Object lo, Object hi) {
 	int i1 = 0, i2 = 0;
 	int nkeys1 = ary1.length >> 1, nkeys2 = ary2.length >> 1;
 	int len1 = nkeys1, len2 = nkeys2;
@@ -1924,11 +1938,11 @@ public class FTreeMap<Key, Val>
 		    ++i2;
 		} else {
 		    if (eql(k1, k2)) {
-			keys.add(k2);
-			vals.add(ary2[i2 + nkeys2]);
+			keys.add(k1);
+			vals.add(valCombiner.apply(ary1[i1 + nkeys1], ary2[i2 + nkeys2]));
 		    } else {
-			keys.add(equivUnion(k1, ary1[i1 + nkeys1],
-					    k2, ary2[i2 + nkeys2]));
+			keys.add(equivUnion(k1, ary1[i1 + nkeys1], k2, ary2[i2 + nkeys2],
+					    valCombiner));
 			vals.add(null);
 			any_equiv = true;
 		    }

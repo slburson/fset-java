@@ -182,6 +182,18 @@ public class FLinkedHashMap<Key, Val>
 	return m;
     }
 
+    public FLinkedHashMap<Key, Val> union(FMap<? extends Key, ? extends Val> with_map,
+					  BinaryOp<Val> valCombiner) {
+	// O(n log n) rather than O(n), and probably with a worse constant factor too.
+	FLinkedHashMap<Key, Val> m = this;
+	for (Map.Entry<? extends Key, ? extends Val> ent : with_map) {
+	    Key k = ent.getKey();
+	    m = m.with(k, (containsKey(k) ? valCombiner.apply(get(k), ent.getValue())
+			   : ent.getValue()));
+	}
+	return m;
+    }
+
     public FLinkedHashMap<Key, Val> restrictedTo(FSet<Key> set) {
 	// Maybe later -- I'm lazy
 	throw new UnsupportedOperationException();
