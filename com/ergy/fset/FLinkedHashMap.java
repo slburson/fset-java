@@ -94,6 +94,18 @@ public class FLinkedHashMap<Key, Val>
 	}
     }
 
+    public FLinkedHashMap<Key, Val> with(Key key, Val value, BinaryOp<Val> valCombiner) {
+	int khash = hashCode(key);
+	Object new_map_tree = FHashMap.with(map_tree, key, khash, value, valCombiner);
+	if (new_map_tree == map_tree) return this;
+	if (FHashMap.treeSize(new_map_tree) == FHashMap.treeSize(map_tree))   // existing key?
+	    return new FLinkedHashMap<Key, Val>(new_map_tree, list_tree, dflt);
+	else {
+	    Object new_list_tree = FTreeList.insert(list_tree, FTreeList.treeSize(list_tree), key);
+	    return new FLinkedHashMap<Key, Val>(new_map_tree, new_list_tree, dflt);
+	}
+    }
+
     public FLinkedHashMap<Key, Val> less(Key key) {
 	Object new_map_tree = FHashMap.less(map_tree, key, hashCode(key));
 	if (new_map_tree == map_tree) return this;
@@ -188,8 +200,7 @@ public class FLinkedHashMap<Key, Val>
 	FLinkedHashMap<Key, Val> m = this;
 	for (Map.Entry<? extends Key, ? extends Val> ent : with_map) {
 	    Key k = ent.getKey();
-	    m = m.with(k, (containsKey(k) ? valCombiner.apply(get(k), ent.getValue())
-			   : ent.getValue()));
+	    m = m.with(k, ent.getValue(), valCombiner);
 	}
 	return m;
     }

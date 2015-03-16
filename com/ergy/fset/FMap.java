@@ -92,6 +92,29 @@ public interface FMap<Key, Val>
     FMap<Key, Val> with(Key key, Val value);
 
     /**
+     * Returns a new map which maps <code>key</code> to either <code>value</code>, if
+     * the map did not already have a value for <code>key</code>, or to the result
+     * of calling <code>valCombiner.apply</code> with the value from this map and
+     * <code>value</code>, in that order.  The result otherwise contains exactly the
+     * same mappings as this map.
+     *
+     * <p>The default value of the result (the value returned by <code>get</code> of
+     * a key not in the map) is that of this map.
+     *
+     * @param key the key whose value is to be added or changed
+     * @param value the new value
+     * @return the updated map
+     * @throws ClassCastException if the class of the key or value prevents it from
+     * being stored in this map (most likely because the key was unacceptable to the
+     * map's comparison method)
+     * @throws NullPointerException if this map does not permit null keys or values,
+     * and the key or value was <code>null</code>.
+     * @throws IllegalArgumentException if some aspect of the specified key or value
+     * makes it incompatible with the map
+     */
+    FMap<Key, Val> with(Key key, Val value, BinaryOp<Val> valCombiner);
+
+    /**
      * Returns a new map which contains no mapping for <code>key</code>, and which
      * otherwise contains exactly the same mappings as this map.  (No exception is
      * thrown if this map did not contain a mapping for <code>key</code>; in that

@@ -233,6 +233,12 @@ public class FHashMap<Key, Val>
 	else return new FHashMap<Key, Val>(t, dflt);
     }
 
+    public FHashMap<Key, Val> with(Key key, Val value, BinaryOp<Val> valCombiner) {
+	Object t = with(tree, key, hashCode(key), value, valCombiner);
+	if (t == tree) return this;
+	else return new FHashMap<Key, Val>(t, dflt);
+    }
+
     public FHashMap<Key, Val> less(Key key) {
 	Object t = less(tree, key, hashCode(key));
 	if (t == tree) return this;
@@ -484,16 +490,12 @@ public class FHashMap<Key, Val>
 	/*pkg*/ final Object right;	// a subtree
     }
 
-    private static Node makeNode(Object key, Object value, Object left, Object right) {
+    private static Node makeNode(Object key, int khash, Object value, Object left, Object right) {
 	if (key instanceof Entry) {	// convenience for some callers
 	    Entry ent = (Entry)key;
 	    value = ent.value;
 	    key = ent.key;
 	}
-	return makeNode(key, hashCode(key), value, left, right);
-    }
-
-    private static Node makeNode(Object key, int khash, Object value, Object left, Object right) {
 	return new Node(treeSize(left) + treeSize(right) + keySize(key),
 			key, khash, value, left, right);
     }
@@ -568,6 +570,11 @@ public class FHashMap<Key, Val>
 
     /* `key' may be an `EquivalentMap', or an `Entry'. */
     /*pkg*/ static Object with(Object subtree, Object key, int khash, Object value) {
+	return with(subtree, key, khash, value, second);
+    }
+
+    /*pkg*/ static Object with(Object subtree, Object key, int khash, Object value,
+			       BinaryOp valCombiner) {
 	if (subtree == null) {
 	    if (!(key instanceof EquivalentMap)) {
 		Object[] a = new Object[2];
@@ -581,15 +588,18 @@ public class FHashMap<Key, Val>
 	    int bin_srch_res = binarySearch(ary, khash);
 	    int found = bin_srch_res & BIN_SEARCH_FOUND_MASK;
 	    int idx = bin_srch_res >> BIN_SEARCH_INDEX_SHIFT;
-	    if (found == BIN_SEARCH_FOUND && !(key instanceof EquivalentMap) && eql(key, ary[idx]))
-		if (eql(value, ary[idx + nkeys])) return subtree;
-		else return update2(ary, idx, value);
-	    else if (found == BIN_SEARCH_NOT_FOUND  &&
+	    if (found == BIN_SEARCH_FOUND && !(key instanceof EquivalentMap) &&
+		eql(key, ary[idx])) {
+		Object oldval = ary[idx + nkeys];
+		Object newval = valCombiner.apply(oldval, value);
+		if (eql(oldval, newval)) return subtree;
+		else return update2(ary, idx, newval);
+	    } else if (found == BIN_SEARCH_NOT_FOUND  &&
 		     len + 1 < MAX_LEAF_ARRAY_LENGTH  &&
 		     !(key instanceof EquivalentMap))
 		return insert2(ary, idx, key, value);
 	    else return makeNode((found == BIN_SEARCH_FOUND
-				  ? equivUnion(ary[idx], ary[idx + nkeys], key, value, second)
+				  ? equivUnion(ary[idx], ary[idx + nkeys], key, value, valCombiner)
 				  : key),
 				 khash, value, subseq2(ary, 0, idx),
 				 subseq2(ary, (found == BIN_SEARCH_FOUND ? idx + 1 : idx),
@@ -600,16 +610,19 @@ public class FHashMap<Key, Val>
 	    int nkhash = node.khash;
 	    if (khash == nkhash) {
 		if (!(key instanceof EquivalentMap) && !(nkey instanceof EquivalentMap) &&
-		    eql(key, nkey) && eql(value, node.value))
-		    return subtree;
-		else return makeNode(equivUnion(nkey, node.value, key, value, second), value,
-				     node.left, node.right);
+		    eql(key, nkey)) {
+		    Object newval = valCombiner.apply(node.value, value);
+		    if (eql(node.value, newval)) return subtree;
+		    else return makeNode(equivUnion(nkey, node.value, key, newval, second),
+					 khash, newval, node.left, node.right);
+		} else return makeNode(equivUnion(nkey, node.value, key, value, valCombiner),
+				       khash, value, node.left, node.right);
 	    } else if (khash < nkhash) {
-		Object new_left = with(node.left, key, khash, value);
+		Object new_left = with(node.left, key, khash, value, valCombiner);
 		if (new_left == node.left) return subtree;
 		else return buildNode(nkey, nkhash, node.value, new_left, node.right);
 	    } else {
-		Object new_right = with(node.right, key, khash, value);
+		Object new_right = with(node.right, key, khash, value, valCombiner);
 		if (new_right == node.right) return subtree;
 		else return buildNode(nkey, nkhash, node.value, node.left, new_right);
 	    }
@@ -635,7 +648,7 @@ public class FHashMap<Key, Val>
 		if (!(nkey instanceof EquivalentMap)) {
 		    if (!eql(key, nkey)) return subtree;
 		    else return join(node.left, node.right);
-		} else return buildNode(equivLess(nkey, key), null,
+		} else return buildNode(equivLess(nkey, key), khash, null,
 					node.left, node.right);
 	    } else if (khash < nkhash) {
 		Object new_left = less(node.left, key, khash);
@@ -664,8 +677,8 @@ public class FHashMap<Key, Val>
 		ArrayList<Entry> al = ((EquivalentMap)node.key).contents;
 		ArrayList<Object> dom = new ArrayList<Object>(al.size());
 		for (int i = 0; i < al.size(); ++i) dom.add(al.get(i).key);
-		return FHashSet.makeNode(new FHashSet.EquivalentSet(dom), ldom, rdom);
-	    } else return FHashSet.makeNode(node.key, ldom, rdom);
+		return FHashSet.makeNode(new FHashSet.EquivalentSet(dom), node.khash, ldom, rdom);
+	    } else return FHashSet.makeNode(node.key, node.khash, ldom, rdom);
 	}
     }
 
@@ -766,7 +779,7 @@ public class FHashMap<Key, Val>
 		if (raw_elt instanceof FHashSet.EquivalentSet)
 		    set_elt = ((FHashSet.EquivalentSet)raw_elt).contents.get(0);
 		else set_elt = raw_elt;
-		int se_hash = FHashSet.hashCode(set_elt);
+		int se_hash = set_node.ehash;
 		Object new_left = restrictedTo(trim(map_subtree, lo, se_hash),
 					       set_node.left, lo, se_hash);
 		Object new_right = restrictedTo(trim(map_subtree, se_hash, hi),
@@ -831,7 +844,7 @@ public class FHashMap<Key, Val>
 		if (raw_elt instanceof FHashSet.EquivalentSet)
 		    set_elt = ((FHashSet.EquivalentSet)raw_elt).contents.get(0);
 		else set_elt = raw_elt;
-		int se_hash = FHashSet.hashCode(set_elt);
+		int se_hash = set_node.ehash;
 		Object new_left = restrictedFrom(trim(map_subtree, lo, se_hash),
 						 FHashSet.trim(set_node.left, lo, se_hash),
 						 lo, se_hash);
@@ -1140,18 +1153,13 @@ public class FHashMap<Key, Val>
 	}
     }
 
-    private static Object buildNode(Object key, Object value,
+    private static Object buildNode(Object key, int khash, Object value,
 				    Object left, Object right) {
 	if (key instanceof Entry) {	// convenience for some callers
 	    Entry ent = (Entry)key;
 	    value = ent.value;
 	    key = ent.key;
 	}
-	return buildNode(key, hashCode(key), value, left, right);
-    }
-
-    private static Object buildNode(Object key, int khash, Object value,
-				    Object left, Object right) {
 	if ((left == null || !(left instanceof Node)) &&
 	    (right == null || !(right instanceof Node))) {
 	    if (!(key instanceof EquivalentMap) &&
@@ -1257,7 +1265,7 @@ public class FHashMap<Key, Val>
 		ArrayList<Entry> al = ((EquivalentMap)key).contents;
 		for (int i = 0, siz = al.size(); i < siz; ++i)
 		    hash += al.get(i).hashCode();
-	    } else hash += (key == null ? 0 : key.hashCode()) ^
+	    } else hash += (key == null ? 0 : key.hashCode()) ^		// not 'node.khash'!
 			   (node.value == null ? 0 : node.value.hashCode());
 	    return hash;
 	}
@@ -1721,7 +1729,8 @@ public class FHashMap<Key, Val>
 	    Object[] res_ary = keys.toArray();
 	    if (res_ary.length > MAX_LEAF_ARRAY_LENGTH) {
 		int idx = nkeys >> 1;
-		return makeNode(keys.get(idx), vals.get(idx),
+		Object key = keys.get(idx);
+		return makeNode(key, hashCode(key), vals.get(idx),
 				subseq2(res_ary, 0, idx),
 				subseq2(res_ary, idx + 1, nkeys));
 	    } else return res_ary;

@@ -358,6 +358,12 @@ public class FTreeMap<Key, Val>
 	else return new FTreeMap<Key, Val>(t, dflt, comp);
     }
 
+    public FTreeMap<Key, Val> with(Key key, Val value, BinaryOp<Val> valCombiner) {
+	Object t = with(tree, key, value, valCombiner);
+	if (t == tree) return this;
+	else return new FTreeMap<Key, Val>(t, dflt, comp);
+    }
+
     public FTreeMap<Key, Val> less(Key key) {
 	Object t = less(tree, key);
 	if (t == tree) return this;
@@ -819,6 +825,11 @@ public class FTreeMap<Key, Val>
 
     /* `key' may be an `EquivalentMap', or an `Entry'. */
     private Object with(Object subtree, Object key, Object value) {
+	return with(subtree, key, value, second);
+    }
+
+    /* `key' may be an `EquivalentMap', or an `Entry'. */
+    private Object with(Object subtree, Object key, Object value, BinaryOp valCombiner) {
 	if (subtree == null) {
 	    if (!(key instanceof EquivalentMap)) {
 		Object[] a = new Object[2];
@@ -832,15 +843,18 @@ public class FTreeMap<Key, Val>
 	    int bin_srch_res = binarySearch(ary, key);
 	    int found = bin_srch_res & BIN_SEARCH_FOUND_MASK;
 	    int idx = bin_srch_res >> BIN_SEARCH_INDEX_SHIFT;
-	    if (found == BIN_SEARCH_FOUND && !(key instanceof EquivalentMap) && eql(key, ary[idx]))
-		if (eql(value, ary[idx + nkeys])) return subtree;
-		else return update2(ary, idx, value);
-	    else if (found == BIN_SEARCH_NOT_FOUND  &&
+	    if (found == BIN_SEARCH_FOUND && !(key instanceof EquivalentMap) &&
+		eql(key, ary[idx])) {
+		Object oldval = ary[idx + nkeys];
+		Object newval = valCombiner.apply(oldval, value);
+		if (eql(oldval, newval)) return subtree;
+		else return update2(ary, idx, newval);
+	    } else if (found == BIN_SEARCH_NOT_FOUND  &&
 		     len + 1 < MAX_LEAF_ARRAY_LENGTH  &&
 		     !(key instanceof EquivalentMap))
 		return insert2(ary, idx, key, value);
 	    else return makeNode((found == BIN_SEARCH_FOUND
-				  ? equivUnion(ary[idx], ary[idx + nkeys], key, value, second)
+				  ? equivUnion(ary[idx], ary[idx + nkeys], key, value, valCombiner)
 				  : key),
 				 value, subseq2(ary, 0, idx),
 				 subseq2(ary, (found == BIN_SEARCH_FOUND ? idx + 1 : idx),
@@ -851,16 +865,19 @@ public class FTreeMap<Key, Val>
 	    int comp_res = compare(key, nkey);
 	    if (comp_res == 0) {
 		if (!(key instanceof EquivalentMap) && !(nkey instanceof EquivalentMap) &&
-		    eql(key, nkey) && eql(value, node.value))
-		    return subtree;
-		else return makeNode(equivUnion(nkey, node.value, key, value, second), value,
-				     node.left, node.right);
+		    eql(key, nkey)) {
+		    Object newval = valCombiner.apply(node.value, value);
+		    if (eql(node.value, newval)) return subtree;
+		    else return makeNode(equivUnion(nkey, node.value, key, newval, second),
+					 newval, node.left, node.right);
+		} else return makeNode(equivUnion(nkey, node.value, key, value, valCombiner),
+				       value, node.left, node.right);
 	    } else if (comp_res < 0) {
-		Object new_left = with(node.left, key, value);
+		Object new_left = with(node.left, key, value, valCombiner);
 		if (new_left == node.left) return subtree;
 		else return buildNode(nkey, node.value, new_left, node.right);
 	    } else {
-		Object new_right = with(node.right, key, value);
+		Object new_right = with(node.right, key, value, valCombiner);
 		if (new_right == node.right) return subtree;
 		else return buildNode(nkey, node.value, node.left, new_right);
 	    }

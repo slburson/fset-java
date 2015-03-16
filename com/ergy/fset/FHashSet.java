@@ -378,7 +378,6 @@ public final class FHashSet<Elt>
     private static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
 
     /*pkg*/ static int hashCode(Object x) {
-	if (x instanceof EquivalentSet) x = ((EquivalentSet)x).contents.get(0);
 	if (x == null) return 0;
 	int h = x.hashCode();
 	if (h == NEGATIVE_INFINITY) return NEGATIVE_INFINITY + 1;
@@ -396,22 +395,24 @@ public final class FHashSet<Elt>
      * use `instanceof' to tell what kind of subtree we're looking at. */
     // This has package access for benefit of `FHashMap.restricted{To,From}'.
     /*pkg*/ static final class Node {
-	Node (int _size, Object _element, Object _left, Object _right) {
+	Node (int _size, Object _element, int _ehash, Object _left, Object _right) {
 	    size = _size;
 	    element = _element;
+	    ehash = _ehash;
 	    left = _left;
 	    right = _right;
 	}
 	/*pkg*/ final int size;		// the number of elements in the subtree
 	/*pkg*/ final Object element;
+	/*pkg*/ final int ehash;
 	/*pkg*/ final Object left;	// a subtree
 	/*pkg*/ final Object right;	// a subtree
     }
 
     // This has default (package-wide) access so `FHashMap.domain' can use it.
-    /*pkg*/ static Node makeNode(Object elt, Object left, Object right) {
+    /*pkg*/ static Node makeNode(Object elt, int ehash, Object left, Object right) {
 	return new Node(treeSize(left) + treeSize(right) + elementSize(elt),
-			elt, left, right);
+			elt, ehash, left, right);
     }
 
     /*pkg*/ static int treeSize(Object subtree) {
@@ -438,7 +439,7 @@ public final class FHashSet<Elt>
 	} else {
 	    Node node = (Node)subtree;
 	    Object nelt = node.element;
-	    int nhash = hashCode(nelt);
+	    int nhash = node.ehash;
 	    if (ehash == nhash) {
 		if (nelt instanceof EquivalentSet)
 		    return ((EquivalentSet)nelt).contents.contains(elt);
@@ -455,7 +456,7 @@ public final class FHashSet<Elt>
 		Object[] a = new Object[1];
 		a[0] = elt;
 		return a;
-	    } else return makeNode(elt, null, null);
+	    } else return makeNode(elt, ehash, null, null);
 	} else if (!(subtree instanceof Node)) {
 	    Object[] ary = (Object[])subtree;
 	    int bin_srch_res = binarySearch(ary, ehash);
@@ -467,26 +468,26 @@ public final class FHashSet<Elt>
 		     !(elt instanceof EquivalentSet))
 		return insert(ary, idx, elt);
 	    else return makeNode((found == BIN_SEARCH_FOUND ? equivUnion(ary[idx], elt) : elt),
-				 subseq(ary, 0, idx),
+				 ehash, subseq(ary, 0, idx),
 				 subseq(ary, (found == BIN_SEARCH_FOUND ? idx + 1 : idx),
 					ary.length));
 	} else {
 	    Node node = (Node)subtree;
 	    Object nelt = node.element;
-	    int nhash = hashCode(nelt);
+	    int nhash = node.ehash;
 	    if (ehash == nhash) {
 		if (!(elt instanceof EquivalentSet) && !(nelt instanceof EquivalentSet)
 		    && eql(elt, nelt))
 		    return subtree;
-		else return makeNode(equivUnion(elt, nelt), node.left, node.right);
+		else return makeNode(equivUnion(elt, nelt), ehash, node.left, node.right);
 	    } else if (ehash < nhash) {
 		Object new_left = with(node.left, elt, ehash);
 		if (new_left == node.left) return subtree;
-		else return buildNode(nelt, new_left, node.right);
+		else return buildNode(nelt, nhash, new_left, node.right);
 	    } else {
 		Object new_right = with(node.right, elt, ehash);
 		if (new_right == node.right) return subtree;
-		else return buildNode(nelt, node.left, new_right);
+		else return buildNode(nelt, nhash, node.left, new_right);
 	    }
 	}
     }
@@ -506,23 +507,23 @@ public final class FHashSet<Elt>
 	} else {
 	    Node node = (Node)subtree;
 	    Object nelt = node.element;
-	    int nhash = hashCode(nelt);
+	    int nhash = node.ehash;
 	    if (ehash == nhash) {
 		if (!(nelt instanceof EquivalentSet)) {
 		    if (!eql(elt, nelt)) return subtree;
 		    else return join(node.left, node.right);
 		} else {
 		    Object diff = equivDiff(nelt, elt);
-		    return buildNode(diff, node.left, node.right);
+		    return buildNode(diff, ehash, node.left, node.right);
 		}
 	    } else if (ehash < nhash) {
 		Object new_left = less(node.left, elt, ehash);
 		if (new_left == node.left) return subtree;
-		else return buildNode(nelt, new_left, node.right);
+		else return buildNode(nelt, nhash, new_left, node.right);
 	    } else {
 		Object new_right = less(node.right, elt, ehash);
 		if (new_right == node.right) return subtree;
-		else return buildNode(nelt, node.left, new_right);
+		else return buildNode(nelt, nhash, node.left, new_right);
 	    }
 	}
     }
@@ -541,7 +542,7 @@ public final class FHashSet<Elt>
 	} else {
 	    Node n1 = (Node)subtree1;
 	    Object elt1 = n1.element;
-	    int hash1 = hashCode(elt1);
+	    int hash1 = n1.ehash;
 	    Object elt2 = findEquiv(subtree2, hash1);
 	    return concat(equivUnion(elt1, elt2), hash1,
 			  union(trim(n1.left, lo, hash1), trim(subtree2, lo, hash1), lo, hash1),
@@ -563,7 +564,7 @@ public final class FHashSet<Elt>
 	} else {
 	    Node n1 = (Node)subtree1;
 	    Object elt1 = n1.element;
-	    int hash1 = hashCode(elt1);
+	    int hash1 = n1.ehash;
 	    Object elt2 = findEquiv(subtree2, hash1);
 	    Object new_left = intersection(n1.left, trim(subtree2, lo, hash1), lo, hash1);
 	    Object new_right = intersection(n1.right, trim(subtree2, hash1, hi), hash1, hi);
@@ -588,7 +589,7 @@ public final class FHashSet<Elt>
 		// commutative.
 		Node n2 = (Node)subtree2;
 		Object elt2 = n2.element;
-		int hash2 = hashCode(elt2);
+		int hash2 = n2.ehash;
 		Object elt1 = findEquiv(subtree1, hash2);
 		Object new_left = difference(trim(subtree1, lo, hash2), trim(n2.left, lo, hash2),
 					     lo, hash2);
@@ -601,7 +602,7 @@ public final class FHashSet<Elt>
 	} else {
 	    Node n1 = (Node)subtree1;
 	    Object elt1 = n1.element;
-	    int hash1 = hashCode(elt1);
+	    int hash1 = n1.ehash;
 	    Object elt2 = findEquiv(subtree2, hash1);
 	    Object new_left = difference(n1.left, trim(subtree2, lo, hash1), lo, hash1);
 	    Object new_right = difference(n1.right, trim(subtree2, hash1, hi), hash1, hi);
@@ -651,7 +652,7 @@ public final class FHashSet<Elt>
 	    else {
 		Object elt1 = node1.element;
 		Object elt2 = rankElement(subtree2, new_hi - base2);
-		int hash1 = hashCode(elt1);
+		int hash1 = node1.ehash;
 		int hash2 = hashCode(elt2);
 		if (hash1 < hash2) return -1;
 		else if (hash1 > hash2) return 1;
@@ -706,7 +707,7 @@ public final class FHashSet<Elt>
 		Object elt1 = node1.element;
 		Object elt2 = rankElement(subtree2, new_hi - base2);
 		if (elt1 == null ? elt2 != null :
-		    !(hashCode(elt1) == hashCode(elt2) && equivEquals(elt1, elt2)))
+		    !(node1.ehash == hashCode(elt2) && equivEquals(elt1, elt2)))
 		    return false;
 		else {
 		    int elt1_size = elementSize(elt1);
@@ -720,8 +721,6 @@ public final class FHashSet<Elt>
 	}
     }
 
-    // There's a rumor that recent JVMs do escape analysis, so returning a small
-    // object that can't get stored in the heap is cheap.
     private static final class RankTrimResult {
 	RankTrimResult (Object _subtree, int _base) {
 	    subtree = _subtree;
@@ -781,7 +780,7 @@ public final class FHashSet<Elt>
 	    else {
 		Node n2 = (Node)subtree2;
 		Object elt2 = n2.element;
-		int hash2 = hashCode(elt2);
+		int hash2 = n2.ehash;
 		if (!isSubset(trim(subtree1, lo, hash2), n2.left, lo, hash2))
 		    return false;
 		else {
@@ -794,7 +793,7 @@ public final class FHashSet<Elt>
 	else {
 	    Node n1 = (Node)subtree1;
 	    Object elt1 = n1.element;
-	    int hash1 = hashCode(elt1);
+	    int hash1 = n1.ehash;
 	    if (!isSubset(n1.left, trim(subtree2, lo, hash1), lo, hash1)) return false;
 	    else {
 		Object elt2 = findEquiv(subtree2, hash1);
@@ -824,7 +823,7 @@ public final class FHashSet<Elt>
 	} else {
 	    Node node = (Node)subtree;
 	    Object nelt = node.element;
-	    int nhash = hashCode(nelt);
+	    int nhash = node.ehash;
 	    if (ehash == nhash) return nelt;
 	    else if (ehash < nhash) return findEquiv(node.left, ehash);
 	    else return findEquiv(node.right, ehash);
@@ -846,7 +845,7 @@ public final class FHashSet<Elt>
 	    else return subseq(ary, lo_split, hi_split);
 	} else {
 	    Node node = (Node)subtree;
-	    int nhash = hashCode(node.element);
+	    int nhash = node.ehash;
 	    if (lo != NEGATIVE_INFINITY && nhash <= lo) {
 		if (hi == POSITIVE_INFINITY && nhash == lo) return node.right;
 		else return split(node.right, lo, hi);
@@ -876,7 +875,7 @@ public final class FHashSet<Elt>
 	    else return subtree;
 	} else {
 	    Node node = (Node)subtree;
-	    int nhash = hashCode(node.element);
+	    int nhash = node.ehash;
 	    if (lo == NEGATIVE_INFINITY || nhash > lo) {
 		if (hi == POSITIVE_INFINITY || nhash < hi)
 		    return subtree;
@@ -897,15 +896,15 @@ public final class FHashSet<Elt>
 	    int sizr = treeSize(right);
 	    if (left instanceof Node && sizl >= sizr * BALANCE_FACTOR) {
 		Node l = (Node)left;
-		return buildNode(l.element, l.left, concat(elt, ehash, l.right, right));
+		return buildNode(l.element, l.ehash, l.left, concat(elt, ehash, l.right, right));
 	    } else if (right instanceof Node && sizr >= sizl * BALANCE_FACTOR) {
 		Node r = (Node)right;
-		return buildNode(r.element, concat(elt, ehash, left, r.left), r.right);
-	    } else return buildNode(elt, left, right);
+		return buildNode(r.element, r.ehash, concat(elt, ehash, left, r.left), r.right);
+	    } else return buildNode(elt, ehash, left, right);
 	}
     }
 
-    private static Object buildNode(Object elt, Object left, Object right) {
+    private static Object buildNode(Object elt, int ehash, Object left, Object right) {
 	if ((left == null || !(left instanceof Node)) &&
 	    (right == null || !(right instanceof Node))) {
 	    Object[] lary = (Object[])left, rary = (Object[])right;
@@ -913,7 +912,7 @@ public final class FHashSet<Elt>
 		(left == null ? 0 : lary.length) +
 		(right == null ? 0 : rary.length) < MAX_LEAF_ARRAY_LENGTH)
 		return concat(elt, lary, rary);
-	    else return makeNode(elt, left, right);
+	    else return makeNode(elt, ehash, left, right);
 	} else {
 	    int sizl = treeSize(left);
 	    int sizr = treeSize(right);
@@ -924,24 +923,25 @@ public final class FHashSet<Elt>
 		Object rl = r.left;
 		Object rr = r.right;
 		if (!(rl instanceof Node) || treeSize(rl) <= treeSize(rr))
-		    return makeNode(r.element, buildNode(elt, left, rl), rr);
+		    return makeNode(r.element, r.ehash, buildNode(elt, ehash, left, rl), rr);
 		else {
 		    Node rln = (Node)rl;
-		    return makeNode(rln.element, buildNode(elt, left, rln.left),
-				    buildNode(r.element, rln.right, rr));
+		    return makeNode(rln.element, rln.ehash, buildNode(elt, ehash, left, rln.left),
+				    buildNode(r.element, r.ehash, rln.right, rr));
 		}
 	    } else if (left instanceof Node && sizl > sizr * BALANCE_FACTOR) {
 		Node l = (Node)left;
 		Object ll = l.left;
 		Object lr = l.right;
 		if (!(lr instanceof Node) || treeSize(lr) <= treeSize(ll))
-		    return makeNode(l.element, ll, buildNode(elt, lr, right));
+		    return makeNode(l.element, l.ehash, ll, buildNode(elt, ehash, lr, right));
 		else {
 		    Node lrn = (Node)lr;
-		    return makeNode(lrn.element, buildNode(l.element, ll, lrn.left),
-				    buildNode(elt, lrn.right, right));
+		    return makeNode(lrn.element, lrn.ehash,
+				    buildNode(l.element, l.ehash, ll, lrn.left),
+				    buildNode(elt, ehash, lrn.right, right));
 		}
-	    } else return makeNode(elt, left, right);
+	    } else return makeNode(elt, ehash, left, right);
 	}
     }
 
@@ -974,8 +974,7 @@ public final class FHashSet<Elt>
 	} else {
 	    Node node = (Node)subtree;
 	    if (node.left == null) return node.right;
-	    else return concat(node.element, hashCode(node.element),
-			       lessMin(node.left), node.right);
+	    else return concat(node.element, node.ehash, lessMin(node.left), node.right);
 	}
     }
 
@@ -999,7 +998,7 @@ public final class FHashSet<Elt>
 		    Object e = al.get(i);
 		    if (e != null) hash += e.hashCode();
 		}
-	    } else if (elt != null) hash += elt.hashCode();
+	    } else if (elt != null) hash += elt.hashCode();	// not 'node.ehash'!
 	    return hash;
 	}
     }
@@ -1059,7 +1058,8 @@ public final class FHashSet<Elt>
 	    return res;
 	} else {
 	    Node node = (Node)subtree;
-	    int hash = hashCode(node.element);
+	    int hash = node.ehash;
+	    if (hash != hashCode(node.element)) return false;
 	    int sizl = treeSize(node.left);
 	    int sizr = treeSize(node.right);
 	    if (node.size != sizl + sizr + elementSize(node.element)) return false;
@@ -1090,6 +1090,10 @@ public final class FHashSet<Elt>
 	    contents = _contents;
 	}
 	/*pkg*/ ArrayList<Object> contents;
+	public int hashCode() {
+	    Object c = contents.get(0);
+	    return c == null ? 0 : c.hashCode();
+	}
     }
 
     private static Object equivUnion(Object elt1, Object elt2) {
@@ -1282,74 +1286,6 @@ public final class FHashSet<Elt>
     // Does a merge-union on `ary1' and `ary2', omitting any elements not greater than
     // `lo' and less than `hi'.  If the result is too long to be a leaf, splits it and
     // makes a node.  Also, if any equivalent values are found, makes a node.
-    private static Object union_save(Object[] ary1, Object[] ary2, int lo, int hi) {
-	int i1 = 0, i2 = 0, len1 = ary1.length, len2 = ary2.length;
-	// We do these with linear rather than binary search because frequently,
-	// the ends of the vectors will already be in range (the worst case for
-	// binary search).
-	if (lo != NEGATIVE_INFINITY) {
-	    while (i1 < len1 && lo >= hashCode(ary1[i1])) ++i1;
-	    while (i2 < len2 && lo >= hashCode(ary2[i2])) ++i2;
-	}
-	if (hi != POSITIVE_INFINITY) {
-	    while (i1 < len1 && hi <= hashCode(ary1[len1 - 1])) --len1;
-	    while (i2 < len2 && hi <= hashCode(ary2[len2 - 1])) --len2;
-	}
-	Object[] res = new Object[(len1 - i1) + (len2 - i2)];
-	int nres = 0;
-	boolean any_equiv = false;
-	Object e1 = null, e2 = null;
-	int hash1 = 0, hash2 = 0;
-	if (i1 < len1) hash1 = hashCode(e1 = ary1[i1]);
-	if (i2 < len2) hash2 = hashCode(e2 = ary2[i2]);
-	while (true) {
-	    if (i1 == len1) {
-		while (i2 < len2) res[nres++] = ary2[i2++];
-		break;
-	    } else if (i2 == len2) {
-		while (i1 < len1) res[nres++] = ary1[i1++];
-		break;
-	    } else {
-		if (hash1 < hash2) {
-		    res[nres++] = e1;
-		    ++i1;
-		    if (i1 < len1) hash1 = hashCode(e1 = ary1[i1]);
-		} else if (hash1 > hash2) {
-		    res[nres++] = e2;
-		    ++i2;
-		    if (i2 < len2) hash2 = hashCode(e2 = ary2[i2]);
-		} else {
-		    if (eql(e1, e2)) res[nres++] = e1;
-		    else {
-			res[nres++] = equivUnion(e1, e2);
-			any_equiv = true;
-		    }
-		    ++i1;
-		    ++i2;
-		    if (i1 < len1) hash1 = hashCode(e1 = ary1[i1]);
-		    if (i2 < len2) hash2 = hashCode(e2 = ary2[i2]);
-		}
-	    }
-	}
-	if (any_equiv) {
-	    Object t = null;
-	    // We could attempt a better algorithm, but this shouldn't happen often.
-	    for (int i = 0; i < nres; ++i) {
-		Object elt = res[i];
-		t = with(t, elt, hashCode(elt));
-	    }
-	    return t;
-	}
-	if (nres > MAX_LEAF_ARRAY_LENGTH) {
-	    int idx = nres / 2;
-	    return makeNode(res[idx], subseq(res, 0, idx),
-			    subseq(res, idx + 1, nres));
-	} else return subseq(res, 0, nres);
-    }
-
-    // Does a merge-union on `ary1' and `ary2', omitting any elements not greater than
-    // `lo' and less than `hi'.  If the result is too long to be a leaf, splits it and
-    // makes a node.  Also, if any equivalent values are found, makes a node.
     private static Object union(Object[] ary1, Object[] ary2, int lo, int hi) {
 	int i1 = 0, i2 = 0, len1 = ary1.length, len2 = ary2.length;
 	// We do these with linear rather than binary search because frequently,
@@ -1411,7 +1347,8 @@ public final class FHashSet<Elt>
 	Object[] res_ary = res.toArray();
 	if (siz > MAX_LEAF_ARRAY_LENGTH) {
 	    int idx = siz / 2;
-	    return makeNode(res.get(idx), subseq(res_ary, 0, idx),
+	    Object elt = res.get(idx);
+	    return makeNode(elt, hashCode(elt), subseq(res_ary, 0, idx),
 			    subseq(res_ary, idx + 1, siz));
 	} else return res_ary;
     }
@@ -1510,8 +1447,7 @@ public final class FHashSet<Elt>
      * equivalent one) either was found or should be inserted.  Since these are both
      * small integers, we pack them into a single `int', to save us from having to
      * allocate a result object.  [Editorial: Java needs multiple values very
-     * badly!  [Update: I think I read that the JIT now does escape analysis, to
-     * handle returning multiple values better.]] */
+     * badly!] */
     private static final int BIN_SEARCH_NOT_FOUND = 0;
     private static final int BIN_SEARCH_FOUND = 1;
     private static final int BIN_SEARCH_FOUND_MASK = 0x1;
