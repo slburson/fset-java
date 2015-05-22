@@ -54,6 +54,18 @@ public class FLinkedHashMap<Key, Val>
 	dflt = _dflt;
     }
 
+    /**
+     * Constructs and returns an empty <code>FLinkedHashMap</code> with default
+     * <code>dflt</code>.  The resulting map's <code>get</code> method returns
+     * <code>dflt</code> when called with a key which is not in the map.
+     *
+     * @param dflt the default value
+     * @return the new <code>FHashMap</code>
+     */
+    public static <Key, Val> FLinkedHashMap<Key, Val> withDefault(Val dflt) {
+	return new FLinkedHashMap<Key, Val>(null, null, dflt);
+    }
+
     public boolean isEmpty() {
 	return map_tree == null;
     }
