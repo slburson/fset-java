@@ -148,7 +148,7 @@ public interface FList<Elt> extends List<Elt> {
      *
      * @return the sorted list
      */
-    FList<Elt> sort();
+    FList<Elt> sorted();
 
     /**
      * Returns a new list in which the elements of this list are sorted according to
@@ -157,7 +157,7 @@ public interface FList<Elt> extends List<Elt> {
      * @param comp the comparator to use for sorting
      * @return the sorted list
      */
-    FList<Elt> sort(Comparator<? super Elt> comp);
+    FList<Elt> sorted(Comparator<? super Elt> comp);
 
 
     /* ======== Deprecated List Methods ========

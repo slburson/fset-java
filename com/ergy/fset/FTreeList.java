@@ -26,7 +26,7 @@ import java.util.*;
  * <i>n</i>) time.  Construction from an existing collection or array,
  * <code>reverse</code>, <code>contains</code>, <code>indexOf</code>,
  * <code>lastIndexOf</code>, <code>compareTo</code>, and <code>equals</code> take
- * O(n) (linear) time.  <code>sort</code> takes O(<i>n</i> log <i>n</i>) time.
+ * O(n) (linear) time.  <code>sorted</code> takes O(<i>n</i> log <i>n</i>) time.
  *
  * <p>Space costs: <code>FTreeSet</code> uses a heterogeneous binary tree
  * structure with bounded-length arrays at the leaves.  It uses much less space than
@@ -280,7 +280,7 @@ public class FTreeList<Elt>
 	return subseq(fromIndex, toIndex);
     }
 
-    public FTreeList<Elt> sort(Comparator<? super Elt> comp) {
+    public FTreeList<Elt> sorted(Comparator<? super Elt> comp) {
 	// We could do our own tree sort -- the code is very similar (though alas, not
 	// identical) to the list-to-set conversion code -- but this is probably pretty
 	// close.
@@ -289,8 +289,8 @@ public class FTreeList<Elt>
 	return new FTreeList<Elt>((Elt[])ary);
     }
 
-    public FTreeList sort() {
-	return sort(null);
+    public FTreeList sorted() {
+	return sorted(null);
     }
 
     public boolean contains(Object elt) {

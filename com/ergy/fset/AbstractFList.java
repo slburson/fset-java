@@ -90,4 +90,13 @@ public abstract class AbstractFList<Elt>
 	throw new UnsupportedOperationException();
     }
 
+    /**
+     * Unsupported.  This is new in Java 8; in previous versions of FSet, this
+     * interface had a 'sort' method, but we've been forced to rename it to 'sorted'
+     * so it doesn't conflict with this one.
+     */
+    public void sort(Comparator<? super Elt> comp) {
+	throw new UnsupportedOperationException();
+    }
+
 }

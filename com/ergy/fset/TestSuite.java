@@ -1984,9 +1984,9 @@ public class TestSuite {
 	    println(compare(ftl0a, ftl0b));
 	    exit();
 	}
-	FTreeList<MyInteger> ftl0s = ftl0.sort(TestComparator.Instance);
+	FTreeList<MyInteger> ftl0s = ftl0.sorted(TestComparator.Instance);
 	ArrayList<MyInteger> al0s = (ArrayList<MyInteger>)al0.clone();
-	Collections.sort(al0s, TestComparator.Instance);
+	al0s.sort(TestComparator.Instance);
 	if (!ftl0s.equals(al0s)) {
 	    println("FTreeList sort failed on iteration " + i);
 	    println(ftl0s);
