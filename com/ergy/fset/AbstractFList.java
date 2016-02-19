@@ -33,6 +33,22 @@ public abstract class AbstractFList<Elt>
 	return this;
     }
 
+    public Elt first() {
+	return get(0);
+    }
+
+    public Elt last() {
+	return get(size() - 1);
+    }
+
+    public FList<Elt> lessFirst() {
+	return less(0);
+    }
+
+    public FList<Elt> lessLast() {
+	return less(size() - 1);
+    }
+
     public FList<Elt> prefix(int len) {
 	return subseq(0, len);
     }

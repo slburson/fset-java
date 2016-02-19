@@ -28,6 +28,22 @@ import java.util.*;
 public interface FList<Elt> extends List<Elt> {
 
     /**
+     * Returns the first element of the list.
+     *
+     * @return the first element of the list
+     * @throws IndexOutOfBoundsException if the list is empty
+     */
+    Elt first();
+
+    /**
+     * Returns the last element of the list.
+     *
+     * @return the last element of the list
+     * @throws IndexOutOfBoundsException if the list is empty
+     */
+    Elt last();
+
+    /**
      * Returns a new list which has <code>elt</code> at position <code>index</code>,
      * in place of the previous element.  The the other elements are the same as
      * those of this list.  If <code>index</code> is equal to the size of the list,
@@ -75,6 +91,20 @@ public interface FList<Elt> extends List<Elt> {
      * @return the result list
      */
     FList<Elt> withLast(Elt elt);
+
+    /**
+     * Returns a new list which is this list less its first element.
+     *
+     * @return the result list
+     */
+    FList<Elt> lessFirst();
+
+    /**
+     * Returns a new list which is this list less its last element.
+     *
+     * @return the result list
+     */
+    FList<Elt> lessLast();
 
     /**
      * Returns a new list from which the element at position <code>index</code> has
