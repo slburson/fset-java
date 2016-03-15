@@ -18,13 +18,14 @@ import java.util.*;
 
 
 /**
- * Just like <code>FHashSet</code> except that the iterator returns entries
- * in the same order in which the keys were first added.
+ * Just like <code>FHashSet</code> except that the iterator returns elements
+ * in the same order in which they were first added.
  *
  * <p>WARNING: <code>less</code> takes O(n) time, in general, in this implementation.
  * Avoid it, except in the special case of the element just returned by <code>arb</code>.
  *
- * Still unimplemented: <code>intersection</code>, <code>difference</code>.
+ * Still unimplemented: user-supplied comparators; <code>intersection</code>,
+ * <code>difference</code>.
  */
 
 public class FLinkedHashSet<Elt>
@@ -62,6 +63,13 @@ public class FLinkedHashSet<Elt>
 
     public int size() {
 	return FHashSet.treeSize(set_tree);
+    }
+
+    /**
+     * Returns the contents of the set, in order, as an FList.
+     */
+    public FList<Elt> toList() {
+	return new FTreeList<Elt>(list_tree, null);
     }
 
     /**
