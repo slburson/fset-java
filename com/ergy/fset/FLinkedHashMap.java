@@ -24,7 +24,8 @@ import java.util.*;
  *
  * <p>WARNING: <code>less</code> takes O(n) time in this implementation.  Avoid it.
  *
- * <p>Still unimplemented: <code>restrictedTo</code>, <code>restrictedFrom</code>.
+ * <p>Still unimplemented: user-supplied comparators; <code>restrictedTo</code>,
+ * <code>restrictedFrom</code>.
  */
 
 public class FLinkedHashMap<Key, Val>
@@ -72,6 +73,13 @@ public class FLinkedHashMap<Key, Val>
 
     public int size() {
 	return FHashMap.treeSize(map_tree);
+    }
+
+    /**
+     * Returns the keys in the map, in order, as an FList.
+     */
+    public FList<Key> keyList() {
+	return new FTreeList<Key>(list_tree, null);
     }
 
     public Map.Entry<Key, Val> arb() {
