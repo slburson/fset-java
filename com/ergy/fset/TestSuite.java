@@ -1516,9 +1516,9 @@ public class TestSuite {
 	    println(compare(ftl0a, ftl0b));
 	    exit();
 	}
-	FTreeList<MyInteger> ftl0s = ftl0.sort(TestComparator.Instance);
+	FTreeList<MyInteger> ftl0s = ftl0.sorted(TestComparator.Instance);
 	ArrayList<MyInteger> al0s = (ArrayList<MyInteger>)al0.clone();
-	Collections.sort(al0s, TestComparator.Instance);
+	al0s.sort(TestComparator.Instance);
 	if (!ftl0s.equals(al0s)) {
 	    println("FTreeList sort failed on iteration " + i);
 	    println(ftl0s);
@@ -1569,6 +1569,22 @@ public class TestSuite {
 		println("FTreeList hasNext failed true on iteration " + i + "." + j);
 		exit();
 	    }
+	}
+	if (! new FTreeList<MyInteger>(ftl0.prefix(ftl0.size() - 3)).isPrefix(ftl0)) {
+	    println("FTreeList prefix or isPrefix failed on iteration " + i);
+	    exit();
+	}
+	if (ftl0.suffix(3).size() != 3) {
+	    println("FTreeList suffix failed on iteration " + i);
+	    exit();
+	}
+	if (ftl0.suffixFrom(3).size() != ftl0.size() - 3) {
+	    println("FTreeList suffixFrom failed on iteration " + i);
+	    exit();
+	}
+	if (! new FTreeList<MyInteger>(ftl0.suffix(ftl0.size() - 3)).isSuffix(ftl0)) {
+	    println("FTreeList suffix or isSuffix failed on iteration " + i);
+	    exit();
 	}
 	if (i % 50 == 0) {
 	    try {

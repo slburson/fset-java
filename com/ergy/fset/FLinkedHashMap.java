@@ -24,7 +24,8 @@ import java.util.*;
  *
  * <p>WARNING: <code>less</code> takes O(n) time in this implementation.  Avoid it.
  *
- * <p>Still unimplemented: <code>restrictedTo</code>, <code>restrictedFrom</code>.
+ * <p>Still unimplemented: user-supplied comparators; <code>restrictedTo</code>,
+ * <code>restrictedFrom</code>.
  */
 
 public class FLinkedHashMap<Key, Val>
@@ -54,12 +55,31 @@ public class FLinkedHashMap<Key, Val>
 	dflt = _dflt;
     }
 
+    /**
+     * Constructs and returns an empty <code>FLinkedHashMap</code> with default
+     * <code>dflt</code>.  The resulting map's <code>get</code> method returns
+     * <code>dflt</code> when called with a key which is not in the map.
+     *
+     * @param dflt the default value
+     * @return the new <code>FHashMap</code>
+     */
+    public static <Key, Val> FLinkedHashMap<Key, Val> withDefault(Val dflt) {
+	return new FLinkedHashMap<Key, Val>(null, null, dflt);
+    }
+
     public boolean isEmpty() {
 	return map_tree == null;
     }
 
     public int size() {
 	return FHashMap.treeSize(map_tree);
+    }
+
+    /**
+     * Returns the keys in the map, in order, as an FList.
+     */
+    public FList<Key> keyList() {
+	return new FTreeList<Key>(list_tree, null);
     }
 
     public Map.Entry<Key, Val> arb() {

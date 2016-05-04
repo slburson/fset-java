@@ -33,12 +33,32 @@ public abstract class AbstractFList<Elt>
 	return this;
     }
 
+    public Elt first() {
+	return get(0);
+    }
+
+    public Elt last() {
+	return get(size() - 1);
+    }
+
+    public FList<Elt> lessFirst() {
+	return less(0);
+    }
+
+    public FList<Elt> lessLast() {
+	return less(size() - 1);
+    }
+
     public FList<Elt> prefix(int len) {
 	return subseq(0, len);
     }
 
     public FList<Elt> suffix(int len) {
 	return subseq(size() - len, size());
+    }
+
+    public FList<Elt> suffixFrom(int fromIndex) {
+	return subseq(fromIndex, size());
     }
 
     /**
@@ -87,6 +107,15 @@ public abstract class AbstractFList<Elt>
      * Unsupported.
      */
     public final Elt set(int index, Elt e) {
+	throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Unsupported.  This is new in Java 8; in previous versions of FSet, this
+     * interface had a 'sort' method, but we've been forced to rename it to 'sorted'
+     * so it doesn't conflict with this one.
+     */
+    public void sort(Comparator<? super Elt> comp) {
 	throw new UnsupportedOperationException();
     }
 
