@@ -164,11 +164,38 @@ public interface FList<Elt> extends List<Elt> {
     FList<Elt> prefix(int len);
 
     /**
-     * Returns the final subsequence of this list, of length <code>len</code>.
+     * Returns the final subsequence of this list, of length <code>len</code>.  (Compare
+     * <code>suffixFrom</code>.)
      *
      * @throws IndexOutOfBoundsException
      */
-    FList<Elt> suffix(int fromIndex);
+    FList<Elt> suffix(int len);
+
+    /**
+     * Returns the final subsequence of this list, starting at index <code>fromIndex</code>.
+     * (Compare <code>suffix</code>.)
+     *
+     * @throws IndexOutOfBoundsException
+     */
+    FList<Elt> suffixFrom(int fromIndex);
+
+    /**
+     * Returns true iff this list is a prefix of <code>other</code>, that is, if every element
+     * of this list occurs in <code>other</code> at the same index (including the case where the
+     * lists are equal).
+     *
+     * Equivalent to <code>other.prefix(size()).equals(this)</code>, but more efficient.
+     */
+    boolean isPrefix(FList<Elt> other);
+
+    /**
+     * Returns true iff this list is a suffix of <code>other</code>, that is, if every element
+     * of this list occurs in <code>other</code> at the same distance from the end (including
+     * the case where the lists are equal).
+     *
+     * Equivalent to <code>other.suffix(size()).equals(this)</code>, but more efficient.
+     */
+    boolean isSuffix(FList<Elt> other);
 
     /**
      * Returns a new list in which the elements of this list are sorted by their

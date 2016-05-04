@@ -57,6 +57,10 @@ public abstract class AbstractFList<Elt>
 	return subseq(size() - len, size());
     }
 
+    public FList<Elt> suffixFrom(int fromIndex) {
+	return subseq(fromIndex, size());
+    }
+
     /**
      * Unsupported.
      */

@@ -257,8 +257,19 @@ public class FTreeList<Elt>
 	return new FTreeList<Elt>(less(tree, index), elt_comp);
     }
 
+    // This, 'lessLast', 'prefix', 'suffix', and 'suffixFrom' are copies of the ones in
+    // 'AbstractFList', except that they return 'FTreeList<Elt>' rather than 'FList<Elt>'.
+    public FTreeList<Elt> lessFirst() {
+	return less(0);
+    }
+
+    public FTreeList<Elt> lessLast() {
+	return less(size() - 1);
+    }
+
     public FTreeList<Elt> concat(List<? extends Elt> list) {
-	if (list instanceof FTreeList)
+	if (list.isEmpty()) return this;
+	else if (list instanceof FTreeList)
 	    return new FTreeList<Elt>(concat(tree, ((FTreeList)list).tree), elt_comp);
 	else return new FTreeList<Elt>(concat(tree, fromCollection(list)), elt_comp);
     }
@@ -273,6 +284,46 @@ public class FTreeList<Elt>
 	if (fromIndex < 0 || fromIndex > siz ||
 	    toIndex < 0 || toIndex > siz) throw new IndexOutOfBoundsException();
 	else return new FTreeList<Elt>(subseq(tree, fromIndex, toIndex), elt_comp);
+    }
+
+    public FTreeList<Elt> prefix(int len) {
+	return subseq(0, len);
+    }
+
+    public FTreeList<Elt> suffix(int len) {
+	return subseq(size() - len, size());
+    }
+
+    public FTreeList<Elt> suffixFrom(int fromIndex) {
+	return subseq(fromIndex, size());
+    }
+
+    public boolean isPrefix(FList<Elt> other) {
+	int siz = treeSize(tree);
+	if (siz > other.size()) return false;
+	else if (other instanceof FTreeList)
+	    return equals(tree, 0, ((FTreeList)other).tree, 0, 0, siz);
+	else {
+	    Iterator<Elt> e1 = iterator();
+	    Iterator<Elt> e2 = other.iterator();
+	    while (e1.hasNext()) if (!eql(e1.next(), e2.next())) return false;
+	    return true;
+	}
+    }
+
+    public boolean isSuffix(FList<Elt> other) {
+	int siz = treeSize(tree);
+	int osiz = other.size();
+	if (siz > osiz) return false;
+	else if (other instanceof FTreeList) {
+	    Object otherTree = ((FTreeList)other).tree;
+	    return equals(tree, osiz - siz, otherTree, 0, osiz - siz, osiz);
+	} else {
+	    Iterator<Elt> e1 = iterator();
+	    Iterator<Elt> e2 = other.listIterator(osiz - siz);
+	    while (e1.hasNext()) if (!eql(e1.next(), e2.next())) return false;
+	    return true;
+	}
     }
 
     public FList<Elt> subList(int fromIndex, int toIndex) {
@@ -526,17 +577,16 @@ public class FTreeList<Elt>
 	    Node node1 = (Node)subtree1;
 	    Object left1 = node1.left;
 	    int sizl1 = treeSize(left1);
-	    int new_hi = base1 + sizl1;
-	    RankTrimResult rtr1 = rankTrim(left1, base1, lo, new_hi);
-	    RankTrimResult rtr2 = rankTrim(subtree2, base2, lo, new_hi);
-	    if (!equals(rtr1.subtree, rtr1.base, rtr2.subtree, rtr2.base, lo, new_hi))
+	    int rank1 = base1 + sizl1;
+	    RankTrimResult rtr1 = rankTrim(left1, base1, lo, rank1);
+	    RankTrimResult rtr2 = rankTrim(subtree2, base2, lo, rank1);
+	    if (!equals(rtr1.subtree, rtr1.base, rtr2.subtree, rtr2.base, lo, rank1))
 		return false;
 	    else {
-		int new_lo = base1 + sizl1;
-		RankTrimResult rtr3 = rankTrim(node1.right, new_lo, new_lo, hi);
-		RankTrimResult rtr4 = rankTrim(subtree2, base2, new_lo, hi);
+		RankTrimResult rtr3 = rankTrim(node1.right, rank1, rank1, hi);
+		RankTrimResult rtr4 = rankTrim(subtree2, base2, rank1, hi);
 		return equals(rtr3.subtree, rtr3.base,
-			      rtr4.subtree, rtr4.base, new_lo, hi);
+			      rtr4.subtree, rtr4.base, rank1, hi);
 	    }
 	}
     }
@@ -551,7 +601,7 @@ public class FTreeList<Elt>
     }
 
     private RankTrimResult rankTrim(Object subtree, int base, int lo, int hi) {
-	while (subtree != null && subtree instanceof Node) {
+	while (subtree instanceof Node) {
 	    Node node = (Node)subtree;
 	    int nrank = base + treeSize(node.left);
 	    if (nrank >= lo) {

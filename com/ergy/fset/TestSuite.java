@@ -2038,6 +2038,22 @@ public class TestSuite {
 		exit();
 	    }
 	}
+	if (! new FTreeList<MyInteger>(ftl0.prefix(ftl0.size() - 3)).isPrefix(ftl0)) {
+	    println("FTreeList prefix or isPrefix failed on iteration " + i);
+	    exit();
+	}
+	if (ftl0.suffix(3).size() != 3) {
+	    println("FTreeList suffix failed on iteration " + i);
+	    exit();
+	}
+	if (ftl0.suffixFrom(3).size() != ftl0.size() - 3) {
+	    println("FTreeList suffixFrom failed on iteration " + i);
+	    exit();
+	}
+	if (! new FTreeList<MyInteger>(ftl0.suffix(ftl0.size() - 3)).isSuffix(ftl0)) {
+	    println("FTreeList suffix or isSuffix failed on iteration " + i);
+	    exit();
+	}
 	if (i % 50 == 0) {
 	    try {
 		// Check handling of null list
